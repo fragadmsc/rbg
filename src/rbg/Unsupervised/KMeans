@@ -1,0 +1,116 @@
+import numpy as np
+
+
+class KMeans:
+    def __init__(self, n_clusters=10, max_iter=300, tol=1e-4, seed=None):
+        self.n_clusters = n_clusters
+        self.max_iter = max_iter
+        self.tol = tol
+        self.seed = seed
+
+        self._centroids = None
+        self._labels = None
+        self._wss = None
+
+    @property
+    def centroids(self):
+        return self._centroids
+
+    @property
+    def labels(self):
+        return self._labels
+
+    @property
+    def wss(self):
+        return self._wss
+
+    def _pre_process(self, X):
+        return np.asarray(X, dtype=np.float64)
+
+    # (a-b)^2 = a^2 - 2ab + b^2
+    def _calc_distances_sq(self, X):
+        return (
+            np.sum(X**2, axis=1, keepdims=True)
+            - 2 * (X @ self._centroids.T)
+            + np.sum(self._centroids**2, axis=1)
+        )
+
+    def _init_centroids(self, X):
+        rng = np.random.default_rng(self.seed)
+        n, p = X.shape
+        centroids = np.empty((self.n_clusters, p))
+
+        # first centroid is picked uniformly
+        centroids[0] = X[rng.choice(n)]
+
+        min_distances_sq = np.full(n, np.inf)
+
+        # pick the rest with k-means++
+        for k in range(1, self.n_clusters):
+            dist_sq = np.sum((X - centroids[k - 1]) ** 2, axis=1)
+            min_distances_sq = np.minimum(min_distances_sq, dist_sq)
+
+            total = min_distances_sq.sum()
+            if total == 0:
+                raise ValueError("not enough unique points for the requested clusters")
+
+            probs = min_distances_sq / total
+            centroids[k] = X[rng.choice(n, p=probs)]
+
+        return centroids
+
+    def fit(self, X):
+        X = self._pre_process(X)
+        n = X.shape[0]
+
+        if self.n_clusters > n:
+            raise ValueError("n_clusters is larger than the number of samples")
+
+        self._centroids = self._init_centroids(X)
+
+        for _ in range(self.max_iter):
+            distances_sq = self._calc_distances_sq(X)
+            new_labels = np.argmin(distances_sq, axis=1)
+            min_dists_sq = np.min(distances_sq, axis=1)
+
+            new_centroids = np.zeros_like(self._centroids)
+            for i in range(self.n_clusters):
+                members = X[new_labels == i]
+                if len(members) > 0:
+                    new_centroids[i] = np.mean(members, axis=0)
+                else:
+                    # no members left, so we steal the farthest point
+                    far = np.argmax(min_dists_sq)
+                    new_centroids[i] = X[far]
+                    new_labels[far] = i
+                    d = np.sum((X - X[far]) ** 2, axis=1)
+                    min_dists_sq = np.minimum(min_dists_sq, d)
+
+            shift = np.linalg.norm(new_centroids - self._centroids)
+            self._centroids = new_centroids
+
+            if shift < self.tol:
+                break
+
+        final = self._calc_distances_sq(X)
+        self._labels = np.argmin(final, axis=1)
+        self._wss = np.sum(np.min(final, axis=1))
+        return self
+
+    def predict(self, X):
+        if self._centroids is None:
+            raise RuntimeError("Not fitted")
+        X = self._pre_process(X)
+        return np.argmin(self._calc_distances_sq(X), axis=1)
+
+    def transform(self, X):
+        if self._centroids is None:
+            raise RuntimeError("Not fitted")
+        X = self._pre_process(X)
+        return np.sqrt(self._calc_distances_sq(X))
+
+    def fit_predict(self, X):
+        return self.fit(X).labels
+
+    def fit_transform(self, X):
+        return self.fit(X).transform(X)
