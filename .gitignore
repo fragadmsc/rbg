@@ -9,3 +9,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+#pytest generated files
+.pytest_cache
+
+#ide generated files
+.vscode
