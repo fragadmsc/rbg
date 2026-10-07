@@ -1,13 +1,20 @@
 [project]
 name = "rbg"
 version = "0.1.0"
-description = "Add your description here"
+description = "Basic Machine Learning Library"
 readme = "README.md"
 authors = [
-    { name = "fragadmsc", email = "damasceno.lucas512@gmail.com" }
+    { name = "fragadmsc", email = "damasceno.lucas512@gmail.com" },
+    { name = "lucca moulin"}
 ]
+keywords = ["machine learning", "basic", "regression"]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "numpy", 
+    "pandas", 
+    "sphinx"
+]
+
 
 [project.scripts]
 rbg = "rbg:main"
