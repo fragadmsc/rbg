@@ -1,0 +1,85 @@
+import numpy as np
+
+
+class PCA:
+    def __init__(self, n_components=None):
+        self.n_components = n_components
+        self._mean = None
+        self._components = None
+        self._explained_variance = None
+        self._explained_variance_ratio = None
+
+    @property
+    def mean(self):
+        return self._mean
+
+    @property
+    def components(self):
+        return self._components
+
+    @property
+    def explained_variance(self):
+        return self._explained_variance
+
+    @property
+    def explained_variance_ratio(self):
+        return self._explained_variance_ratio
+
+    def _pre_process(self, X):
+        X = np.asarray(X, dtype=np.float64)
+        if self._mean is None:
+            self._mean = np.mean(X, axis=0)
+        return X - self._mean
+
+    # Implements the sign criterion for SVD decompositions
+    def _svd_flip(self, V):
+        max_abs_cols = np.argmax(np.abs(V), axis=1)
+        signs = np.sign(V[np.arange(len(V)), max_abs_cols])
+        return V * signs.reshape(-1,1)
+
+    def fit(self, X):
+        self._mean = None
+        X_centered = self._pre_process(X)
+        n, p = X_centered.shape
+
+        _, S, V = np.linalg.svd(X_centered, full_matrices=False)
+        V = self._svd_flip(V)
+
+        if n > 1:
+            explained_variance = S**2/(n-1)
+        else:
+            explained_variance = np.zeros(p, dtype=np.float64)
+
+        total = explained_variance.sum()
+        if total > 0:
+            explained_variance_ratio = explained_variance / total
+        else:
+            explained_variance_ratio = np.zeros_like(explained_variance)
+
+        nc = self.n_components
+        if isinstance(nc, int):
+            k = nc
+        elif isinstance(nc, float):
+            if nc >= 1.0:
+                k = p
+            else:
+                cum_var = np.cumsum(explained_variance_ratio)
+                k = np.searchsorted(cum_var, nc) + 1
+        else:
+            k = p
+
+        self._components = V[:k, :]
+        self._explained_variance = explained_variance[:k]
+        self._explained_variance_ratio = explained_variance_ratio[:k]
+        return self
+
+    def transform(self, X):
+        if self._components is None:
+            raise RuntimeError("Not fitted")
+        X = self._pre_process(X)
+        return X @ self._components.T
+
+    def inverse_transform(self, X):
+        if self._components is None:
+            raise RuntimeError("Not fitted")
+        return X @ self._components + self._mean
