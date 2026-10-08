@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 #=========================== fazer ainda ===================
+#=========================== FAZ SENTIDO UTILIZAR OS VALORES DE CLASSIFICAÇÃO COMO INT OU STRING ? OU DEIXAR COMO APENAS INT?
 class TestDataEntry():
     def test_DataFrame(self):
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
@@ -55,19 +56,24 @@ class TestError():
         pass
 
     def test_attributes(self):
+        #======================= PADRONIZAR A INTERFAÇE POR K =============
 
-        LDA.labels
-        #testa se é uma array e retorna o identificador de cada grupo, por exemplo string ou idx
+
+        X_treino = np.array([
+            [1.5, 2.0], 
+            [1.6, 1.9], 
+            [8.5, 9.0], 
+            [8.6, 9.1]
+        ])
+        Y_treino = np.array([0, 0, 1, 1])
         
-        LDA.cov_matrix
-        #testa se a matrix de covariança é numpy, testa se tem a dimenção esperada 
+        LDA.fit(X_treino, Y_treino)
 
-        LDA.mean_array
-        #testa se tem o tamanho correto, testa se é numpy
-
-        LDA.prior
-        #testa se é numpy array, testa se tem o tamanho correto
         
+        assert isinstance(LDA.labels, np.ndarray)
+        assert np.array_equal(np.unique(LDA.labels), np.unique(Y_treino))
+        
+    def test_method(self):
 
         X_treino = np.array([
             [1.5, 2.0], 
@@ -82,22 +88,21 @@ class TestError():
         
         LDA.fit(X_treino, Y_treino)
 
-        
-        assert isinstance(LDA.labels, np.ndarray)
-        assert np.array_equal(np.unique(LDA.labels), np.unique(Y_treino))
-        
-        assert isinstance(LDA.cov_matrix, np.ndarray)
-        assert LDA.cov_matrix.shape == (n_features, n_features)
+        cov_matrix = LDA.cov_matrix(k = LDA.labels[0])
+        assert isinstance(cov_matrix, np.ndarray)
+        assert cov_matrix.shape == (n_features, n_features)
 
-        assert isinstance(LDA.mean_array, np.ndarray)
-        assert LDA.mean_array.shape == (n_features,)
+        mean_array = LDA.mean_array(k = LDA.label[0])
+        assert isinstance(mean_array, np.ndarray)
+        assert mean_array.shape == (n_features,)
 
-        assert isinstance(LDA.prior, np.ndarray)
-        assert LDA.prior.shape == (n_classes,)
+        prior = LDA.prior(k = LDA.label[0])
+        assert isinstance(prior, np.number)
 
         #++++++++++++++++++++++++ decidir se guardamos em uma array ou se guardamos uma função que passamos o identificador da label como parametro
         LDA.k_functions
         #testa se é numpy array, testa se cada campo é uma função
+
 
 
 #============= Fazer ainda =================
