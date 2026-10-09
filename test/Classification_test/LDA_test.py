@@ -3,12 +3,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-#=========================== fazer ainda ===================
-#=========================== FAZ SENTIDO UTILIZAR OS VALORES DE CLASSIFICAÇÃO COMO INT OU STRING ? OU DEIXAR COMO APENAS INT?
+
 class TestDataEntry():
     def test_DataFrame(self):
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
-        Y = pd.DataFrame({"coluna2": ['1', '2', '1']})
+        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
 
         Data = pd.DataFrame({"coluna1": [1.5,2.0,0.5]})
 
@@ -21,7 +20,7 @@ class TestDataEntry():
 
     def test_Numpy(self):
         X = np.ndarray([1.0, 2.0, 3.0])
-        Y = np.ndarray(['1', '2', '1'])
+        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
 
         Data = np.ndarray([1.5,2.0,0.5])
 
@@ -32,7 +31,6 @@ class TestDataEntry():
         assert isinstance(NpResult, np.ndarray)
 
 
-#========= Fazer ainda ================
 class TestError():
     def test_MatchingDim(self):
         X = np.zeros((10, 3)) 
@@ -56,8 +54,6 @@ class TestError():
         pass
 
     def test_attributes(self):
-        #======================= PADRONIZAR A INTERFAÇE POR K =============
-
         X_treino = np.array([
             [1.5, 2.0], 
             [1.6, 1.9], 

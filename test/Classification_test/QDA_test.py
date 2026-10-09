@@ -3,11 +3,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-#=========================== fazer ainda ===================
 class TestDataEntry():
     def test_DataFrame(self):
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
-        Y = pd.DataFrame({"coluna2": [1, 2, 1]})
+        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
 
         Data = pd.DataFrame({"coluna1": [1.5,2.0,0.5]})
 
@@ -20,7 +19,7 @@ class TestDataEntry():
 
     def test_Numpy(self):
         X = np.ndarray([1.0, 2.0, 3.0])
-        Y = np.ndarray([1, 2, 1])
+        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
 
         Data = np.ndarray([1.5,2.0,0.5])
 
@@ -31,7 +30,6 @@ class TestDataEntry():
         assert isinstance(NpResult, np.ndarray)
 
 
-#========= Fazer ainda ================
 class TestError():
     def test_MatchingDim(self):
         X = np.zeros((10, 3)) 
@@ -55,44 +53,55 @@ class TestError():
         pass
 
     def test_attributes(self):
-        
-        #IMPORTANTE, decidir se cov_matriz guardará as matrizes como array ou como função que retorna a matriz
-        #decidido por agora, será por função, e usaremos a label para iterar se necessário
-        QDA.cov_matrix()
-        #testa se a matrix de covariança é numpy, testa se tem a dimenção esperada 
 
-        #==================== Verificar a implementacao do LDA============
-        QDA.mean_array
-        #testa se tem o tamanho correto, testa se é numpy
-
-        
-        QDA.prior
-        #testa se é numpy array, testa se tem o tamanho correto
-        
-
-        X_treino = np.array([
+        X_train = np.array([
             [1.5, 2.0], 
             [1.6, 1.9], 
             [8.5, 9.0], 
             [8.6, 9.1]
         ])
-        Y_treino = np.array([0, 0, 1, 1])
-        
-        n_features = X_treino.shape[1]
-        n_classes = len(np.unique(Y_treino))
-        
-        QDA.fit(X_treino, Y_treino)
+        Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
+        QDA.fit(X_train, Y_train)
 
-        cov_matrix = QDA.cov_matrix(k = QDA.labels[0])
+        
+        assert isinstance(QDA.labels, np.ndarray)
+        assert np.array_equal(np.unique(QDA.labels), np.unique(Y_train))
+    
+
+        
+    def test_method(self):
+        X_train = np.array([
+            [1.5, 2.0], 
+            [1.6, 1.9], 
+            [8.5, 9.0], 
+            [8.6, 9.1]
+        ])
+        Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
+        
+        QDA.fit(X_train, Y_train)
+
+        label = QDA.labels[0]
+
+        n_features = X_train.size[0]
+
+        cov_matrix = QDA.cov_matrix(k=label)
         assert isinstance(cov_matrix, np.ndarray)
         assert cov_matrix.shape == (n_features, n_features)
 
+        mean_array = QDA.mean_array(k=label)
+        assert isinstance(mean_array, np.ndarray)
+        assert mean_array.shape == (n_features,)
 
+        prior = QDA.prior(k=label)
+        assert isinstance(prior, (float, np.number))
 
-        #++++++++++++++++++++++++ decidir se guardamos em uma array ou se guardamos uma função que passamos o identificador da label como parametro
-        QDA.k_functions
-        #testa se é numpy array, testa se cada campo é uma função
+        k_function = QDA.k_functions(k=label)
+        assert callable(k_function)
 
+        amostra_teste = X_train[0]
+        resultado_func = k_function(amostra_teste)
+        
+        assert isinstance(resultado_func, (float, np.number))
 
 #============= Fazer ainda =================
 class TestRightResults():
