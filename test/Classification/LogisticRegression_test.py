@@ -61,7 +61,6 @@ class TestError():
         assert np.array_equal(np.unique(LogReg.labels), np.unique(Y_treino))
         assert np.array_equal(LogReg.labels,np.array(['contaminated', 'drinkable']))
 
-    #terminar
     def test_method(self):
 
         X_train = np.array([
@@ -74,19 +73,26 @@ class TestError():
         
         n_features = X_train.shape[1]
 
-        
-        label = LogReg.labels
-
-        
+        # O treinamento deve ocorrer ANTES de extrair a label
         LogReg.fit(X_train, Y_train)
 
+        # Selecionamos a primeira label (k) gerada após o fit, seguindo o padrão construído no LDA
+        label = LogReg.labels[0]
+
+        #retorna uma função testa igual o lda
+        func_k = LogReg.k_function(k = label)
+        assert callable(func_k)
         
-        LogReg.k_function(k = label)
+        # Injeta uma amostra para garantir que a função gerada executa sem quebrar
+        amostra_teste = X_train[0]
+        resultado_func = func_k(amostra_teste)
+        assert isinstance(resultado_func, (float, np.number))
 
         #aqui deve retornar uma array com coeficientes
-        LogReg.k_coef(k = label)
+        coefs = LogReg.k_coef(k = label)
+        assert isinstance(coefs, np.ndarray)
 
-#============= Fazer ainda =================
+#faz nada
 class TestRightResults():
     pass
 
