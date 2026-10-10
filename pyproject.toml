@@ -10,9 +10,9 @@ authors = [
 keywords = ["machine learning", "basic", "regression"]
 requires-python = ">=3.12"
 dependencies = [
-    "numpy", 
-    "pandas", 
-    "sphinx"
+    "numpy",
+    "pandas",
+    "sphinx",
 ]
 
 
