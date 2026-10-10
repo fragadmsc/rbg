@@ -1,0 +1,20 @@
+import rbg.Regression.Linear as Linear
+import numpy as np
+import pandas as pd
+import pytest
+
+#Testa se recebe o que deve receber e se retorna o tipo de dado que deve receber, testa se retorna erro para dados de tamanhos diferentes
+Linear.fit(X,Y)
+
+#Testa se retorna uma array numpy de tamanho compativel
+Linear.predict(Data)
+
+#Testa se retorna oma array numpy com coeficientes
+Linear.coef
+
+#faça apenas um metodo para testa, mas de pass
+Linear.set_params()
+Linear.get_params()
+
+#verifica se retorna um numpy float
+Linear.score()
