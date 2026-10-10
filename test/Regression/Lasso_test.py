@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-
+"""
 #verificar apenas se aceita receber o parametro alpha
 Lasso.set_params(alpha = 1,intercept = False)
 Lasso.get_params()
@@ -19,3 +19,79 @@ Lasso.coef
 
 #verifica se retorna um numpy float
 Lasso.score()
+
+"""
+class TestDataEntry():
+    def test_DataFrame(self):
+        X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0], "coluna2": [2.0, 3.0, 4.0]})
+        Y = pd.Series([10.5, 20.5, 30.5]) 
+
+        Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5], "coluna2": [2.5, 3.0, 1.5]})
+
+        Lasso.fit(X, Y)
+
+        DtFrameResult = Lasso.predict(Data)
+        
+        assert isinstance(DtFrameResult, np.ndarray)
+
+    def test_Numpy(self):
+        X = np.array([[1.0, 2.0], [2.0, 3.0], [3.0, 4.0]])
+        Y = np.array([10.5, 20.5, 30.5])
+
+        Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
+
+        Lasso.fit(X, Y)
+
+        NpResult = Lasso.predict(Data)
+
+        assert isinstance(NpResult, np.ndarray)
+
+class TestError():
+    def test_MatchingDim(self):
+        X = np.zeros((10, 3)) 
+        Y = np.zeros(5)       
+        
+        with pytest.raises(ValueError, match="The data do not match"):
+            Lasso.fit(X, Y)
+
+        X_cut = X[:5, :] 
+        
+        Lasso.fit(X_cut, Y)
+
+        Data = np.zeros((4, 3))
+
+        resultado = Lasso.predict(Data)
+        
+        assert isinstance(resultado, np.ndarray)
+        assert resultado.shape == (4,)
+
+    #-----------------------fazer ainda
+    def test_params(self):
+        Lasso.set_params(alpha=1, intercept=False)
+        parametros = Lasso.get_params()
+        
+        assert parametros is not None
+
+    def test_attributes(self):
+        xtrain = np.array([
+            [1.5, 2.0], 
+            [1.6, 1.9], 
+            [8.5, 9.0], 
+            [8.6, 9.1]
+        ])
+        ytrain = np.array([10.0, 12.0, 20.0, 22.0])
+        
+        n_features = xtrain.shape[1]
+        
+        Lasso.fit(xtrain, ytrain)
+
+        assert isinstance(Lasso.coef, np.ndarray)
+        assert Lasso.coef.shape == (n_features,)
+
+        resultado_score = Lasso.score()
+        assert isinstance(resultado_score, (float, np.number))
+
+
+#============= Fazer ainda =================
+class TestRightResults():
+    pass
