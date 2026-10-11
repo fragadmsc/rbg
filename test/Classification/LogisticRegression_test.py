@@ -20,9 +20,8 @@ class TestDataEntry():
         assert isinstance(NpResult, np.ndarray)
 
 
-#========= Fazer ainda ================
+
 class TestError():
-    #não faça nada aqui
     def test_MatchingDim(self):
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
@@ -40,11 +39,9 @@ class TestError():
         
         assert resultado.shape == (4,)
 
-    #nem aqui
     def test_params(self):
         pass
 
-    #nem aqui
     def test_attributes(self):
         X_train = np.array([
             [1.5, 2.0], 
@@ -73,26 +70,20 @@ class TestError():
         
         n_features = X_train.shape[1]
 
-        # O treinamento deve ocorrer ANTES de extrair a label
         LogReg.fit(X_train, Y_train)
 
-        # Selecionamos a primeira label (k) gerada após o fit, seguindo o padrão construído no LDA
         label = LogReg.labels[0]
 
-        #retorna uma função testa igual o lda
         func_k = LogReg.k_function(k = label)
         assert callable(func_k)
         
-        # Injeta uma amostra para garantir que a função gerada executa sem quebrar
         amostra_teste = X_train[0]
         resultado_func = func_k(amostra_teste)
         assert isinstance(resultado_func, (float, np.number))
 
-        #aqui deve retornar uma array com coeficientes
         coefs = LogReg.k_coef(k = label)
         assert isinstance(coefs, np.ndarray)
 
-#faz nada
 class TestRightResults():
     pass
 
