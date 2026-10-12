@@ -1,5 +1,7 @@
 # from rbg.Utilities import Matrix_design, Resample
 from rbg.ModelSelection.crossvalidation import Resample
+from rbg.Utilities import *
+import rbg.Utilities as utilities
 
 '''
 #a partir de uma array constroi uma matriz design
@@ -12,9 +14,8 @@ Resample(data,size = len(data),qte = 10 ,replace = True,)
 '''
 
 
-
-import pytest
 import numpy as np
+import pytest
 
 
 class TestBootstrap:
@@ -36,3 +37,29 @@ class TestBootstrap:
         
         for amostra in resultado:
             assert len(amostra) == size
+
+
+
+def test_l1_shrinkage(CoordinateDescent):
+    """Check a regular solution."""
+    X = np.eye(3)
+    y = np.array([3.0, 0.5, -2.0])
+
+    beta = CoordinateDescent.solve(X, y, 1.0, False)
+
+    assert isinstance(beta, np.ndarray)
+    assert beta.shape == (3,)
+    np.testing.assert_allclose(beta, [2.0, 0.0, -1.0], atol=1e-5)
+
+
+def test_unpenalized_intercept(CoordinateDescent):
+    """Intercept test"""
+    X = np.array([[1.0, -1.0], [1.0, 0.0], [1.0, 1.0]])
+    y = np.array([1.0, 4.0, 7.0])
+
+    beta = CoordinateDescent.solve(X, y, 2.0, True)
+
+    assert isinstance(beta, np.ndarray)
+    assert beta.shape == (2,)
+    np.testing.assert_allclose(beta, [4.0, 2.0], atol=1e-5)
+

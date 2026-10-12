@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
+from rbg.Utilities import CoordinateDescent
 
 class BaseEstimator(ABC):
     """Abstract base class with shared data storage and residual calculations."""
@@ -290,14 +291,20 @@ class RidgeRegression(LinearModel):
             self._cov_matrix_hat = self._T @ self._cov_matrix_hat_padronized @ self._T.T
 
 
-class LassoRegression(LinearModel):
-    """Lasso structure awaiting an L1 fitting algorithm and dedicated inference.
+class LassoRegression(LinearModel, CoordinateDescent):
+    """Lasso regression using the CoordinateDescent solver supplied externally.
 
-    Inherit configuration, data preparation, prediction, and residuals.
+    Assumed solver contract: CoordinateDescent.solve(X, y, alpha, fit_intercept)
+    is a static or class method that returns a
+    converged coefficient vector in the supplied feature scale, including the
+    intercept first when enabled. It minimizes 0.5 * squared_error + alpha *
+    sum(abs(feature_coefficients)), leaving the intercept unpenalized.
+    CoordinateDescent must be imported before this class is defined; any
+    required solver settings must be initialized according to its interface.
     """
 
     def fit(self, X: np.ndarray, y: np.ndarray, alpha: float = 1.0) -> np.ndarray:
-        """Fit Lasso using an L1 penalty; implementation is pending.
+        """Prepare scaled features and delegate the L1 fit to CoordinateDescent.
 
         Args:
             X: Feature matrix of shape (n_samples, p_features).
@@ -305,13 +312,100 @@ class LassoRegression(LinearModel):
             alpha: Finite, nonnegative penalty strength.
 
         Returns:
-            Once implemented, coefficients in the original feature scale,
+            Coefficients in the original feature scale,
             with the intercept first when enabled.
 
+        Raises:
+            ValueError: If inputs or alpha are invalid, or the solver returns
+                coefficients with an invalid shape or nonfinite values.
+            NotImplementedError: If inference is requested.
         """
+        self._alpha = alpha
+        if not isinstance(self._alpha, (int,float,np.integer,np.floating)):
+            raise ValueError("Alpha must be a numeric scalar.")
+        if not np.isfinite(self._alpha) or alpha < 0:
+            raise ValueError("Alpha must be finite and nonnegative.")
+
+        self._prepare_training_data(X, y)
+        if self._fit_done == False:
+            self._means = self._X_input.mean(axis=0) if self._intercept else np.zeros(self._X_input.shape[1])
+            self._stds = self._X_input.std(axis=0)
+            self._stds = np.where(self._stds == 0, 1.0, self._stds)
+            self._Z = (self._X_input - self._means) / self._stds
+            if self._intercept:
+                self._Z = np.column_stack((np.ones(self._n), self._Z))
+            beta_scaled = CoordinateDescent.solve(self._Z,self._y,self._alpha,self._intercept)
+            self._T = np.diag(1.0 / self._stds)
+            if self._intercept:
+                self._T = np.eye(self._p)
+                self._T[0, 1:] = -self._means / self._stds
+                self._T[1:, 1:] = np.diag(1.0 / self._stds)
+            self._beta = self._T @ beta_scaled
+            self._fit_done = True
+            e = self.residuals()
+            self._residuals_square_sum = np.dot(e,e)
+        if self._inference:
+            self._compute_inference()
+        return self._beta
+    
+
+    def inference(
+        self, n_bootstrap: int = 1000, seed: int | None = None
+    ) -> tuple[np.ndarray, float, np.ndarray, np.ndarray]:
+        """Configure bootstrap inference and use the inherited inference interface.
+
+        Args:
+            n_bootstrap: Number of bootstrap repetitions, at least two.
+            seed: Nonnegative random seed, or None for unseeded sampling.
+
+        Returns:
+            Once bootstrap is complete, coefficients, estimated error variance,
+            coefficient covariance, and training residuals.
+
+        Raises:
+            RuntimeError: If the model has not been fitted.
+            ValueError: If the number of repetitions or seed is invalid.
+        """
+        if not self._fit_done:
+            raise RuntimeError("The model has not been fitted yet.")
+        if isinstance(n_bootstrap, (bool, np.bool_)) or not isinstance(n_bootstrap, (int, np.integer)) or n_bootstrap < 2:
+            raise ValueError("n_bootstrap must be an integer greater than or equal to two.")
+        if seed is not None and (
+            isinstance(seed, (bool, np.bool_))
+            or not isinstance(seed, (int, np.integer)) or seed < 0
+        ):
+            raise ValueError("seed must be a nonnegative integer or None.")
+        if n_bootstrap != getattr(self, "_n_bootstrap", 1000) or seed != getattr(self, "_seed", None):
+            self._inference_done = False
+        self._n_bootstrap = n_bootstrap
+        self._seed = seed
+        return super().inference()
 
     def _compute_inference(self) -> None:
-        """Compute Lasso-specific inference; implementation is pending.
-        """
+        """Estimate coefficient covariance by pairs bootstrap.
 
+        Use fresh models with inference disabled to preserve the original fit.
+        Estimate error variance from the original residuals and active parameter
+        count. This approximation may be biased and does not guarantee valid
+        confidence intervals for Lasso coefficients.
+        """
+        if not self._fit_done:
+            raise RuntimeError("The model has not been fitted yet.")
+        if self._inference_done:
+            return
+        features_beta = self._beta[1:] if self._intercept else self._beta
+        self._d = np.count_nonzero(features_beta) + int(self._intercept)
+        rng = np.random.default_rng(self._seed)
+        betas_boot = np.zeros((self._n_bootstrap, self._p))
+        for i in range(self._n_bootstrap):
+            indices = rng.choice(self._n, size=self._n, replace=True)
+            X_boot = self._X_input[indices]
+            y_boot = self._y[indices]
+            model_boot = LassoRegression(fit_intercept=self._intercept, inference=False)
+            betas_boot[i] = model_boot.fit(X_boot, y_boot, self._alpha)
+        self._residuals = e = self.residuals()
+        self._sigma2_hat = np.dot(e,e)/(self._n-self._d)
+        self._cov_matrix_hat = np.atleast_2d(np.cov(betas_boot, rowvar=False, ddof=1))
+        self._inference_done = True
+        
 
