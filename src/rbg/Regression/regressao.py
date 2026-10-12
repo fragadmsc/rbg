@@ -91,50 +91,20 @@ class BaseEstimator(ABC):
         return self._residuals
 
 
-class LinearRegression(BaseEstimator):
-    """Ordinary least-squares regression with optional classical inference.
+class LinearModel(BaseEstimator):
+    """Abstract base for linear predictors with model-specific fitting and inference.
 
-    Inference assumes uncorrelated errors with constant variance.
+    Subclasses store coefficients in the original feature scale, with the
+    intercept first when enabled. Prediction and inference access are shared.
     """
-        
-    def fit(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Estimate coefficients and calculate inference statistics if requested.
 
-        Each call replaces the previous fit and cached inference results.
-
-        Args:
-            X: Feature matrix of shape (n_samples, p_features), without an
-                automatically generated intercept column.
-            y: Target vector of shape (n_samples,).
-
-        Returns:
-            Coefficient vector, with the intercept first when enabled.
-
-        Raises:
-            ValueError: If training inputs are invalid, or inference is requested
-                but the design matrix lacks full column rank or has no residual
-                degrees of freedom.
-        """
-        self._prepare_training_data(X, y)
-        if self._fit_done == False:
-            self._beta, self._residuals_square_sum, self._rank,self._singularvaluesX = np.linalg.lstsq(self._X,self._y, rcond=None)
-            self._fit_done = True
-        if self._inference:
-            self._compute_inference()
-        return self._beta
-
+    @abstractmethod
     def _compute_inference(self) -> None:
-        """Compute inference statistics without fitting the coefficients again."""
-        if not self._inference_done:
-            if self._rank != self._p or self._n <= self._p:
-                raise ValueError("X must have full column rank and n must exceed p to perform inference.")
-            self._residuals = self.residuals()
-            self._sigma2_hat = np.dot(self._residuals, self._residuals)/(self._n - self._p)
-            self._cov_matrix_hat = self._sigma2_hat * np.linalg.inv(self._X.T@self._X)
-            self._inference_done = True
+        """Compute the inference statistics specific to the subclass."""
+        pass
 
     def inference(self) -> tuple[np.ndarray, float, np.ndarray, np.ndarray]:
-        """Calculate and return classical inference results for the fitted model.
+        """Calculate and return the subclass's inference results.
 
         Returns:
             A tuple containing the coefficients, estimated error variance,
@@ -142,8 +112,8 @@ class LinearRegression(BaseEstimator):
 
         Raises:
             RuntimeError: If the model has not been fitted.
-            ValueError: If the design matrix lacks full column rank or has
-                no residual degrees of freedom.
+            ValueError: If the subclass's inference requirements are not met.
+            NotImplementedError: If the subclass does not implement inference.
         """
         if self._fit_done == False:
                     raise RuntimeError("The model has not been fitted yet.")
@@ -193,7 +163,47 @@ class LinearRegression(BaseEstimator):
 
 
 
-class RidgeRegression(LinearRegression):
+class LinearRegression(LinearModel):
+    """Ordinary least-squares regression with optional classical inference.
+
+    Inference assumes uncorrelated errors with constant variance.
+    """
+
+    def fit(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
+        """Fit ordinary least squares, replacing previous training results.
+
+        Args:
+            X: Feature matrix of shape (n_samples, p_features), without an
+                automatically generated intercept column.
+            y: Target vector of shape (n_samples,).
+
+        Returns:
+            Coefficient vector, with the intercept first when enabled.
+
+        Raises:
+            ValueError: If inputs are invalid or requested inference lacks
+                full column rank or positive residual degrees of freedom.
+        """
+        self._prepare_training_data(X, y)
+        if self._fit_done == False:
+            self._beta, self._residuals_square_sum, self._rank,self._singularvaluesX = np.linalg.lstsq(self._X,self._y, rcond=None)
+            self._fit_done = True
+        if self._inference:
+            self._compute_inference()
+        return self._beta
+
+    def _compute_inference(self) -> None:
+        """Compute ordinary least-squares inference without refitting."""
+        if not self._inference_done:
+            if self._rank != self._p or self._n <= self._p:
+                raise ValueError("X must have full column rank and n must exceed p to perform inference.")
+            self._residuals = self.residuals()
+            self._sigma2_hat = np.dot(self._residuals, self._residuals)/(self._n - self._p)
+            self._cov_matrix_hat = self._sigma2_hat * np.linalg.inv(self._X.T@self._X)
+            self._inference_done = True
+
+
+class RidgeRegression(LinearModel):
     """Ridge regression with feature scaling and original-scale coefficients.
 
     Inference treats alpha as fixed. The residual variance estimate may be
@@ -278,5 +288,30 @@ class RidgeRegression(LinearRegression):
             self._cov_matrix_hat_padronized = self._sigma2_hat * (M @ M.T)
             
             self._cov_matrix_hat = self._T @ self._cov_matrix_hat_padronized @ self._T.T
+
+
+class LassoRegression(LinearModel):
+    """Lasso structure awaiting an L1 fitting algorithm and dedicated inference.
+
+    Inherit configuration, data preparation, prediction, and residuals.
+    """
+
+    def fit(self, X: np.ndarray, y: np.ndarray, alpha: float = 1.0) -> np.ndarray:
+        """Fit Lasso using an L1 penalty; implementation is pending.
+
+        Args:
+            X: Feature matrix of shape (n_samples, p_features).
+            y: Target vector of shape (n_samples,).
+            alpha: Finite, nonnegative penalty strength.
+
+        Returns:
+            Once implemented, coefficients in the original feature scale,
+            with the intercept first when enabled.
+
+        """
+
+    def _compute_inference(self) -> None:
+        """Compute Lasso-specific inference; implementation is pending.
+        """
 
 
