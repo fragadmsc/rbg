@@ -3,11 +3,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-#=========================== fazer ainda ===================
+
 class TestDataEntry():
     def test_DataFrame(self):
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
-        Y = pd.DataFrame({"coluna2": [1, 2, 1]})
+        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
 
         Data = pd.DataFrame({"coluna1": [1.5,2.0,0.5]})
 
@@ -20,7 +20,7 @@ class TestDataEntry():
 
     def test_Numpy(self):
         X = np.ndarray([1.0, 2.0, 3.0])
-        Y = np.ndarray([1, 2, 1])
+        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
 
         Data = np.ndarray([1.5,2.0,0.5])
 
@@ -31,7 +31,6 @@ class TestDataEntry():
         assert isinstance(NpResult, np.ndarray)
 
 
-#========= Fazer ainda ================
 class TestError():
     def test_MatchingDim(self):
         X = np.zeros((10, 3)) 
@@ -55,19 +54,23 @@ class TestError():
         pass
 
     def test_attributes(self):
-
-        LDA.labels
-        #testa se é uma array e retorna o identificador de cada grupo, por exemplo string ou idx
+        X_treino = np.array([
+            [1.5, 2.0], 
+            [1.6, 1.9], 
+            [8.5, 9.0], 
+            [8.6, 9.1]
+        ])
+        Y_treino = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
         
-        LDA.cov_matrix
-        #testa se a matrix de covariança é numpy, testa se tem a dimenção esperada 
+        LDA.fit(X_treino, Y_treino)
 
-        LDA.mean_array
-        #testa se tem o tamanho correto, testa se é numpy
-
-        LDA.prior
-        #testa se é numpy array, testa se tem o tamanho correto
         
+        assert isinstance(LDA.labels, np.ndarray)
+        assert np.array_equal(np.unique(LDA.labels), np.unique(Y_treino))
+        assert np.array_equal(LDA.labels,np.array(['contaminated', 'drinkable']))
+
+
+    def test_method(self):
 
         X_treino = np.array([
             [1.5, 2.0], 
@@ -78,26 +81,28 @@ class TestError():
         Y_treino = np.array([0, 0, 1, 1])
         
         n_features = X_treino.shape[1]
-        n_classes = len(np.unique(Y_treino))
         
         LDA.fit(X_treino, Y_treino)
 
+        cov_matrix = LDA.cov_matrix(k = LDA.labels[0])
+        assert isinstance(cov_matrix, np.ndarray)
+        assert cov_matrix.shape == (n_features, n_features)
+
+        mean_array = LDA.mean_array(k = LDA.labels[0])
+        assert isinstance(mean_array, np.ndarray)
+        assert mean_array.shape == (n_features,)
+
+        prior = LDA.prior(k = LDA.labels[0])
+        assert isinstance(prior, np.number)
+
+        k_function = LDA.k_functions(k = LDA.labels[0])
+
+        assert callable(k_function)
+
+        amostra_teste = X_treino[0] 
+        resultado_func = k_function(amostra_teste)
         
-        assert isinstance(LDA.labels, np.ndarray)
-        assert np.array_equal(np.unique(LDA.labels), np.unique(Y_treino))
-        
-        assert isinstance(LDA.cov_matrix, np.ndarray)
-        assert LDA.cov_matrix.shape == (n_features, n_features)
-
-        assert isinstance(LDA.mean_array, np.ndarray)
-        assert LDA.mean_array.shape == (n_features,)
-
-        assert isinstance(LDA.prior, np.ndarray)
-        assert LDA.prior.shape == (n_classes,)
-
-        #++++++++++++++++++++++++ decidir se guardamos em uma array ou se guardamos uma função que passamos o identificador da label como parametro
-        LDA.k_functions
-        #testa se é numpy array, testa se cada campo é uma função
+        assert isinstance(resultado_func, (float, np.number))
 
 
 #============= Fazer ainda =================
