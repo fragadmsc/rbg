@@ -534,11 +534,12 @@ class PolynomialRegression():
 
 class GLM(BaseEstimator):
 
-    """Scalar-response generalized linear model with a canonical link.
+    """Scalar or multivariate generalized linear model with a canonical link.
 
     This model is intended as a foundation for logistic regression. The current
     implementation uses theta = X @ beta and a fixed family dispersion.
-    Multiclass responses require an extension of the scalar fitting procedure.
+    Multivariate coefficients are ordered by response component when flattened:
+    beta.ravel(order="F"). Fisher information must use the same order.
     """
     def __init__(
         self, family, fit_intercept=True, inference=False, tol=1e-6, max_iter=100
@@ -547,7 +548,8 @@ class GLM(BaseEstimator):
 
         Args:
             family: ExponentialFamily instance accepting natural parameters of
-                shape (n_samples, 1) for scalar responses.
+                shape (n_samples, n_components), including one component for
+                scalar responses.
             fit_intercept: Whether to add an intercept column to the design.
             inference: Whether to compute coefficient covariance during fitting.
             tol: Convergence tolerance passed to FisherScoring.
@@ -558,26 +560,55 @@ class GLM(BaseEstimator):
         self._tol = tol
         self._max_iter = max_iter
 
+    def _prepare_training_data(self, X, y):
+        """Prepare scalar or vector responses without changing other estimators."""
+        X = np.asarray(X)
+        y = np.asarray(y)
+        if X.ndim != 2 or y.ndim not in (1, 2):
+            raise ValueError("X must be a matrix and y must be a vector or matrix.")
+        if X.shape[0] != y.shape[0]:
+            raise ValueError("X and y must contain the same number of observations.")
+        if X.size == 0 or y.size == 0:
+            raise ValueError("Training data must not be empty.")
+        self._X_input = X.copy()
+        self._X = self._X_input.copy()
+        self._y = y.copy()
+        self._n, self._p = self._X.shape
+        self._n_components = 1 if y.ndim == 1 else y.shape[1]
+        if self._intercept:
+            self._X = np.column_stack((np.ones(self._n), self._X))
+            self._p += 1
+        self._fit_done = False
+        self._inference_done = False
+        self._residuals = None
+
     def fit(self, X, y):
         """Fit coefficients and obtain final Fisher information from the solver.
 
         Args:
             X: Feature matrix of shape (n_samples, p_features), without an
                 automatically generated intercept column.
-            y: Response vector of shape (n_samples,), in the family's domain.
+            y: Response vector (n_samples,) or matrix (n_samples, n_components),
+                in the family's domain.
 
         Returns:
-            Coefficient vector, with the intercept first when enabled.
+            Coefficients of shape (p,) for vector y or (p, n_components) for
+            matrix y. Here p includes the intercept when enabled.
 
         Raises:
             ValueError: If training inputs fail the shared data validation.
 
         Notes:
             Requires an implemented FisherScoring.solve returning coefficients
-            and total information evaluated at the final coefficients.
+            and total information evaluated at the final coefficients. For
+            multivariate responses, the solver must assemble information blocks
+            in component-major order, matching beta.ravel(order="F").
         """
         self._prepare_training_data(X, y)
-        self._beta, self._fisher = FisherScoring.solve(self._X,self._y,self._family,np.zeros(self._p),self._tol,self._max_iter,)
+        beta0 = np.zeros(self._p) if self._y.ndim == 1 else np.zeros((self._p, self._n_components))
+        beta, fisher = FisherScoring.solve(self._X,self._y,self._family,beta0,self._tol,self._max_iter)
+        beta, fisher = np.asarray(beta), np.asarray(fisher)
+        self._beta, self._fisher = beta, fisher
         self._fit_done = True
         if self._inference:
             self._compute_inference()
@@ -590,6 +621,7 @@ class GLM(BaseEstimator):
             A tuple of coefficients, inverse-Fisher covariance, and training
             response residuals. Covariance is an asymptotic approximation
             under standard maximum-likelihood regularity conditions.
+            Multivariate covariance uses component-major coefficient order.
 
         Raises:
             RuntimeError: If the model has not been fitted.
@@ -610,8 +642,9 @@ class GLM(BaseEstimator):
                 and without an automatically generated intercept column.
 
         Returns:
-            Mean response vector of shape (n_new_samples,), calculated by
-            applying the family's mean function to X @ beta.
+            Mean response vector (n_new_samples,) or matrix
+            (n_new_samples, n_components), matching the training response
+            dimensionality. Apply the family's mean function to X @ beta.
 
         Raises:
             RuntimeError: If the model has not been fitted.
@@ -624,12 +657,14 @@ class GLM(BaseEstimator):
             raise ValueError("X must be a matrix with the same feature count as the training data.")
         if self._intercept:
             X = np.column_stack((np.ones(X.shape[0]), X))
-        theta = (X @ self._beta)[:, None]
-        return self._family.mean(theta)[:, 0]
+        theta = X @ self._beta
+        if theta.ndim == 1:
+            return self._family.mean(theta[:, None])[:, 0]
+        return self._family.mean(theta)
 
     def _predict_mean(self, X):
-        """Delegate mean prediction to predict for shared residual calculations."""
-        return self.predict(X)
+        """Return GLM means even if a classifier overrides predict with labels."""
+        return GLM.predict(self, X)
 
     def _compute_inference(self):
         """Compute inverse-Fisher covariance and training response residuals.
@@ -647,7 +682,7 @@ class GLM(BaseEstimator):
         if not self._inference_done:
             self._cov_matrix_hat = np.linalg.solve(
                 self._fisher,
-                np.eye(self._p),
+                np.eye(self._beta.size),
             )
             self._residuals = self.residuals()
             self._inference_done = True
