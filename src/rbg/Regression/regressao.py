@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from rbg.Utilities import CoordinateDescent
+from rbg.Utilities.utilities import FisherScoring
 
 class BaseEstimator(ABC):
     """Abstract base class with shared data storage and residual calculations."""
@@ -530,3 +531,123 @@ class PolynomialRegression():
             RuntimeError: If the internal estimator has not been fitted.
         """
         return self._model.inference(**options)
+
+class GLM(BaseEstimator):
+
+    """Scalar-response generalized linear model with a canonical link.
+
+    This model is intended as a foundation for logistic regression. The current
+    implementation uses theta = X @ beta and a fixed family dispersion.
+    Multiclass responses require an extension of the scalar fitting procedure.
+    """
+    def __init__(
+        self, family, fit_intercept=True, inference=False, tol=1e-6, max_iter=100
+    ):
+        """Configure the exponential family and solver settings.
+
+        Args:
+            family: ExponentialFamily instance accepting natural parameters of
+                shape (n_samples, 1) for scalar responses.
+            fit_intercept: Whether to add an intercept column to the design.
+            inference: Whether to compute coefficient covariance during fitting.
+            tol: Convergence tolerance passed to FisherScoring.
+            max_iter: Maximum number of solver iterations.
+        """
+        super().__init__(fit_intercept=fit_intercept, inference=inference)
+        self._family = family
+        self._tol = tol
+        self._max_iter = max_iter
+
+    def fit(self, X, y):
+        """Fit coefficients and obtain final Fisher information from the solver.
+
+        Args:
+            X: Feature matrix of shape (n_samples, p_features), without an
+                automatically generated intercept column.
+            y: Response vector of shape (n_samples,), in the family's domain.
+
+        Returns:
+            Coefficient vector, with the intercept first when enabled.
+
+        Raises:
+            ValueError: If training inputs fail the shared data validation.
+
+        Notes:
+            Requires an implemented FisherScoring.solve returning coefficients
+            and total information evaluated at the final coefficients.
+        """
+        self._prepare_training_data(X, y)
+        self._beta, self._fisher = FisherScoring.solve(self._X,self._y,self._family,np.zeros(self._p),self._tol,self._max_iter,)
+        self._fit_done = True
+        if self._inference:
+            self._compute_inference()
+        return self._beta
+
+    def inference(self):
+        """Return fitted coefficients, approximate covariance, and residuals.
+
+        Returns:
+            A tuple of coefficients, inverse-Fisher covariance, and training
+            response residuals. Covariance is an asymptotic approximation
+            under standard maximum-likelihood regularity conditions.
+
+        Raises:
+            RuntimeError: If the model has not been fitted.
+            numpy.linalg.LinAlgError: If Fisher information is singular.
+        """
+        if not self._fit_done:
+            raise RuntimeError("The model has not been fitted yet.")
+        if not self._inference_done:
+            self._inference = True
+            self._compute_inference()
+        return self._beta, self._cov_matrix_hat, self._residuals
+
+    def predict(self, X):
+        """Return predicted conditional means on the response scale.
+
+        Args:
+            X: Matrix of shape (n_new_samples, p_features), in training order
+                and without an automatically generated intercept column.
+
+        Returns:
+            Mean response vector of shape (n_new_samples,), calculated by
+            applying the family's mean function to X @ beta.
+
+        Raises:
+            RuntimeError: If the model has not been fitted.
+            ValueError: If X has an incompatible shape.
+        """
+        if not self._fit_done:
+            raise RuntimeError("The model has not been fitted yet.")
+        X = np.asarray(X)
+        if X.ndim != 2 or X.shape[1] != self._X_input.shape[1]:
+            raise ValueError("X must be a matrix with the same feature count as the training data.")
+        if self._intercept:
+            X = np.column_stack((np.ones(X.shape[0]), X))
+        theta = (X @ self._beta)[:, None]
+        return self._family.mean(theta)[:, 0]
+
+    def _predict_mean(self, X):
+        """Delegate mean prediction to predict for shared residual calculations."""
+        return self.predict(X)
+
+    def _compute_inference(self):
+        """Compute inverse-Fisher covariance and training response residuals.
+
+        Fisher information must include dispersion scaling and be evaluated at
+        the final coefficients. No additional dispersion factor is applied.
+
+        Raises:
+            RuntimeError: If the model has not been fitted.
+            numpy.linalg.LinAlgError: If Fisher information is singular.
+        """
+        if not self._fit_done:
+            raise RuntimeError("The model has not been fitted yet.")
+
+        if not self._inference_done:
+            self._cov_matrix_hat = np.linalg.solve(
+                self._fisher,
+                np.eye(self._p),
+            )
+            self._residuals = self.residuals()
+            self._inference_done = True
