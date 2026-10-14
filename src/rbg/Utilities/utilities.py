@@ -7,7 +7,7 @@ class ExponentialFamily():
     must support these batched inputs and correspond to a valid distribution.
     """
 
-    def __init__(self, b, b_prime, b_second,phi=1.0):
+    def __init__(self, b, b_prime, b_second, h_inverse, phi=1.0):
         """Store the family functions and dispersion parameter.
 
         Args:
@@ -15,19 +15,22 @@ class ExponentialFamily():
             b_prime: Gradient returning means of shape (n_samples, n_components).
             b_second: Hessian returning arrays of shape
                 (n_samples, n_components, n_components).
+            h_inverse: Inverse of b_prime on its mean domain. With a canonical
+                link, map response means to natural parameters and predictors.
             phi: Finite, positive dispersion parameter; fixed at 1 for the
                 standard categorical family.
 
         Raises:
             ValueError: If a family function is not callable or phi is invalid.
         """
-        if not all(callable(f) for f in (b, b_prime, b_second)):
-            raise ValueError("b, b_prime, and b_second must be callable.")
+        if not all(callable(f) for f in (b, b_prime, b_second, h_inverse)):
+            raise ValueError("b, b_prime, b_second, and h_inverse must be callable.")
         if not isinstance(phi, (int, float, np.integer, np.floating)) or not np.isfinite(phi) or phi <= 0:
             raise ValueError("phi must be finite and positive.")
         self.b = b
         self.b_prime = b_prime
         self.b_second = b_second
+        self.h_inverse = h_inverse
         self._phi = phi
 
     def log_likelihood(self, y, theta, weights=1.0):
@@ -107,4 +110,14 @@ class ExponentialFamily():
         if weights.ndim == 1:
             scale = scale[:, None, None]
         return scale * result
+
+
+class FisherScoring:
+    @staticmethod
+    def solve(X, y, family, beta0, tol=1e-6, max_iter=100):
+        pass
+
+    @staticmethod
+    def _working_values(X, y, family, beta):
+        pass
     
