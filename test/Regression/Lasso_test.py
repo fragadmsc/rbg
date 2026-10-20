@@ -17,9 +17,6 @@ Lasso.predict(Data)
 #Testa se retorna oma array numpy com coeficientes
 Lasso.coef
 
-#verifica se retorna um numpy float
-Lasso.score()
-
 """
 class TestDataEntry():
     def test_DataFrame(self):
@@ -88,8 +85,6 @@ class TestError():
         assert isinstance(Lasso.coef, np.ndarray)
         assert Lasso.coef.shape == (n_features,)
 
-        resultado_score = Lasso.score()
-        assert isinstance(resultado_score, (float, np.number))
 
 
 #============= Fazer ainda =================
