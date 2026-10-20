@@ -1,6 +1,7 @@
 from rbg.Utilities import Matrix_design, Resample
 
 
+
 '''
 #a partir de uma array constroi uma matriz design
 Matrix_design(X, intecept = True)
