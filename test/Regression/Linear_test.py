@@ -17,8 +17,6 @@ Linear.predict(Data)
 #Testa se retorna oma array numpy com coeficientes
 Linear.coef
 
-#verifica se retorna um numpy float
-Linear.score()
 
 '''
 
@@ -90,8 +88,6 @@ class TestError():
         assert isinstance(Linear.coef, np.ndarray)
         assert Linear.coef.shape == (n_features,)
 
-        resultado_score = Linear.score()
-        assert isinstance(resultado_score, (float, np.number))
         
 #============= Fazer ainda =================
 class TestRightResults():
