@@ -5,9 +5,9 @@
 #[(test_indx,train_indx) * k]  = KFold(data_size,k = 5)
 
 for test_indx, train_indx in KFold(data_size,k= 5):
-    metodo_generico.fit(data[train_indx,:-1],data[train_indx,-1])
+    metodo_generico.fit(X[train_indx],Y[train_indx])
 
-    y_tested = metodo_generico.predict(test_indx[test_indx,:-1])
+    y_tested = metodo_generico.predict(X[test_indx])
 
 #ideia do LOOCV
 #testa se retorna os tamanhos que deveriam retornar
