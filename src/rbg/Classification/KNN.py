@@ -18,6 +18,7 @@ class KNN(Classifier):
             ValueError: If the class labels or reference label are invalid,
                 as defined by the base classifier.
         """
+
         Classifier.__init__(self, classes, reference_class)
         self.set_params(k)
 
@@ -33,6 +34,7 @@ class KNN(Classifier):
         Raises:
             ValueError: If k is not a positive integer or is a boolean.
         """
+
         if isinstance(k, bool) == False:
             if isinstance(k, int) and k>0:
                 self.k = k
@@ -87,7 +89,6 @@ class KNN(Classifier):
             raise ValueError("X and y must not be empty.")
         if X.shape[1] == 0:
             raise ValueError("X must have at least one feature.")
-
         self._X_train = X
         self._y_train = y
         self._fit_done = True
@@ -169,8 +170,10 @@ class KNN(Classifier):
                 Class label with the highest frequency. Ties are resolved by
                 selecting the first class returned by np.unique.
             """
+
             classes, counts =  np.unique(prediction, return_counts=True)
             return classes[np.argmax(counts)]
 
         predicted_classes = np.array([final_class(neighbors) for neighbors in prediction])
         return predicted_classes
+
