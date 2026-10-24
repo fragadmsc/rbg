@@ -249,6 +249,47 @@ class Regression:
                 return gratest_purity_gain_overall # do not think is necessary here, but okay          
 
     def _best_cut_value_for_fixed_p(self, y,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor):
+            """
+
+            For a given predictior and node, the module finds that best cut value ( if it exists), and then:
+                - add to 'matri_list' the new X line ordered formed after the possible split (X_c_p)
+                - add to 'y_list' the new y line ordered (y_c_p) to match X_c_p
+                - add to 'possible_cuts' the best cut found, which is a list containing:
+                    * gratest_purity_gain_per_p: The best burity gain, over all value cuts, of the fixed parameter
+                    * associated_value_per_p: The value cut that maximized the purity gain
+                    * predictor: The fixed predictor
+                    * new_end_begin: The samples that originally belonged to the node ( that is being checked if cn be splitted)
+                    will be divided between the left child and right child ( if the node is splitted). Since in X_c_p those samples
+                    are ordered according to the fixed parameter, then "new_end_begin" delimits the new "slice" of samples that
+                    belongs to the left child and right child. 
+                    * imp_left: impurity of the left child, according to this parameter
+                    * imp_right: impurity of the right child, according to this parameter
+                    * prev_l: prediction of the left child, according to this parameter
+                    * prev_r: prediction of the right child, according to this parameter
+            
+            If, for a given cut value, the split violates any of the conditions 
+                -'The minimum purity gain to allow a split in a node.'
+                -'Minimum number of samples of each leaf.'
+            Then this value cut will not be further considered to actually partition the sample space. 
+            If all of the cut values are invalid, then 'gratest_purity_gain_per_p' will remain as None,
+            and the fixed parameter will not be considered to partitionate the node. 
+
+            The current metrics for prediction is the mean values of the samples that fall on the region,
+            and the impurity is measured with MSE (so far).
+
+            Args:
+                - y
+                - node
+                - median: sequence of the possible cut values. 
+                - matri_list
+                - possible_cuts
+                - y_list
+                - X_c_p
+                - y_c_p
+                - predictor
+
+            
+            """
             m = 0
             gratest_purity_gain_per_p = None
             associated_value_per_p = None
@@ -264,17 +305,6 @@ class Regression:
                     m = id_last_m 
                 prevision_left = np.mean(y[self.start[node]:self.start[node]+m]) # maybe we should add +1 
                 prevision_right = np.mean(y[self.start[node]+m:self.end[node]]) # maybe we should add +1 in somewhere here too. Or +2 
-
-                '''
-                
-                    Now we have to compare the gain of purity. Since we have got a way of limiting the minimum amout of 
-                    samples in a leaf ( even though the standard is only one), we would have to compare those stuff. If it was 
-                    the simple case ( equals to one) then e would be sure that it is okay ( becase it is impossible to be lower).
-                
-                    I fell that this step could be more optimal
-                                
-                                
-                    '''
                 
                 if m+1 >=  self.min_samples_leaf and len(median) - (m +1) >= self.min_samples_leaf:
                     left_mse = MSE(y[self.start[node]:m],prevision_left) 
