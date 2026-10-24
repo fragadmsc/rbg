@@ -83,3 +83,63 @@ def resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state 
         train_idxs = rng.choice(all_idxs, size=size, replace=replace)
         test_idxs = np.setdiff1d(all_idxs, train_idxs)
         yield train_idxs, test_idxs
+        
+class KFold:
+    # nos testes, ao inicializar o obj, devemos passar o dataset,
+    # ver depois qual jeito eh melhor
+    
+    """
+    K-Fold Cross Validation.
+    
+    Splits the dataset in 'n_splits' consecutive parts (folds).
+    Each fold is used once as a testing set, while the others
+    are the training set.
+    """
+    def __init__(self, n_splits : int = 5, shuffle : bool = False, random_state = None):
+        """Initializes a KFold object.
+
+        Args:
+            n_splits (int, optional): the number of splits. Defaults to 5.
+            shuffle (bool, optional): if True, the dataset is shuffled. Defaults to False.
+            random_state (optional): seed for shuffle. Defaults to None.
+
+        Raises:
+            ValueError: if 'n_splits' is an invalid entrance.
+        """
+        if type(n_splits) is not int or n_splits <= 1:
+            raise ValueError("'n_splits' must be an integer greater than 1.")
+        self.n_splits = n_splits
+        self.shuffle = shuffle
+        self.random_state = random_state
+        
+    def split(self, X):
+        X = np.asarray(X)
+        n_samples = X.shape[0]
+        idxs = np.arange(n_samples)
+        if self.shuffle:
+            rng = np.random.default_rng(self.random_state)
+            idxs = rng.permutation(n_samples)
+        idx_sets = np.array_split(idxs, self.n_splits)
+        
+        for i in range(self.n_splits):
+            test_idxs = idx_sets[i]
+            train_idxs = np.setdiff1d(idxs, test_idxs)
+            yield train_idxs, test_idxs
+            
+class LOOCV:
+    # eh melhor criar uma classe q herda as props de kfold?
+    
+    """
+    Leave-One-Out Cross Validation.
+    
+    Uses one sample as the testing set.
+    Is a particular case of K-Fold CV, with k = X.shape[0].
+    """
+    def __init__():
+        """
+        Initializes a LOOCV object.
+        """
+        pass
+    def split(self, X):
+        kfold = KFold(X.shape[0])
+        yield from kfold.split(X)
