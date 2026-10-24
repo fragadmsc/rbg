@@ -1,7 +1,7 @@
 import numpy as np
 
 from Metrics import MSE
-
+from rgb.Utilities import MAE, RMSE, MSE, RSquare
 
 epsolon = 0.00000001 # can be better defined 
 
@@ -10,12 +10,70 @@ class Regression:
     """Base regression class for building a tree and fitting data. """
 
     def __init__(self,min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None,criterion = 'SQE', min_samples_leaf = 1, max_leaf = None):
-        "Initialized tree "
+        """Initializes the Regression Tree Strcuture 
+
+                 
+        
+        Args:
+        
+            min_impurity_decrease: The minimum purity gain to allow a split in a node.
+            min_samples_split: The minimum number of samples in a node to allow a split.
+            max_depth: The maximum depth the tree can grow.
+            criterion: What type of metric the splits will be evaluated.
+            min_samples_leaf: Minimum number of samples of each leaf. 
+            max_leaf: Maximum number of leaves of the tree. 
+
+        Initializes the attributes:
+        
+            - self.min_impurity_decrease: The minimum purity gain to allow a split in a node.
+            - self.min_samples_split: The minimum number of samples in a node to allow a split.
+            - self.max_depth: The maximum depth the tree can grow.
+            - self.criterion: What type of metric the splits will be evaluated.
+            - self.min_samples_leaf: Minimum number of samples of each leaf. 
+            - self.children_left: Array mapping each node to its left child or -1 (if it is a leaf)
+            - self.node_depth: Array mapping each node to its depth 
+            - self.children_right: Array mapping each node to its right child or -1 (if it is a leaf)
+            - self.feature: Array mapping each node to its predictor splitter 
+            - self.threshold: Array mapping each node to its value of split
+            - self.impurity: Array mapping each node to its impurity
+            - self.value: Array mapping each node to its predictor splitter 
+            - self.purity_gain_subtree: Array mapping each node to its purity gain compared to it's subtree leaves
+            - self.start: Array mapping each node to the first sample that falls on that node
+            - self.end: Array mapping each node to the last sample that falls on that node
+            - self.aux_purity_gain: Auxiliar array mapping each node to its' purity gain compated to both children
+            - self.max_leaf: Maximum number of leaves
+            - self.n: Number of nodes
+            - self.max_splits: Maximum number of splits
+        
+        Raises:
+
+
+        """
+        
+        if isinstance(min_impurity_decrease, str):
+             raise TypeError ("min_impurity_decrease should be a number")        
+        if max_depth is not None and not isinstance(max_depth,(int,np.integer)):
+            raise TypeError("The param 'ma_depth' must be None or an integer.")
+        if max_depth is not None and max_depth < 0:
+            raise ValueError("'max_depth' must be greater or equal to zero.")
+        if  not isinstance(min_samples_split, (int,np.integer)):
+            raise TypeError('min_samples_split must be an integer.')
+        if min_samples_split < 2:
+            raise ValueError ('min_samples_split must be at least 2')
+        if not isinstance (min_samples_leaf, (int, np.integer)):
+            raise TypeError ("min_samples_leaf should be an integer")
+        if min_samples_leaf <1:
+            raise ValueError("min_samples_leaf must be at least one")
+        if not None and not isinstance (max_leaf, (int, np.integer)):
+            raise TypeError("max_leaf must be an integer")
+        if max_leaf != None and max_leaf <1:
+            raise ValueError("You must have at least one leaf node") 
+            
         self.min_impurity_decrease = min_impurity_decrease 
         self.min_samples_split = min_samples_split 
         self.max_depth = max_depth
         self.criterion = criterion
-        self.min_samples_leaf = max(min_samples_leaf,1) # Para evitar de um usário mandar ter menos que 1 sample por nó 
+        self.min_samples_leaf = min_samples_leaf
         self.children_left = None
         self.node_depth = None
         self.children_right = None
@@ -26,42 +84,92 @@ class Regression:
         self.purity_gain_subtree = None
         self.start = None
         self.end = None
-        self.values_per_leaf = None#maybe erase 
         self.aux_purity_gain = None
         self.max_leaf = max_leaf
-        
+        self.n = None
+        if max_leaf:
+            self.max_splits = max_leaf - 1
+        else:
+            self.max_splits = None
+                
     def tree_structure(self,X):
+        """
+        Defines self.n, the number of nodes of the tree, according to the number os samples and previously
+        defined limitations (min_samples_leaf, max_depth, and max_leaf). The most limited criteria will define
+        how many nodes the tree will have.
+
+        Defines the arrays size of  
+            - self.children_left
+            - self.children_right
+            - self.feature 
+            - self.node_depth 
+            - self.threshold 
+            - self.impurity 
+            - self.value 
+            - self.purity_gain 
+            - self.start 
+            - self.end 
+            - self.values_per_leaf 
+            - self.aux_purity_gain 
+
+        Args:
+            X: Sample matrix of shape (n_samples, p_feature)
+        
+        Returns:
+            No returns. 
+    
+        
+        """
         if self.max_depth:
-            n = (2 **(self.max_depth +1)) - 1 
+            self.n = min(2 * np.floor(N/self.min_samples_leaf) -1,(2 **(self.max_depth +1)) - 1 ) 
         else:
             N = np.shape(X)[0]
             n = 2 * np.floor(N/self.min_samples_leaf) -1 # maybe change to ceil to be safe that it fits
-        self.children_left = np.ones(n) * -1 
-        self.children_right = np.ones(n) * -1 
-        self.feature = np.ones(n) * -1 
-        self.node_depth = np.ones(n) * -1 #impossible, so that is ok 
-        self.threshold = np.full(n, np.nan)
-        self.impurity = np.ones(n) * -1 
-        self.value = np.full(n, np.nan)
-        self.purity_gain = np.ones(n) * -1 
-        self.start = np.ones(n) * -1
-        self.end = np.ones(n) * -1
-        self.values_per_leaf = np.arange(n)
-        self.aux_purity_gain = np.ones(n) * -1 
-        if self.max_leaf:
-            self.max_leaf = self.max_leaf
-            if self.max_leaf <1:
-                raise ValueError("WYou must have at least one leaf node")
-        else:
-            self.max_leaf = np.floor(N/self.min_samples_leaf)  # talvez tenha um +1 ou -1 ai, sei la. Mas eh o maximo de folhas que poderiamos ter. Como eu tenho o minimo de nos por folha...
+         if self.max_leaf != None:
+            self.n = min(self.n, 2*self.max_leaf-1) # Get the most restritive condition
+        self.children_left = np.ones(self.n) * -1 
+        self.children_right = np.ones(self.n) * -1 
+        self.feature = np.ones(self.n) * -1 
+        self.node_depth = np.ones(self.n) * -1 #impossible, so that is ok 
+        self.threshold = np.full(self.n, np.nan)
+        self.impurity = np.ones(self.n) * -1 
+        self.value = np.full(self.n, np.nan)
+        self.purity_gain = np.ones(self.n) * -1 
+        self.start = np.ones(self.n) * -1
+        self.end = np.ones(self.n) * -1
+        self.aux_purity_gain = np.ones(self.n) * -1 
+        if self.max_leaf == None:
+            self.max_leaf = (self.n+ 1)/2  # talvez tenha um +1 ou -1 ai, sei la. Mas eh o maximo de folhas que poderiamos ter. Como eu tenho o minimo de nos por folha...
+            self.max_splits = self.max_leaf - 1
 
     def splitter(self, X,y,node,defenitive = False):
+
+         """
+
+        Algorithm designed to find the best predictor and the best value of that predictor
+        to partitionate a node. 
+        If the node is found to be the best one to be splitted, it will indeed be partitioned and 
+        generate two new nodes.
+
+
+
+        Args:
+            X: Sample matrix of shape (n_samples, p_feature).
+            y: Vector of the observations of shape (n_samples,).
+            node: indice of the node that will be testedo or actually partitioned
+            defenitive: if "False" then splitter only find the best cut of the node. If "True", then
+            besides finding the best, it will actually cut the node and generate the new leaves.
+
+        
+        """
 
         matri_list = [] 
         possible_cuts = [] 
         y_list = [] 
 
-        for predictor in range(y):
+        y_tam = int(y.shape[0])
+
+        for predictor in range(y_tam):
 
             X_c_p = X.copy()
             lines = X[self.start[node]:self.end[node]]
