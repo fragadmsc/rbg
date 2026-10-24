@@ -151,7 +151,16 @@ class Regression:
         If the node is found to be the best one to be splitted, it will indeed be partitioned and 
         generate two new nodes.
 
-
+        For a fixed node, the algorithm will iterate for every parameter. In each parameter, 
+        the method "_best_cut_value_for_fixed_p" will be called to find the best cut value 
+        of that parameter ( if it existis). Then, the chosen parameter to cut the node will be
+        selected. If defenitive = False, only the information of the impurity decrease will be returned.
+        If defenitive = True, it means that the node will actually be cut, therefore, its children
+        will be defined, and the node's attributes of threshold and features will be updated. Also, 
+        the sample matrix "X" will be updated, that is, its lines will re-arrenge themselves to simulate
+        the final partition of the sample datas in each leaf. Therefore, the y vector will have its
+        lines equally re-arrenged. Lsatly, it sets up left child and right child as possible future nodes
+        to be split.
 
         Args:
             X: Sample matrix of shape (n_samples, p_feature).
@@ -159,7 +168,11 @@ class Regression:
             node: indice of the node that will be testedo or actually partitioned
             defenitive: if "False" then splitter only find the best cut of the node. If "True", then
             besides finding the best, it will actually cut the node and generate the new leaves.
-
+            
+        Returns:
+            None - > If there is no possible cut 
+            gratest_purity_gain_overall -> If there is a possible cut, returns the onw which
+            increses the purity the most
         
         """
 
@@ -183,9 +196,59 @@ class Regression:
             final_y_lines = y_lines[ordered_ind]
             y_c_p [self.start[node]:self.end[node]] = final_y_lines
 
-            #IMPORTANT : WE HAVE TO CHANGE THE ORDERS FROM Y AS WELL!! Look below:
-
             median = (final_lines[:-1] + final_lines[1:])/2 # Candidated for cut value. This will have to be chenged for classification (probably)
+
+            self._best_cut_value_for_fixed_p(y,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor)
+
+        y_list = np.array(y_list)
+        matri_list = np.ndarray(matri_list)
+        possible_cuts = np.ndarray(possible_cuts)
+
+
+        if y_list.shape[0] == 0: 
+            return None 
+        else:
+            gratest_purity_gain_overall_index = np.argmax(possible_cuts[:,0])
+            gratest_purity_gain_overall = possible_cuts[gratest_purity_gain_overall_index,0]
+            if defenitive == False:
+                return gratest_purity_gain_overall
+            else:
+                X = matri_list[gratest_purity_gain_overall_index]
+                y = y_list[gratest_purity_gain_overall_index]
+                self.threshold[node] = possible_cuts[gratest_purity_gain_overall_index,1]
+                self.feature[node] = possible_cuts[gratest_purity_gain_overall_index,2]
+                r1 = np.max(self.children_right)
+                r2 = np.max(self.children_left)
+                right = max(r1,r2)+1
+                left = right+1
+                if right == 0: #because in the first split, all values will be -1, but 0, 0 = -1 +1, is the root.
+                    right =1 
+                    left = 2
+                self.children_left[node] = left
+                self.children_right[node] = right
+                
+                self.value[left] = possible_cuts[gratest_purity_gain_overall_index,6]
+                self.impurity[left] = possible_cuts[gratest_purity_gain_overall_index,4]
+                self.start[left] = self.start[node]
+                self.end[left] = possible_cuts[gratest_purity_gain_overall_index,3]
+                self.node_depth[left] = self.node_depth[node] +1 
+
+                if (self.end[left] - self.start[left]) >= self.min_samples_split and self.node_depth[left] > self.max_depth and self.impurity[left] > epsolon:
+                    self.aux_purity_gain[left] = 1
+
+
+
+                self.value[right] = possible_cuts[gratest_purity_gain_overall_index,7]
+                self.impurity[right] = possible_cuts[gratest_purity_gain_overall_index,5]
+                self.start[right]= possible_cuts[gratest_purity_gain_overall_index,3] #might need to review that
+                self.end[right] = self.end[node]
+                self.node_depth[right] = self.node_depth[node] +1 
+
+                if (self.end[right] - self.start[right]) >= self.min_samples_split and self.node_depth[right] > self.max_depth and self.impurity[right] > epsolon:
+                                    self.aux_purity_gain[right] = 1
+                return gratest_purity_gain_overall # do not think is necessary here, but okay          
+
+    def _best_cut_value_for_fixed_p(self, y,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor):
             m = 0
             gratest_purity_gain_per_p = None
             associated_value_per_p = None
@@ -239,50 +302,7 @@ class Regression:
             if gratest_purity_gain_per_p:
                 matri_list.append(X_c_p)
                 possible_cuts.append([gratest_purity_gain_per_p,associated_value_per_p,predictor,new_end_begin,imp_left, imp_right,prev_l,prev_r])
-                y_list.append(y_c_p)
-
-        y_list = np.array(y_list)
-        matri_list = np.ndarray(matri_list)
-        possible_cuts = np.ndarray(possible_cuts)
-
-
-        if y_list.shape[0] == 0: 
-            return None 
-        else:
-            gratest_purity_gain_overall_index = np.argmax(possible_cuts[:,0])
-            gratest_purity_gain_overall = possible_cuts[gratest_purity_gain_overall_index,0]
-            if defenitive == False:
-                return gratest_purity_gain_overall
-            else:
-                self.threshold[node] = possible_cuts[gratest_purity_gain_overall_index,1]
-                self.feature[node] = possible_cuts[gratest_purity_gain_overall_index,2]
-                r1 = np.max(self.children_right)
-                r2 = np.max(self.children_left)
-                right = max(r1,r2)+1
-                left = right+1
-                self.children_left[node] = left
-                self.children_right[node] = right
-                self.value[left] = possible_cuts[gratest_purity_gain_overall_index,6]
-                self.impurity[left] = possible_cuts[gratest_purity_gain_overall_index,4]
-                self.start[left] = self.start[node]
-                self.end[left] = possible_cuts[gratest_purity_gain_overall_index,3]
-                self.node_depth[left] = self.node_depth[node] +1 
-
-                if (self.end[left] - self.start[left]) >= self.min_samples_split and self.node_depth[left] > self.max_depth and self.impurity[left] > epsolon:
-                    self.aux_purity_gain[left] = 1
-
-
-
-                self.value[right] = possible_cuts[gratest_purity_gain_overall_index,7]
-                self.impurity[right] = possible_cuts[gratest_purity_gain_overall_index,5]
-                self.start[right]= possible_cuts[gratest_purity_gain_overall_index,3] #might need to review that
-                self.end[right] = self.end[node]
-                self.node_depth[right] = self.node_depth[node] +1 
-
-                if (self.end[right] - self.start[right]) >= self.min_samples_split and self.node_depth[right] > self.max_depth and self.impurity[right] > epsolon:
-                                    self.aux_purity_gain[right] = 1
-                return gratest_purity_gain_overall # do not think is necessary here, but okay          
-
+                y_list.append(y_c_p)    
 
     def tree_construction(self, X,y):
         if X.ndim != 2:
