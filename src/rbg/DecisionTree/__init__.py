@@ -198,7 +198,7 @@ class Regression:
 
             median = (final_lines[:-1] + final_lines[1:])/2 # Candidated for cut value. This will have to be chenged for classification (probably)
 
-            self._best_cut_value_for_fixed_p(y,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor)
+            self._best_cut_value_for_fixed_p(node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor)
 
         y_list = np.array(y_list)
         matri_list = np.ndarray(matri_list)
@@ -248,7 +248,7 @@ class Regression:
                                     self.aux_purity_gain[right] = 1
                 return gratest_purity_gain_overall # do not think is necessary here, but okay          
 
-    def _best_cut_value_for_fixed_p(self, y,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor):
+    def _best_cut_value_for_fixed_p(self,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor):
             """
 
             For a given predictior and node, the module finds that best cut value ( if it exists), and then:
@@ -276,17 +276,39 @@ class Regression:
 
             The current metrics for prediction is the mean values of the samples that fall on the region,
             and the impurity is measured with MSE (so far).
+            
+            Since the sequence of the possible cut values is calculated based on the ordinated sequence of 
+            the fixed predictor, there are (self.end[node] - self.start[node] -1) possible values. 
+            For Example, if "pi" is the predictor value of the samples, ordinated in final_lines , and "mj" the median 
+            values calculated as mj = (pj + p(j+1))/2, we would have:
+
+                    p1  p2   p3  p4  p5  p6  p7  p8  p9  p10 
+                      m1  m2   m3  m4  m5  m6  m7  m8  m9
+
+            Some "mj" values might be repeated. For example, if p1 = p2 = p3, then m1 = m2. Therefore,
+            in this cenario, instead of dividing de sample values according to the position m1, that is,
+            instead of testing 
+
+                    p1 | p2   p3  p4  p5  p6  p7  p8  p9  p10 
+                      m1   m2   m3  m4  m5  m6  m7  m8  m9
+            Since m1 = m2, and values are ordered, it means that the samples that would be on the left
+            child according to m1, should be actually the same according to m2. Therefore, whenever we are 
+            testing those "mj" values, we will take the last indice "k" from "median" , such that mj = mk,
+            and we will compare mk to p(k+1). If mk = p(k+1), then the cut on the sample will be indice 
+            "k+1":
+
+                    p1  p2  p3 | p4  p5  p6  p7  p8  p9  p10 
+                      m1  m2  m3  m4  m5  m6  m7  m8  m9
 
             Args:
-                - y
-                - node
+                - node: node evaluated for the split
                 - median: sequence of the possible cut values. 
-                - matri_list
-                - possible_cuts
-                - y_list
-                - X_c_p
-                - y_c_p
-                - predictor
+                - matri_list: list of the X with its lines re-ordered to match the split
+                - possible_cuts: list of the possible cuts of the node
+                - y_list: list of the y with its lines re-ordered to match the split
+                - X_c_p: Matrix X with the lines re-ordered to match the split according to a fixed predictor
+                - y_c_p: vector y with the lines re-ordered to match the split according to a fixed predictor
+                - predictor: the fixed predictor
 
             
             """
@@ -299,23 +321,27 @@ class Regression:
             prev_l= None
             prev_r = None
             while m < len(median):
-                #since we are using an ordinated array, we can use a function that uses binary search to avoid recounting repeated medians.
-                id_last_m = np.searchsorted(median, median[m], side = 'right') - 1
+                id_last_m = np.searchsorted(median, median[m], side = 'right') - 1  #since we are using an ordinated array, we can use a function that uses binary search to avoid recounting repeated medians.
                 if median[m] == median[id_last_m]:
                     m = id_last_m 
-                prevision_left = np.mean(y[self.start[node]:self.start[node]+m]) # maybe we should add +1 
-                prevision_right = np.mean(y[self.start[node]+m:self.end[node]]) # maybe we should add +1 in somewhere here too. Or +2 
+                if median[m] == final_lines[m+1,predictor]:
+                    if m+1 == len(median): #Extremly important break. If it is true, then it means that we would try to split by letting 
+                        break # everything on the left child. Besides being prohibited, it would cause index error in the next lines.
+                    else:
+                        m+=1
+                prevision_left = np.mean(y_c_p[self.start[node]:self.start[node]+m+1])  # add +1 after m becuase in sclicing the end is exclusive
+                prevision_right = np.mean(y_c_p[self.start[node]+m+1:self.end[node]]) 
                 
-                if m+1 >=  self.min_samples_leaf and len(median) - (m +1) >= self.min_samples_leaf:
-                    left_mse = MSE(y[self.start[node]:m],prevision_left) 
-                    right_mse = MSE(y[m:self.end[node]],prevision_right)
-                    current_purity_gain = self.impurity[node] - ((m+1)/ len(median) * left_mse + (len(median)-(m+1))/len(median)*right_mse)
-                    if current_purity_gain >= self.min_impurity_decrease:
-                        if  gratest_purity_gain_per_p:
+                if m+1 >=  self.min_samples_leaf and len(median)+1 - (m +1) >= self.min_samples_leaf:# checking if the left child and right child both have the minimum amount of samples
+                    left_mse = MSE(y_c_p[self.start[node]:m+1],prevision_left) 
+                    right_mse = MSE(y_c_p[m+1:self.end[node]],prevision_right)
+                    current_purity_gain = self.impurity[node] - ((m+1)/ (len(median)+1) * left_mse + ((len(median)+1)-(m+1))/(len(median)+1)*right_mse)
+                    if current_purity_gain >= self.min_impurity_decrease:# Checkgin if the purity gain is equal or greater than the minimum necessary
+                        if  gratest_purity_gain_per_p: #If a value was already computed, we have to check if the new one is better
                             if gratest_purity_gain_per_p >current_purity_gain:
                                 gratest_purity_gain_per_p = current_purity_gain
                                 associated_value_per_p = median[m]
-                                new_end_begin = m 
+                                new_end_begin = m+1 # considerind [start , end)
                                 imp_left = left_mse
                                 imp_right = right_mse
                                 prev_l= prevision_left
@@ -323,7 +349,7 @@ class Regression:
                         else:
                             gratest_purity_gain_per_p = current_purity_gain
                             associated_value_per_p = median[m]
-                            new_end_begin = m #carefull
+                            new_end_begin = m+1 # considerind [start , end)
                             imp_left = left_mse
                             imp_right =right_mse
                             prev_l= prevision_left
