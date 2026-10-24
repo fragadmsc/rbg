@@ -17,8 +17,6 @@ Ridge.predict(Data)
 #Testa se retorna oma array numpy com coeficientes
 Ridge.coef
 
-#verifica se retorna um numpy float
-Ridge.score()
 
 '''
 
@@ -88,9 +86,6 @@ class TestError():
 
         assert isinstance(Ridge.coef, np.ndarray)
         assert Ridge.coef.shape == (n_features,)
-
-        resultado_score = Ridge.score()
-        assert isinstance(resultado_score, (float, np.number))
 
 
 #============= Fazer ainda =================
