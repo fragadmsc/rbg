@@ -351,7 +351,7 @@ class Regression:
                 if X[i][self.feature[node]] <= self.threshold[node]:
                     node = self.children_left[node]
                 else:
-                    node = self.children_left[node]
+                    node = self.children_right[node]
             pred_y = self.value[node]
             y.append(pred_y)
         y = np.ndarray(y)
