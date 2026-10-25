@@ -38,6 +38,7 @@ class QDA(Classifier):
         """
         self._fit_done = False
 
+
         X = np.asarray(X)
         y = np.asarray(y)
 
