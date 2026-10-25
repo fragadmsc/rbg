@@ -1,4 +1,6 @@
 import numpy as np
+from rbg.Utilities import MAE,RMSE,MSE,RSquare
+
 
 def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, shuffle = True, random_state = None):
     """
@@ -143,3 +145,34 @@ class LOOCV:
     def split(self, X):
         kfold = KFold(X.shape[0])
         yield from kfold.split(X)
+        
+def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
+    """Returns a list of scores given a machine learning model, a cross-validation method and a loss function.
+
+    Args:
+        model: a machine learning model with method .fit and .predict
+        X (np.ndarray): input of the dataset.
+        y (np.ndarray): output of the dataset.
+        cv_method: a cross-validation method, KFold or LOOCV.
+        metrics: a metrics such as MSE, imported from rbg.Utilities
+
+    Returns:
+        np.ndarray: a list of scores.
+    """
+    # conferir depois se o metrics(y_pred, y_test) ta certo (talvez o certo seja inverter)
+    scores = []
+    for idxs_train, idxs_test in cv_method.split(X):
+        X_train = X[idxs_train]
+        X_test = X[idxs_test]
+        y_train = y[idxs_train]
+        y_test = y[idxs_test]
+        
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        
+        score = metrics(y_pred, y_test)
+        scores.append(score)
+    return np.array(scores)
+        
+        
+# implementar busca de hiperparametros
