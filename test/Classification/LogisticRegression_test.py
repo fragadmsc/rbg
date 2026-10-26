@@ -8,17 +8,18 @@ class TestDataEntry():
     def test_DataFrame(self):
         Data = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
         
-        DtFrameResult =LogReg.fit(Data)
+        modelo_logreg = LogReg.LogisticRegression()
+        DtFrameResult = modelo_logreg.fit(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
 
     def test_Numpy(self):
-        Data = np.ndarray([1.0,2.0,3.0])
+        Data = np.array([1.0, 2.0, 3.0])
 
-        NpResult =LogReg.fit(Data)
+        modelo_logreg = LogReg.LogisticRegression()
+        NpResult = modelo_logreg.fit(Data)
 
         assert isinstance(NpResult, np.ndarray)
-
 
 
 class TestError():
@@ -26,16 +27,18 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
+        modelo_logreg = LogReg.LogisticRegression()
+
         with pytest.raises(ValueError, match="The data do not match"):
-            LogReg.fit(X, Y)
+            modelo_logreg.fit(X, Y)
 
         X_cut = X[:5, :] 
         
-        LogReg.fit(X_cut, Y)
+        modelo_logreg.fit(X_cut, Y)
 
         Data = np.zeros((4, 3))
 
-        resultado = LogReg.predict(Data)
+        resultado = modelo_logreg.predict(Data)
         
         assert resultado.shape == (4,)
 
@@ -51,15 +54,14 @@ class TestError():
         ])
         Y_treino = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
         
-        LogReg.fit(X_train, Y_treino)
-
+        modelo_logreg = LogReg.LogisticRegression()
+        modelo_logreg.fit(X_train, Y_treino)
         
-        assert isinstance(LogReg.labels, np.ndarray)
-        assert np.array_equal(np.unique(LogReg.labels), np.unique(Y_treino))
-        assert np.array_equal(LogReg.labels,np.array(['contaminated', 'drinkable']))
+        assert isinstance(modelo_logreg.labels, np.ndarray)
+        assert np.array_equal(np.unique(modelo_logreg.labels), np.unique(Y_treino))
+        assert np.array_equal(modelo_logreg.labels, np.array(['contaminated', 'drinkable']))
 
     def test_method(self):
-
         X_train = np.array([
             [1.5, 2.0], 
             [1.6, 1.9], 
@@ -70,20 +72,20 @@ class TestError():
         
         n_features = X_train.shape[1]
 
-        LogReg.fit(X_train, Y_train)
+        modelo_logreg = LogReg.LogisticRegression()
+        modelo_logreg.fit(X_train, Y_train)
 
-        label = LogReg.labels[0]
+        label = modelo_logreg.labels[0]
 
-        func_k = LogReg.k_function(k = label)
+        func_k = modelo_logreg.k_function(k = label)
         assert callable(func_k)
         
         amostra_teste = X_train[0]
         resultado_func = func_k(amostra_teste)
         assert isinstance(resultado_func, (float, np.number))
 
-        coefs = LogReg.k_coef(k = label)
+        coefs = modelo_logreg.k_coef(k = label)
         assert isinstance(coefs, np.ndarray)
 
 class TestRightResults():
     pass
-
