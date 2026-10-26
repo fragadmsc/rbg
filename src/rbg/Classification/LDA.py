@@ -142,7 +142,6 @@ class LDA(Classifier):
             Returns:
                 Discriminant score for class k.
             """
-
             function = (x.T @ np.linalg.inv(self._covariance) @ self.mean_array(k) 
                     - 1/2 * self.mean_array(k).T @ np.linalg.inv(self._covariance)
                     @ self.mean_array(k) + np.log(self.prior(k)))
