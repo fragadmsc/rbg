@@ -28,7 +28,7 @@ class TestBootstrap:
     ])
     def test_Resample_parametrizado(self, data, size, qte, replace):
         
-        resultado = Resample(data, size=size, qte=qte, replace=replace)
+        resultado = Resample(data, size=size, n_resamples=qte, replace=replace)
         
         assert isinstance(resultado, (np.ndarray, list))
         
