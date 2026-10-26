@@ -1,5 +1,4 @@
 import numpy as np
-from rbg.Utilities import MAE,RMSE,MSE,RSquare
 
 
 def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, shuffle = True, random_state = None):
@@ -147,19 +146,22 @@ class LOOCV:
         yield from kfold.split(X)
         
 def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
-    """Returns a list of scores given a machine learning model, a cross-validation method and a loss function.
+    """Returns a list of scores given a machine learning model, a cross-validation method and a metric.
+    
+    Typical usage example:
+        list_of_scores = cv_score(ex_model, X, y, KFold(10), "accuracy")
 
     Args:
         model: a machine learning model with method .fit and .predict
         X (np.ndarray): input of the dataset.
         y (np.ndarray): output of the dataset.
         cv_method: a cross-validation method, KFold or LOOCV.
-        metrics: a metrics such as MSE, imported from rbg.Utilities
+        metrics: a metric.
 
     Returns:
         np.ndarray: a list of scores.
     """
-    # conferir depois se o metrics(y_pred, y_test) ta certo (talvez o certo seja inverter)
+    # conferir depois se o metrics(y_pred, y_test) ta certo
     scores = []
     for idxs_train, idxs_test in cv_method.split(X):
         X_train = X[idxs_train]
