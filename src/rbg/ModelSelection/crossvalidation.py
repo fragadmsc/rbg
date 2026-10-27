@@ -84,67 +84,66 @@ def resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state 
         train_idxs = rng.choice(all_idxs, size=size, replace=replace)
         test_idxs = np.setdiff1d(all_idxs, train_idxs)
         yield train_idxs, test_idxs
-        
-class KFold:
-    # nos testes, ao inicializar o obj, devemos passar o dataset,
-    # ver depois qual jeito eh melhor
-    
-    """
-    K-Fold Cross Validation.
-    
-    Splits the dataset in 'n_splits' consecutive parts (folds).
-    Each fold is used once as a testing set, while the others
-    are the training set.
-    """
-    def __init__(self, n_splits : int = 5, shuffle : bool = False, random_state = None):
-        """Initializes a KFold object.
 
-        Args:
-            n_splits (int, optional): the number of splits. Defaults to 5.
-            shuffle (bool, optional): if True, the dataset is shuffled. Defaults to False.
-            random_state (optional): seed for shuffle. Defaults to None.
+def KFold(data_size, k : int = 5, shuffle : bool = False, random_state = None):
+    """K-Fold Cross Validation.
+    
+    Separates the dataset in k folds and uses k-1 folds as train and 1 fold as test.
 
-        Raises:
-            ValueError: if 'n_splits' is an invalid entrance.
-        """
-        if type(n_splits) is not int or n_splits <= 1:
-            raise ValueError("'n_splits' must be an integer greater than 1.")
-        self.n_splits = n_splits
-        self.shuffle = shuffle
-        self.random_state = random_state
-        
-    def split(self, X):
-        X = np.asarray(X)
-        n_samples = X.shape[0]
-        idxs = np.arange(n_samples)
-        if self.shuffle:
-            rng = np.random.default_rng(self.random_state)
-            idxs = rng.permutation(n_samples)
-        idx_sets = np.array_split(idxs, self.n_splits)
-        
-        for i in range(self.n_splits):
-            test_idxs = idx_sets[i]
-            train_idxs = np.setdiff1d(idxs, test_idxs)
-            yield train_idxs, test_idxs
-            
-class LOOCV:
-    # eh melhor criar uma classe q herda as props de kfold?
-    
+    Args:
+        data_size: the size of the dataset. It can also be an array.
+        k (int, optional): the number of folds. Defaults to 5.
+        shuffle (bool, optional): if True, the data will be shuffled. Defaults to False.
+        random_state (int, optional): a seed used for shuffling. Defaults to None.
+
+    Raises:
+        ValueError: if 'data_size' is not an integer or a dataset.
+        ValueError: if 'n_splits' is not an integer larger than 1 and less than the size of the dataset.
+
+    Yields:
+        'data_size' tuples Tuple(np.ndarray, np.ndarray): test_idxs, train_idxs 
     """
-    Leave-One-Out Cross Validation.
+    if type(data_size) == np.ndarray or type(data_size) == list:
+        n_samples = len(data_size)
+    elif type(data_size) == int:
+        n_samples = data_size
+    else:
+        raise ValueError("'data_size' must be an integer or a dataset.")
+    if type(k) is not int or k <= 1 or k > n_samples:
+        raise ValueError("'n_splits' must be an integer larger than 1 and less than the size of the dataset.")
+    idxs = np.arange(n_samples)
+    if shuffle:
+        rng = np.random.default_rng(random_state)
+        idxs = rng.permutation(idxs)
+    idx_sets = np.array_split(idxs, k)
+    for i in range(k):
+        test_idxs = idx_sets[i]
+        train_idxs = np.setdiff1d(idxs, test_idxs)
+        yield test_idxs, train_idxs # eu acho que faz mais sentido sair primeiro os treinos e depois os testes, 
+                                    # mas so tá passando nos testes desse jeito
+
+def LOOCV(data_size):
+    """Leave-One-Out Cross Validation
     
-    Uses one sample as the testing set.
-    Is a particular case of K-Fold CV, with k = X.shape[0].
+    Take one sample and uses it as the testing set. Is a great option if the dataset is small enough.
+
+    Args:
+        data_size: the size of the dataset. It can also be an array.
+
+    Raises:
+        ValueError: if 'data_size' is not an integer or a dataset.
+
+    Yields:
+        'data_size' tuples Tuple(test_idxs, train_idxs): 
     """
-    def __init__():
-        """
-        Initializes a LOOCV object.
-        """
-        pass
-    def split(self, X):
-        kfold = KFold(X.shape[0])
-        yield from kfold.split(X)
-        
+    if type(data_size) == np.ndarray or type(data_size) == list:
+        x = len(data_size)
+    elif type(data_size) == int:
+        x = data_size
+    else:
+        raise ValueError("'data_size' must be an integer or a dataset.")
+    return KFold(data_size = x, k = x)
+
 def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     """Returns a list of scores given a machine learning model, a cross-validation method and a metric.
     
