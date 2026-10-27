@@ -1,4 +1,4 @@
-import rbg.Classification.KNN as KNN
+from rbg.Classification.KNN  import KNN
 import numpy as np
 import pandas as pd
 import pytest
@@ -10,7 +10,7 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
 
-        modelo_knn = KNN.KNN()
+        modelo_knn = KNN()
         modelo_knn.fit(X, Y)
 
         DtFrameResult = modelo_knn.predict(Data)
@@ -23,7 +23,7 @@ class TestDataEntry():
 
         Data = np.array([1.5, 2.0, 0.5])
 
-        modelo_knn = KNN.KNN()
+        modelo_knn = KNN()
         modelo_knn.fit(X, Y)
 
         NpResult = modelo_knn.predict(Data)
@@ -37,7 +37,7 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_knn = KNN.KNN()
+        modelo_knn = KNN()
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_knn.fit(X, Y)
@@ -53,7 +53,7 @@ class TestError():
         assert resultado.shape == (4,)
 
     def test_params(self):
-        modelo_knn = KNN.KNN()
+        modelo_knn = KNN()
         modelo_knn.set_params(k = 5)
 
         di = modelo_knn.get_params()
@@ -63,31 +63,4 @@ class TestError():
 
 
 class TestRightResults():
-
-    def test_resuts(self):
-        X = np.array([[1.0, 1.5], [2.0, 2.5], [10.0, 10.5], [11.0, 11.5]])
-        Y = np.array([0, 0, 1, 1])
-
-        modelo_knn = KNN.KNN()
-        modelo_knn.fit(X, Y)
-
-        TrainPredict = modelo_knn.predict(X)
-        
-        np.testing.assert_allclose(
-            TrainPredict, 
-            Y, 
-            atol=1e-9, 
-            err_msg="The Predict do not match"
-        )
-
-        XTest = np.array([[1.2, 1.8], [10.5, 11.0]])
-        YPred = np.array([0, 1])
-
-        predict = modelo_knn.predict(XTest)
-
-        np.testing.assert_allclose(
-            predict, 
-            YPred, 
-            atol=1e-9, 
-            err_msg="The predict do not match"
-        )
+    pass

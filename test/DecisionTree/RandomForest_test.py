@@ -1,5 +1,5 @@
-import rbg.DecisionTree.RandomForest as RdForest
-import rbg.DecisionTree.RandomForestRegression as RdForestReg
+from rbg.DecisionTree.RandomForest import RdForest
+from rbg.DecisionTree.RandomForestRegression import RdForestReg
 import numpy as np
 import pandas as pd
 import pytest 
@@ -31,7 +31,7 @@ class TestRdForest_DataEntry:
 
         Data = pd.DataFrame({"col1": [1.5, 2.0, 0.5], "col2": [2.5, 3.0, 1.5]})
 
-        modelo_rdforest = RdForest.RandomForest()
+        modelo_rdforest = RdForest()
         modelo_rdforest.fit(X, Y)
         DtFrameResult = modelo_rdforest.predict(Data)
         
@@ -44,7 +44,7 @@ class TestRdForest_DataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        modelo_rdforest = RdForest.RandomForest()
+        modelo_rdforest = RdForest()
         modelo_rdforest.fit(X, Y)
         NpResult = modelo_rdforest.predict(Data)
 
@@ -57,7 +57,7 @@ class TestRdForest_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_rdforest = RdForest.RandomForest()
+        modelo_rdforest = RdForest()
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_rdforest.fit(X, Y)
@@ -74,7 +74,7 @@ class TestRdForest_Error:
 
     def test_params(self):
         features = 100
-        modelo_rdforest = RdForest.RandomForest()
+        modelo_rdforest = RdForest()
         modelo_rdforest.set_params(impurity='Gini', m=features/3, n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
         
         params = modelo_rdforest.get_params()
@@ -95,7 +95,7 @@ class TestRdForestReg_DataEntry:
 
         Data = pd.DataFrame({"col1": [1.5, 2.0, 0.5], "col2": [2.5, 3.0, 1.5]})
 
-        modelo_rdforest_reg = RdForestReg.RandomForestRegression()
+        modelo_rdforest_reg = RdForestReg()
         modelo_rdforest_reg.fit(X, Y)
         DtFrameResult = modelo_rdforest_reg.predict(Data)
         
@@ -108,7 +108,7 @@ class TestRdForestReg_DataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        modelo_rdforest_reg = RdForestReg.RandomForestRegression()
+        modelo_rdforest_reg = RdForestReg()
         modelo_rdforest_reg.fit(X, Y)
         NpResult = modelo_rdforest_reg.predict(Data)
 
@@ -121,7 +121,7 @@ class TestRdForestReg_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_rdforest_reg = RdForestReg.RandomForestRegression()
+        modelo_rdforest_reg = RdForestReg()
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_rdforest_reg.fit(X, Y)
@@ -137,7 +137,7 @@ class TestRdForestReg_Error:
 
     def test_params(self):
         features = 100
-        modelo_rdforest_reg = RdForestReg.RandomForestRegression()
+        modelo_rdforest_reg = RdForestReg()
         modelo_rdforest_reg.set_params(m=features/3, n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
         
         params = modelo_rdforest_reg.get_params()

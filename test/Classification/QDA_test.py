@@ -1,4 +1,4 @@
-import rbg.Classification.QDA as QDA
+from rbg.Classification.QDA import QDA as QDA
 import numpy as np
 import pandas as pd
 import pytest
@@ -10,7 +10,7 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
 
-        modelo_qda = QDA.QDA()
+        modelo_qda = QDA()
         modelo_qda.fit(X, Y)
 
         DtFrameResult = modelo_qda.predict(Data)
@@ -23,7 +23,7 @@ class TestDataEntry():
 
         Data = np.array([1.5, 2.0, 0.5])
 
-        modelo_qda = QDA.QDA()
+        modelo_qda = QDA()
         modelo_qda.fit(X, Y)
 
         NpResult = modelo_qda.predict(Data)
@@ -36,7 +36,7 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_qda = QDA.QDA()
+        modelo_qda = QDA()
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_qda.fit(X, Y)
@@ -65,7 +65,7 @@ class TestError():
         ])
         Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
         
-        modelo_qda = QDA.QDA()
+        modelo_qda = QDA()
         modelo_qda.fit(X_train, Y_train)
 
         
@@ -83,7 +83,7 @@ class TestError():
         ])
         Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
         
-        modelo_qda = QDA.QDA()
+        modelo_qda = QDA()
         modelo_qda.fit(X_train, Y_train)
 
         label = modelo_qda.labels[0]

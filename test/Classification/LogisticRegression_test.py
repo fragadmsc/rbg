@@ -1,4 +1,4 @@
-import rbg.Classification.LogisticRegression as LogReg
+from rbg.Classification.LogisticRegression import LogisticRegression as LogReg
 import numpy as np
 import pandas as pd
 import pytest
@@ -8,7 +8,7 @@ class TestDataEntry():
     def test_DataFrame(self):
         Data = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
         
-        modelo_logreg = LogReg.LogisticRegression()
+        modelo_logreg = LogReg()
         DtFrameResult = modelo_logreg.fit(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
@@ -16,7 +16,7 @@ class TestDataEntry():
     def test_Numpy(self):
         Data = np.array([1.0, 2.0, 3.0])
 
-        modelo_logreg = LogReg.LogisticRegression()
+        modelo_logreg = LogReg()
         NpResult = modelo_logreg.fit(Data)
 
         assert isinstance(NpResult, np.ndarray)
@@ -27,7 +27,7 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_logreg = LogReg.LogisticRegression()
+        modelo_logreg = LogReg()
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_logreg.fit(X, Y)
@@ -54,7 +54,7 @@ class TestError():
         ])
         Y_treino = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
         
-        modelo_logreg = LogReg.LogisticRegression()
+        modelo_logreg = LogReg()
         modelo_logreg.fit(X_train, Y_treino)
         
         assert isinstance(modelo_logreg.labels, np.ndarray)
@@ -72,7 +72,7 @@ class TestError():
         
         n_features = X_train.shape[1]
 
-        modelo_logreg = LogReg.LogisticRegression()
+        modelo_logreg = LogReg()
         modelo_logreg.fit(X_train, Y_train)
 
         label = modelo_logreg.labels[0]

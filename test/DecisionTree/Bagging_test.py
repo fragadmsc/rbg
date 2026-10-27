@@ -1,5 +1,5 @@
-import rbg.DecisionTree.Bagging as Bagging
-import rbg.DecisionTree.BaggingRegression as BaggingReg
+from rbg.DecisionTree.Bagging import Bagging
+from rbg.DecisionTree import BaggingReg
 import numpy as np
 import pandas as pd
 import pytest
@@ -31,7 +31,7 @@ class TestBagging_DataEntry:
 
         Data = pd.DataFrame({"col1": [1.5, 2.0, 0.5], "col2": [2.5, 3.0, 1.5]})
 
-        modelo_bagging = Bagging.Bagging()
+        modelo_bagging = Bagging()
         modelo_bagging.fit(X, Y)
         DtFrameResult = modelo_bagging.predict(Data)
         
@@ -44,7 +44,7 @@ class TestBagging_DataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        modelo_bagging = Bagging.Bagging()
+        modelo_bagging = Bagging()
         modelo_bagging.fit(X, Y)
         NpResult = modelo_bagging.predict(Data)
 
@@ -57,7 +57,7 @@ class TestBagging_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_bagging = Bagging.Bagging()
+        modelo_bagging = Bagging()
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_bagging.fit(X, Y)
@@ -72,7 +72,7 @@ class TestBagging_Error:
         assert result.shape == (4,)
 
     def test_params(self):
-        modelo_bagging = Bagging.Bagging()
+        modelo_bagging = Bagging()
         modelo_bagging.set_params(impurity='Gini', n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
         
         params = modelo_bagging.get_params()
@@ -90,7 +90,7 @@ class TestBaggingReg_DataEntry:
 
         Data = pd.DataFrame({"col1": [1.5, 2.0, 0.5], "col2": [2.5, 3.0, 1.5]})
 
-        modelo_bagging_reg = BaggingReg.BaggingRegression()
+        modelo_bagging_reg = BaggingReg()
         modelo_bagging_reg.fit(X, Y)
         DtFrameResult = modelo_bagging_reg.predict(Data)
         
@@ -103,7 +103,7 @@ class TestBaggingReg_DataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        modelo_bagging_reg = BaggingReg.BaggingRegression()
+        modelo_bagging_reg = BaggingReg()
         modelo_bagging_reg.fit(X, Y)
         NpResult = modelo_bagging_reg.predict(Data)
 
@@ -116,7 +116,7 @@ class TestBaggingReg_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_bagging_reg = BaggingReg.BaggingRegression()
+        modelo_bagging_reg = BaggingReg()
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_bagging_reg.fit(X, Y)
@@ -131,7 +131,7 @@ class TestBaggingReg_Error:
         assert result.shape == (4,)
 
     def test_params(self):
-        modelo_bagging_reg = BaggingReg.BaggingRegression()
+        modelo_bagging_reg = BaggingReg()
         modelo_bagging_reg.set_params(n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
         
         params = modelo_bagging_reg.get_params()

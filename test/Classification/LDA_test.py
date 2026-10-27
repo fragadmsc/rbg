@@ -1,4 +1,4 @@
-import rbg.Classification.LDA as LDA
+from rbg.Classification.LDA import LDA
 import numpy as np
 import pandas as pd
 import pytest
@@ -11,7 +11,7 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
 
-        modelo_lda = LDA.LDA()
+        modelo_lda = LDA()
         modelo_lda.fit(X, Y)
 
         DtFrameResult = modelo_lda.predict(Data)
@@ -24,7 +24,7 @@ class TestDataEntry():
 
         Data = np.array([1.5, 2.0, 0.5])
 
-        modelo_lda = LDA.LDA()
+        modelo_lda = LDA()
         modelo_lda.fit(X, Y)
 
         NpResult = modelo_lda.predict(Data)
@@ -37,7 +37,7 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_lda = LDA.LDA()
+        modelo_lda = LDA()
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_lda.fit(X, Y)
@@ -65,7 +65,7 @@ class TestError():
         ])
         Y_treino = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
         
-        modelo_lda = LDA.LDA()
+        modelo_lda = LDA()
         modelo_lda.fit(X_treino, Y_treino)
         
         assert isinstance(modelo_lda.labels, np.ndarray)
@@ -85,7 +85,7 @@ class TestError():
         
         n_features = X_treino.shape[1]
         
-        modelo_lda = LDA.LDA()
+        modelo_lda = LDA()
         modelo_lda.fit(X_treino, Y_treino)
 
         cov_matrix = modelo_lda.cov_matrix(k = modelo_lda.labels[0])
