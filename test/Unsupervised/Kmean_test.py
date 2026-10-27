@@ -1,4 +1,4 @@
-import rbg.Unsupervised.KMean as KMean
+from rbg.Unsupervised.KMean import KMean
 import numpy as np
 import pytest
 
@@ -29,9 +29,10 @@ KMean.centroids
 class TestKMean:
     
     def test_params(self):
-        KMean.set_params(k=10, centroid_selection='Kmean++', max_iter=100)
+        modelo_kmean = KMean()
+        modelo_kmean.set_params(k=10, centroid_selection='Kmean++', max_iter=100)
         
-        params = KMean.get_params()
+        params = modelo_kmean.get_params()
         
         assert isinstance(params, dict)
         assert params.get('k') == 10
@@ -39,9 +40,9 @@ class TestKMean:
         assert params.get('max_iter') == 100
 
         centroids = [(10.5, 11.4), (12.0, 1.4), (90.0, 43.12)]
-        KMean.set_params(k=10, centroid_selection=centroids)
+        modelo_kmean.set_params(k=10, centroid_selection=centroids)
         
-        params = KMean.get_params()
+        params = modelo_kmean.get_params()
         assert params.get('centroid_selection') == centroids
 
     def test_fit_and_attributes(self):
@@ -56,14 +57,15 @@ class TestKMean:
         n_features = X.shape[1]
 
         k = 2
-        KMean.set_params(k=k, centroid_selection='Kmean++', max_iter=100)
+        modelo_kmean = KMean()
+        modelo_kmean.set_params(k=k, centroid_selection='Kmean++', max_iter=100)
         
-        KMean.fit(X)
-        assert isinstance(KMean.clusters, np.ndarray)
-        assert KMean.clusters.shape == (n_amostras, )
+        modelo_kmean.fit(X)
+        assert isinstance(modelo_kmean.clusters, np.ndarray)
+        assert modelo_kmean.clusters.shape == (n_amostras, )
 
-        assert isinstance(KMean.centroids, np.ndarray)
-        assert KMean.centroids.shape == (k ,)
+        assert isinstance(modelo_kmean.centroids, np.ndarray)
+        assert modelo_kmean.centroids.shape == (k ,)
 
-        for centroid in KMean.centroids:
+        for centroid in modelo_kmean.centroids:
             assert len(centroid) == n_features

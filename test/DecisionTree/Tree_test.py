@@ -1,5 +1,5 @@
-import rbg.DecisionTree.ClassificationTree as Classification
-import rbg.DecisionTree.RegressionTree as Regression
+from rbg.DecisionTree.ClassificationTree import Classification
+from rbg.DecisionTree.RegressionTree import Regression
 import numpy as np
 import pandas as pd
 import pytest
@@ -31,7 +31,7 @@ Regression.predict(Data)
 class TestClassificationTree:
     
     def test_params(self):
-        modelo_classificacao = Classification.ClassificationTree()
+        modelo_classificacao = Classification()
         modelo_classificacao.set_params(impurity='Gini', min_inpurity_decrease=0.1, max_depth=30)
         
         params = modelo_classificacao.get_params()
@@ -53,7 +53,7 @@ class TestClassificationTree:
         X_errado = np.zeros((10, 2))
         Y_errado = np.zeros(5)
         
-        modelo_classificacao = Classification.ClassificationTree()
+        modelo_classificacao = Classification()
         
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_classificacao.fit(X_errado, Y_errado)
@@ -70,7 +70,7 @@ class TestClassificationTree:
 class TestRegressionTree:
     
     def test_params(self):
-        modelo_regressao = Regression.RegressionTree()
+        modelo_regressao = Regression()
         modelo_regressao.set_params(min_inpurity_decrease=0.1, max_depth=30)
         
         params = modelo_regressao.get_params()
@@ -91,7 +91,7 @@ class TestRegressionTree:
         X_errado = np.zeros((10, 2))
         Y_errado = np.zeros(5)
         
-        modelo_regressao = Regression.RegressionTree()
+        modelo_regressao = Regression()
         
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_regressao.fit(X_errado, Y_errado)
