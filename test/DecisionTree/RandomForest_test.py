@@ -24,7 +24,6 @@ RdForestReg.fit(X,Y)
 RdForestReg.predict(Data)
 '''
 
-
 class TestRdForest_DataEntry:
     def test_DataFrame(self):
         X = pd.DataFrame({"col1": [1.0, 2.0, 3.0], "col2": [2.0, 3.0, 4.0]})
@@ -32,8 +31,9 @@ class TestRdForest_DataEntry:
 
         Data = pd.DataFrame({"col1": [1.5, 2.0, 0.5], "col2": [2.5, 3.0, 1.5]})
 
-        RdForest.fit(X, Y)
-        DtFrameResult = RdForest.predict(Data)
+        modelo_rdforest = RdForest.RandomForest()
+        modelo_rdforest.fit(X, Y)
+        DtFrameResult = modelo_rdforest.predict(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
         assert DtFrameResult.shape == (3,)
@@ -44,8 +44,9 @@ class TestRdForest_DataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        RdForest.fit(X, Y)
-        NpResult = RdForest.predict(Data)
+        modelo_rdforest = RdForest.RandomForest()
+        modelo_rdforest.fit(X, Y)
+        NpResult = modelo_rdforest.predict(Data)
 
         assert isinstance(NpResult, np.ndarray)
         assert NpResult.shape == (3,)
@@ -56,24 +57,27 @@ class TestRdForest_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
+        modelo_rdforest = RdForest.RandomForest()
+
         with pytest.raises(ValueError, match="The data do not match"):
-            RdForest.fit(X, Y)
+            modelo_rdforest.fit(X, Y)
 
         X_cut = X[:5, :] 
-        RdForest.fit(X_cut, Y)
+        modelo_rdforest.fit(X_cut, Y)
 
         Data = np.zeros((4, 3))
-        result = RdForest.predict(Data)
+        result = modelo_rdforest.predict(Data)
         
-        # Testa se retorna uma array numpy de tamanho compativel[cite: 1]
+        # Testa se retorna uma array numpy de tamanho compativel
         assert isinstance(result, np.ndarray)
         assert result.shape == (4,)
 
     def test_params(self):
         features = 100
-        RdForest.set_params(impurity='Gini', m=features/3, n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
+        modelo_rdforest = RdForest.RandomForest()
+        modelo_rdforest.set_params(impurity='Gini', m=features/3, n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
         
-        params = RdForest.get_params()
+        params = modelo_rdforest.get_params()
         
         assert isinstance(params, dict)
         assert params.get('impurity') == 'Gini'
@@ -91,8 +95,9 @@ class TestRdForestReg_DataEntry:
 
         Data = pd.DataFrame({"col1": [1.5, 2.0, 0.5], "col2": [2.5, 3.0, 1.5]})
 
-        RdForestReg.fit(X, Y)
-        DtFrameResult = RdForestReg.predict(Data)
+        modelo_rdforest_reg = RdForestReg.RandomForestRegression()
+        modelo_rdforest_reg.fit(X, Y)
+        DtFrameResult = modelo_rdforest_reg.predict(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
         assert DtFrameResult.shape == (3,)
@@ -103,8 +108,9 @@ class TestRdForestReg_DataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        RdForestReg.fit(X, Y)
-        NpResult = RdForestReg.predict(Data)
+        modelo_rdforest_reg = RdForestReg.RandomForestRegression()
+        modelo_rdforest_reg.fit(X, Y)
+        NpResult = modelo_rdforest_reg.predict(Data)
 
         assert isinstance(NpResult, np.ndarray)
         assert NpResult.shape == (3,)
@@ -115,23 +121,26 @@ class TestRdForestReg_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
+        modelo_rdforest_reg = RdForestReg.RandomForestRegression()
+
         with pytest.raises(ValueError, match="The data do not match"):
-            RdForestReg.fit(X, Y)
+            modelo_rdforest_reg.fit(X, Y)
 
         X_cut = X[:5, :] 
-        RdForestReg.fit(X_cut, Y)
+        modelo_rdforest_reg.fit(X_cut, Y)
 
         Data = np.zeros((4, 3))
-        result = RdForestReg.predict(Data)
+        result = modelo_rdforest_reg.predict(Data)
         
         assert isinstance(result, np.ndarray)
         assert result.shape == (4,)
 
     def test_params(self):
         features = 100
-        RdForestReg.set_params(m=features/3, n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
+        modelo_rdforest_reg = RdForestReg.RandomForestRegression()
+        modelo_rdforest_reg.set_params(m=features/3, n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
         
-        params = RdForestReg.get_params()
+        params = modelo_rdforest_reg.get_params()
         
         assert isinstance(params, dict)
         assert params.get('m') == features/3

@@ -31,9 +31,10 @@ Regression.predict(Data)
 class TestClassificationTree:
     
     def test_params(self):
-        Classification.set_params(impurity='Gini', min_inpurity_decrease=0.1, max_depth=30)
+        modelo_classificacao = Classification.ClassificationTree()
+        modelo_classificacao.set_params(impurity='Gini', min_inpurity_decrease=0.1, max_depth=30)
         
-        params = Classification.get_params()
+        params = modelo_classificacao.get_params()
         
         assert isinstance(params, dict)
         assert params.get('impurity') == 'Gini'
@@ -52,13 +53,15 @@ class TestClassificationTree:
         X_errado = np.zeros((10, 2))
         Y_errado = np.zeros(5)
         
+        modelo_classificacao = Classification.ClassificationTree()
+        
         with pytest.raises(ValueError, match="The data do not match"):
-            Classification.fit(X_errado, Y_errado)
+            modelo_classificacao.fit(X_errado, Y_errado)
 
-        Classification.fit(X, Y)
+        modelo_classificacao.fit(X, Y)
 
         Data = np.array([[1.5, 2.0], [8.5, 9.0]])
-        resultado = Classification.predict(Data)
+        resultado = modelo_classificacao.predict(Data)
 
         assert isinstance(resultado, np.ndarray)
         assert resultado.shape == (2,)
@@ -67,9 +70,10 @@ class TestClassificationTree:
 class TestRegressionTree:
     
     def test_params(self):
-        Regression.set_params(min_inpurity_decrease=0.1, max_depth=30)
+        modelo_regressao = Regression.RegressionTree()
+        modelo_regressao.set_params(min_inpurity_decrease=0.1, max_depth=30)
         
-        params = Regression.get_params()
+        params = modelo_regressao.get_params()
         
         assert isinstance(params, dict)
         assert params.get('min_inpurity_decrease') == 0.1
@@ -87,13 +91,15 @@ class TestRegressionTree:
         X_errado = np.zeros((10, 2))
         Y_errado = np.zeros(5)
         
+        modelo_regressao = Regression.RegressionTree()
+        
         with pytest.raises(ValueError, match="The data do not match"):
-            Regression.fit(X_errado, Y_errado)
+            modelo_regressao.fit(X_errado, Y_errado)
 
-        Regression.fit(X, Y)
+        modelo_regressao.fit(X, Y)
 
         Data = np.array([[1.5, 2.0], [8.5, 9.0], [5.0, 5.0]])
-        resultado = Regression.predict(Data)
+        resultado = modelo_regressao.predict(Data)
 
         assert isinstance(resultado, np.ndarray)
         assert resultado.shape == (3,)
