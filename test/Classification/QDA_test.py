@@ -5,12 +5,12 @@ import pytest
 
 class TestDataEntry():
     def test_DataFrame(self):
-        X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
-        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
+        X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0, 2.5]})
+        Y = pd.Series(['contaminated', 'drinkable', 'contaminated', 'drinkable'], name="coluna2")
 
-        Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
+        Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5, 2.5]})
 
-        modelo_qda = QDA()
+        modelo_qda = QDA(classes=["contaminated", "drinkable"])
         modelo_qda.fit(X, Y)
 
         DtFrameResult = modelo_qda.predict(Data)
@@ -18,12 +18,12 @@ class TestDataEntry():
         assert isinstance(DtFrameResult, np.ndarray)
 
     def test_Numpy(self):
-        X = np.array([1.0, 2.0, 3.0])
-        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
+        X = np.array([[1.0], [2.0], [3.0], [2.5]])
+        Y = pd.Series(['contaminated', 'drinkable', 'contaminated', 'drinkable'], name="coluna2")
 
-        Data = np.array([1.5, 2.0, 0.5])
+        Data = np.array([[1.5], [2.0], [0.5], [2.5]])
 
-        modelo_qda = QDA()
+        modelo_qda = QDA(classes=["contaminated", "drinkable"])
         modelo_qda.fit(X, Y)
 
         NpResult = modelo_qda.predict(Data)
@@ -35,20 +35,22 @@ class TestError():
     def test_MatchingDim(self):
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
-        
-        modelo_qda = QDA()
-
+                
+        modelo_qda = QDA(classes=[0,1])
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_qda.fit(X, Y)
-
-        X_cut = X[:5, :] 
         
-        modelo_qda.fit(X_cut, Y)
-
-        Data = np.zeros((4, 3))
-
+        # valid train set
+        X_treino = np.array([[0.0, 0.0],[0.1, -0.1],[4.0, 4.0],[4.1, 4.1], [0.2, 0.6], [3.5, 4]])
+        Y_treino = np.array([0, 0, 1, 1, 0, 1])
+        modelo_qda.fit(X_treino, Y_treino)
+                
+        # prediction verification
+        Data = np.array([[0.05, -0.05],[4.05, 4.05],[0.02, -0.02],[4.08, 4.08]])
+        
         resultado = modelo_qda.predict(Data)
         
+        assert isinstance(resultado, np.ndarray)
         assert resultado.shape == (4,)
 
 
@@ -61,11 +63,15 @@ class TestError():
             [1.5, 2.0], 
             [1.6, 1.9], 
             [8.5, 9.0], 
-            [8.6, 9.1]
+            [8.6, 9.1],
+            [2.0, 1.5],
+            [9.5, 8.5],
+            [1.0, 1.5],
+            [7.5, 9.0]
         ])
-        Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
+        Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable', 'contaminated', 'drinkable', 'contaminated', 'drinkable'])
         
-        modelo_qda = QDA()
+        modelo_qda = QDA(classes=["contaminated", "drinkable"])
         modelo_qda.fit(X_train, Y_train)
 
         
@@ -79,11 +85,15 @@ class TestError():
             [1.5, 2.0], 
             [1.6, 1.9], 
             [8.5, 9.0], 
-            [8.6, 9.1]
+            [8.6, 9.1],
+            [2.0, 1.5],
+            [9.5, 8.5],
+            [1.0, 1.5],
+            [7.5, 9.0]
         ])
-        Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
+        Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable', 'contaminated', 'drinkable', 'contaminated', 'drinkable'])
         
-        modelo_qda = QDA()
+        modelo_qda = QDA(classes=["contaminated", "drinkable"])
         modelo_qda.fit(X_train, Y_train)
 
         label = modelo_qda.labels[0]

@@ -7,11 +7,11 @@ import pytest
 class TestDataEntry():
     def test_DataFrame(self):
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
-        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
+        Y = pd.Series(['contaminated', 'drinkable', 'contaminated'], name="coluna2")
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
 
-        modelo_lda = LDA()
+        modelo_lda = LDA(classes=["contaminated", "drinkable"])
         modelo_lda.fit(X, Y)
 
         DtFrameResult = modelo_lda.predict(Data)
@@ -19,12 +19,12 @@ class TestDataEntry():
         assert isinstance(DtFrameResult, np.ndarray)
 
     def test_Numpy(self):
-        X = np.array([1.0, 2.0, 3.0])
-        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
+        X = np.array([[1.0], [2.0], [3.0]])
+        Y = pd.Series(['contaminated', 'drinkable', 'contaminated'], name="coluna2")
 
-        Data = np.array([1.5, 2.0, 0.5])
+        Data = np.array([[1.5], [2.0], [0.5]])
 
-        modelo_lda = LDA()
+        modelo_lda = LDA(classes=["contaminated", "drinkable"])
         modelo_lda.fit(X, Y)
 
         NpResult = modelo_lda.predict(Data)
@@ -37,21 +37,22 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_lda = LDA()
-
+        modelo_lda = LDA(classes=[0,1])
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_lda.fit(X, Y)
 
-        X_cut = X[:5, :] 
+        # valid train set
+        X_treino = np.array([[0.0, 0.0],[0.1, -0.1],[4.0, 4.0],[4.1, 4.1]])
+        Y_treino = np.array([0, 0, 1, 1])
+        modelo_lda.fit(X_treino, Y_treino)
         
-        modelo_lda.fit(X_cut, Y)
-
-        Data = np.zeros((4, 3))
+        # prediction verification
+        Data = np.array([[0.05, -0.05],[4.05, 4.05],[0.02, -0.02],[4.08, 4.08]])
 
         resultado = modelo_lda.predict(Data)
-        
-        assert resultado.shape == (4,)
 
+        assert isinstance(resultado, np.ndarray)
+        assert resultado.shape == (4,)
 
     def test_params(self):
         pass
@@ -65,7 +66,7 @@ class TestError():
         ])
         Y_treino = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
         
-        modelo_lda = LDA()
+        modelo_lda = LDA(classes=["contaminated", "drinkable"])
         modelo_lda.fit(X_treino, Y_treino)
         
         assert isinstance(modelo_lda.labels, np.ndarray)
@@ -85,10 +86,10 @@ class TestError():
         
         n_features = X_treino.shape[1]
         
-        modelo_lda = LDA()
+        modelo_lda = LDA([0,1])
         modelo_lda.fit(X_treino, Y_treino)
 
-        cov_matrix = modelo_lda.cov_matrix(k = modelo_lda.labels[0])
+        cov_matrix = modelo_lda.cov_matrix()
         assert isinstance(cov_matrix, np.ndarray)
         assert cov_matrix.shape == (n_features, n_features)
 
