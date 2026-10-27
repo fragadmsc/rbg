@@ -14,10 +14,10 @@ F1Score(Y_predicted,Y_real)
 
 import pytest
 import numpy as np
-from rbg.Utilities import Acurracy, Pressision,Reccal, F1Score
+from rbg.Utilities import Acurracy, Pressision, Reccal, F1Score
 
 class TestMetrics:
-    
+
     def test_Acurracy(self):
         Y_real = np.array([0, 0, 1, 1, 2, 2])
         Y_predicted = np.array([0, 1, 1, 1, 0, 2])
@@ -62,12 +62,11 @@ class TestMetrics:
         assert resultado.shape == (n_classes,)
         assert np.all((resultado >= 0.0) & (resultado <= 1.0))
 
-
-    def test_Pressision_resiliencia_divisao_zero(self):
+    def test_Pressision_resilience_divisao_zero(self):
         #verifica se para a classe 1 por exemplo a funcao nao quebra, divisao por zero
         Y_real = np.array([0, 0, 1, 1])
         Y_predicted = np.array([0, 0, 0, 0]) 
-        
+
         try:
             resultado = Pressision(Y_predicted, Y_real)
             assert isinstance(resultado, np.ndarray)
@@ -76,11 +75,11 @@ class TestMetrics:
         except Exception as e:
             pytest.fail(f"Erro genérico inesperado na Precisão. Erro: {e}")
 
-    def test_Reccal_resiliencia_divisao_zero(self):
+    def test_Reccal_resilience_divisao_zero(self):
         #verifica se está tentando calcular um ponto que a classe não existe no mundo real e se a divisão por zero não falha
         Y_real = np.array([0, 0, 0, 0])
         Y_predicted = np.array([0, 1, 0, 0])
-        
+
         try:
             resultado = Reccal(Y_predicted, Y_real)
             assert isinstance(resultado, np.ndarray)
