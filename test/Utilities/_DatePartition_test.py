@@ -17,7 +17,9 @@ for test_indx, train_indx in KFold(data_size,k= 5):
 
 import pytest
 import numpy as np
-from rbg import KFold,LOOCV
+
+from rbg.ModelSelection.crossvalidation import KFold,LOOCV
+
 class TestError:
     
     @pytest.mark.parametrize("k_invalido", [0, 1, 15])
