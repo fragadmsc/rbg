@@ -24,7 +24,6 @@ BaggingReg.predict(Data)
 '''
 
 
-
 class TestBagging_DataEntry:
     def test_DataFrame(self):
         X = pd.DataFrame({"col1": [1.0, 2.0, 3.0], "col2": [2.0, 3.0, 4.0]})
@@ -32,8 +31,9 @@ class TestBagging_DataEntry:
 
         Data = pd.DataFrame({"col1": [1.5, 2.0, 0.5], "col2": [2.5, 3.0, 1.5]})
 
-        Bagging.fit(X, Y)
-        DtFrameResult = Bagging.predict(Data)
+        modelo_bagging = Bagging.Bagging()
+        modelo_bagging.fit(X, Y)
+        DtFrameResult = modelo_bagging.predict(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
         assert DtFrameResult.shape == (3,)
@@ -44,8 +44,9 @@ class TestBagging_DataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        Bagging.fit(X, Y)
-        NpResult = Bagging.predict(Data)
+        modelo_bagging = Bagging.Bagging()
+        modelo_bagging.fit(X, Y)
+        NpResult = modelo_bagging.predict(Data)
 
         assert isinstance(NpResult, np.ndarray)
         assert NpResult.shape == (3,)
@@ -56,22 +57,25 @@ class TestBagging_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
+        modelo_bagging = Bagging.Bagging()
+
         with pytest.raises(ValueError, match="The data do not match"):
-            Bagging.fit(X, Y)
+            modelo_bagging.fit(X, Y)
 
         X_cut = X[:5, :] 
-        Bagging.fit(X_cut, Y)
+        modelo_bagging.fit(X_cut, Y)
 
         Data = np.zeros((4, 3))
-        result = Bagging.predict(Data)
+        result = modelo_bagging.predict(Data)
         
         assert isinstance(result, np.ndarray)
         assert result.shape == (4,)
 
     def test_params(self):
-        Bagging.set_params(impurity='Gini', n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
+        modelo_bagging = Bagging.Bagging()
+        modelo_bagging.set_params(impurity='Gini', n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
         
-        params = Bagging.get_params()
+        params = modelo_bagging.get_params()
         
         assert isinstance(params, dict)
         assert params.get('impurity') == 'Gini'
@@ -79,7 +83,6 @@ class TestBagging_Error:
         assert params.get('min_inpurity_decrease') == 0.1
         assert params.get('max_depth') == 30
 
-#teste regressão
 class TestBaggingReg_DataEntry:
     def test_DataFrame(self):
         X = pd.DataFrame({"col1": [1.0, 2.0, 3.0], "col2": [2.0, 3.0, 4.0]})
@@ -87,8 +90,9 @@ class TestBaggingReg_DataEntry:
 
         Data = pd.DataFrame({"col1": [1.5, 2.0, 0.5], "col2": [2.5, 3.0, 1.5]})
 
-        BaggingReg.fit(X, Y)
-        DtFrameResult = BaggingReg.predict(Data)
+        modelo_bagging_reg = BaggingReg.BaggingRegression()
+        modelo_bagging_reg.fit(X, Y)
+        DtFrameResult = modelo_bagging_reg.predict(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
         assert DtFrameResult.shape == (3,)
@@ -99,8 +103,9 @@ class TestBaggingReg_DataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        BaggingReg.fit(X, Y)
-        NpResult = BaggingReg.predict(Data)
+        modelo_bagging_reg = BaggingReg.BaggingRegression()
+        modelo_bagging_reg.fit(X, Y)
+        NpResult = modelo_bagging_reg.predict(Data)
 
         assert isinstance(NpResult, np.ndarray)
         assert NpResult.shape == (3,)
@@ -111,22 +116,25 @@ class TestBaggingReg_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
+        modelo_bagging_reg = BaggingReg.BaggingRegression()
+
         with pytest.raises(ValueError, match="The data do not match"):
-            BaggingReg.fit(X, Y)
+            modelo_bagging_reg.fit(X, Y)
 
         X_cut = X[:5, :] 
-        BaggingReg.fit(X_cut, Y)
+        modelo_bagging_reg.fit(X_cut, Y)
 
         Data = np.zeros((4, 3))
-        result = BaggingReg.predict(Data)
+        result = modelo_bagging_reg.predict(Data)
         
         assert isinstance(result, np.ndarray)
         assert result.shape == (4,)
 
     def test_params(self):
-        BaggingReg.set_params(n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
+        modelo_bagging_reg = BaggingReg.BaggingRegression()
+        modelo_bagging_reg.set_params(n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
         
-        params = BaggingReg.get_params()
+        params = modelo_bagging_reg.get_params()
         
         assert isinstance(params, dict)
         assert params.get('n_trees') == 100
