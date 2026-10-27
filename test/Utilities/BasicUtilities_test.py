@@ -1,5 +1,5 @@
-from rbg.Utilities import Matrix_design, Resample
-
+# from rbg.Utilities import Matrix_design, Resample
+from rbg.ModelSelection.crossvalidation import Resample
 
 '''
 #a partir de uma array constroi uma matriz design
@@ -28,7 +28,7 @@ class TestBootstrap:
     ])
     def test_Resample_parametrizado(self, data, size, qte, replace):
         
-        resultado = Resample(data, size=size, n_resamples=qte, replace=replace)
+        resultado = Resample(X = data, size=size, n_resamples=qte, replace=replace)
         
         assert isinstance(resultado, (np.ndarray, list))
         

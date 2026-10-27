@@ -48,7 +48,7 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     
     return X_train, X_test, y_train, y_test
 
-def resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state = None, replace = True):
+def Resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state = None, replace = True):
     """
     Returns resamples of the original dataset.
     If size = None and replace = True (by default), is a bootstrap.
@@ -79,11 +79,12 @@ def resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state 
             raise ValueError("'size' must be at most the size of the dataset.")
     rng = np.random.default_rng(random_state)
     all_idxs = np.arange(n_samples)
-    
+    resamples = []
     for _ in range(n_resamples):
         train_idxs = rng.choice(all_idxs, size=size, replace=replace)
         test_idxs = np.setdiff1d(all_idxs, train_idxs)
-        yield train_idxs, test_idxs
+        resamples.append((train_idxs)) # acho q o bootstrap devia retornar os testes tbm, se ele for usado como um metodo de cv
+    return resamples # isso gasta mais memoria do que o yield, mas os testes pedem pra retornar uma lista ou array
 
 def KFold(data_size, k : int = 5, shuffle : bool = False, random_state = None):
     """K-Fold Cross Validation.
