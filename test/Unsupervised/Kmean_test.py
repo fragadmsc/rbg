@@ -1,4 +1,4 @@
-from rbg.Unsupervised.KMean import KMean
+from rbg.Unsupervised.KMeans import KMeans
 import numpy as np
 import pytest
 
@@ -29,7 +29,7 @@ KMean.centroids
 class TestKMean:
     
     def test_params(self):
-        modelo_kmean = KMean()
+        modelo_kmean = KMeans()
         modelo_kmean.set_params(k=10, centroid_selection='Kmean++', max_iter=100)
         
         params = modelo_kmean.get_params()
@@ -57,7 +57,7 @@ class TestKMean:
         n_features = X.shape[1]
 
         k = 2
-        modelo_kmean = KMean()
+        modelo_kmean = KMeans()
         modelo_kmean.set_params(k=k, centroid_selection='Kmean++', max_iter=100)
         
         modelo_kmean.fit(X)
