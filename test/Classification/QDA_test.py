@@ -11,7 +11,7 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5, 2.5]})
 
-        modelo_qda = QDA(["contaminated", "drinkable"])
+        modelo_qda = QDA(classes=["contaminated", "drinkable"])
         modelo_qda.fit(X, Y)
 
         DtFrameResult = modelo_qda.predict(Data)
@@ -22,11 +22,11 @@ class TestDataEntry():
 
     def test_Numpy(self):
         X = np.array([[1.0], [2.0], [3.0], [2.5]])
-        Y = np.array(['contaminated', 'drinkable', 'contaminated', 'drinkable'])
+        Y = pd.Series(['contaminated', 'drinkable', 'contaminated', 'drinkable'], name="coluna2")
 
         Data = np.array([[1.5], [2.0], [0.5], [2.5]])
 
-        modelo_qda = QDA(["contaminated", "drinkable"])
+        modelo_qda = QDA(classes=["contaminated", "drinkable"])
         modelo_qda.fit(X, Y)
 
         NpResult = modelo_qda.predict(Data)
@@ -51,12 +51,11 @@ class TestDataEntry():
 
 
 class TestError():
-
     def test_MatchingDim(self):
-        X = np.zeros((10, 3))
-        Y = np.zeros(5)
+        X = np.zeros((10, 3)) 
+        Y = np.zeros(5)       
                 
-        modelo_qda = QDA([0,1])
+        modelo_qda = QDA(classes=[0,1])
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_qda.fit(X, Y)
         
@@ -85,7 +84,7 @@ class TestError():
         X_train = np.array([[1.5, 2.0],[1.6, 1.9],[8.5, 9.0],[8.6, 9.1],[2.0, 1.5],[9.5, 8.5],[1.0, 1.5],[7.5, 9.0]])
         Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable', 'contaminated', 'drinkable', 'contaminated', 'drinkable'])
         
-        modelo_qda = QDA(["contaminated", "drinkable"])
+        modelo_qda = QDA(classes=["contaminated", "drinkable"])
         modelo_qda.fit(X_train, Y_train)
       
         assert isinstance(modelo_qda.labels, np.ndarray)
@@ -96,7 +95,7 @@ class TestError():
         X_train = np.array([[1.5, 2.0],[1.6, 1.9],[8.5, 9.0],[8.6, 9.1],[2.0, 1.5],[9.5, 8.5],[1.0, 1.5],[7.5, 9.0]])
         Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable', 'contaminated', 'drinkable', 'contaminated', 'drinkable'])
         
-        modelo_qda = QDA(["contaminated", "drinkable"])
+        modelo_qda = QDA(classes=["contaminated", "drinkable"])
         modelo_qda.fit(X_train, Y_train)
 
         label = modelo_qda.labels[0]

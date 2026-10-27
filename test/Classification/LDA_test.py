@@ -12,7 +12,7 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
 
-        modelo_lda = LDA(["contaminated", "drinkable"])
+        modelo_lda = LDA(classes = ["contaminated", "drinkable"])
         modelo_lda.fit(X, Y)
 
         DtFrameResult = modelo_lda.predict(Data)
@@ -27,7 +27,7 @@ class TestDataEntry():
 
         Data = np.array([[1.5], [2.0], [0.5]])
 
-        modelo_lda = LDA(["contaminated", "drinkable"])
+        modelo_lda = LDA(classes  = ["contaminated", "drinkable"])
         modelo_lda.fit(X, Y)
 
         NpResult = modelo_lda.predict(Data)
@@ -56,7 +56,7 @@ class TestError():
         X = np.zeros((10, 3))
         Y = np.zeros(5)
 
-        modelo_lda = LDA([0,1])
+        modelo_lda = LDA(classes =[0,1])
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_lda.fit(X, Y)
@@ -86,7 +86,7 @@ class TestError():
         X_treino = np.array([[1.5, 2.0], [1.6, 1.9], [8.5, 9.0], [8.6, 9.1], [1.7, 2.1], [8.7, 9.2]])
         Y_treino = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable', 'contaminated', 'drinkable'])
 
-        modelo_lda = LDA(["contaminated", "drinkable"])
+        modelo_lda = LDA(classes =["contaminated", "drinkable"])
         modelo_lda.fit(X_treino, Y_treino)
 
         assert isinstance(modelo_lda.labels, np.ndarray)
@@ -99,7 +99,7 @@ class TestError():
         Y_treino = np.array([0, 0, 1, 1, 0, 1])
 
         n_features = X_treino.shape[1]
-
+        
         modelo_lda = LDA([0,1])
         modelo_lda.fit(X_treino, Y_treino)
 

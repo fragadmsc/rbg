@@ -10,7 +10,11 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
 
+<<<<<<< HEAD
         modelo_knn = KNN([1, 2])
+=======
+        modelo_knn = KNN(classes=[1, 2])
+>>>>>>> 1c7ae25 (test: fix KNN, LDA and QDA classifier tests)
         modelo_knn.fit(X, Y)
 
         DtFrameResult = modelo_knn.predict(Data)
@@ -20,12 +24,20 @@ class TestDataEntry():
         assert np.isin(DtFrameResult, [1, 2]).all()
 
     def test_Numpy(self):
+<<<<<<< HEAD
         X = np.array([[1.0], [2.0], [3.0]])
+=======
+        X = np.array([[1.0], [2.], [3.0]])
+>>>>>>> 1c7ae25 (test: fix KNN, LDA and QDA classifier tests)
         Y = np.array([1, 2, 1])
 
         Data = np.array([[1.5], [2.0], [0.5]])
 
+<<<<<<< HEAD
         modelo_knn = KNN([1, 2])
+=======
+        modelo_knn = KNN(classes=[1, 2])
+>>>>>>> 1c7ae25 (test: fix KNN, LDA and QDA classifier tests)
         modelo_knn.fit(X, Y)
 
         NpResult = modelo_knn.predict(Data)
@@ -54,7 +66,7 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_knn = KNN([0])
+        modelo_knn = KNN(classes=[0])
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_knn.fit(X, Y)
@@ -70,7 +82,7 @@ class TestError():
         assert resultado.shape == (4,)
 
     def test_params(self):
-        modelo_knn = KNN([0])
+        modelo_knn = KNN(classes=[0])
         modelo_knn.set_params(k = 5)
 
         di = modelo_knn.get_params()
