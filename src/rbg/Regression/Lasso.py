@@ -4,7 +4,7 @@ from rbg.Regression.linearmodel import LinearModel
 from rbg.Utilities import CoordinateDescent
 
 
-class LassoRegression(LinearModel, CoordinateDescent):
+class Lasso(LinearModel, CoordinateDescent):
     """Lasso regression using the CoordinateDescent solver supplied externally.
 
     Assumed solver contract: CoordinateDescent.solve(X, y, alpha, fit_intercept)
@@ -116,7 +116,7 @@ class LassoRegression(LinearModel, CoordinateDescent):
             indices = rng.choice(self._n, size=self._n, replace=True)
             X_boot = self._X_input[indices]
             y_boot = self._y[indices]
-            model_boot = LassoRegression(fit_intercept=self._intercept, inference=False)
+            model_boot = Lasso(fit_intercept=self._intercept, inference=False)
             betas_boot[i] = model_boot.fit(X_boot, y_boot, self._alpha)
         self._residuals = e = self.residuals()
         self._sigma2_hat = np.dot(e,e)/(self._n-self._d)

@@ -3,7 +3,7 @@ from rbg.Regression.GLM import GLM
 from rbg.Utilities.utilities import ExponentialFamily
 from rbg.Classification.classifier import Classifier
 
-class LogisticRegression(Classifier, GLM):
+class Logistic(Classifier, GLM):
     """Multinomial logistic classifier using a reference-class GLM.
 
     Estimate K-1 coefficient vectors, fixing the reference-class coefficients

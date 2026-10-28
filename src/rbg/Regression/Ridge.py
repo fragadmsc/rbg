@@ -3,7 +3,7 @@ import numpy as np
 from rbg.Regression.linearmodel import LinearModel
 
 
-class RidgeRegression(LinearModel):
+class Ridge(LinearModel):
     """Ridge regression with feature scaling and original-scale coefficients.
 
     Inference treats alpha as fixed. The residual variance estimate may be
