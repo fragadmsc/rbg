@@ -1,4 +1,4 @@
-import rbg.Regression.Ridge as Ridge
+from rbg.Regression.Ridge import Ridge
 import numpy as np
 import pandas as pd
 import pytest
@@ -20,6 +20,7 @@ Ridge.coef
 
 '''
 
+
 class TestDataEntry():
     def test_DataFrame(self):
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0], "coluna2": [2.0, 3.0, 4.0]})
@@ -27,9 +28,10 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5], "coluna2": [2.5, 3.0, 1.5]})
 
-        Ridge.fit(X, Y)
+        modelo_ridge = Ridge()
+        modelo_ridge.fit(X, Y)
 
-        DtFrameResult = Ridge.predict(Data)
+        DtFrameResult = modelo_ridge.predict(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
 
@@ -39,9 +41,10 @@ class TestDataEntry():
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        Ridge.fit(X, Y)
+        modelo_ridge = Ridge()
+        modelo_ridge.fit(X, Y)
 
-        NpResult = Ridge.predict(Data)
+        NpResult = modelo_ridge.predict(Data)
 
         assert isinstance(NpResult, np.ndarray)
 
@@ -50,24 +53,26 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
+        modelo_ridge = Ridge()
+
         with pytest.raises(ValueError, match="The data do not match"):
-            Ridge.fit(X, Y)
+            modelo_ridge.fit(X, Y)
 
         X_cut = X[:5, :] 
         
-        Ridge.fit(X_cut, Y)
+        modelo_ridge.fit(X_cut, Y)
 
         Data = np.zeros((4, 3))
 
-        resultado = Ridge.predict(Data)
+        resultado = modelo_ridge.predict(Data)
         
         assert isinstance(resultado, np.ndarray)
         assert resultado.shape == (4,)
 
     def test_params(self):
-        
-        Ridge.set_params(alpha=1, intecerpt=False)
-        parametros = Ridge.get_params()
+        modelo_ridge = Ridge()
+        modelo_ridge.set_params(alpha=1, intercept=False) # Corrigido de intecerpt para intercept
+        parametros = modelo_ridge.get_params()
         
         assert parametros is not None
 
@@ -82,11 +87,11 @@ class TestError():
         
         n_features = xtrain.shape[1]
         
-        Ridge.fit(xtrain, ytrain)
+        modelo_ridge = Ridge()
+        modelo_ridge.fit(xtrain, ytrain)
 
-        assert isinstance(Ridge.coef, np.ndarray)
-        assert Ridge.coef.shape == (n_features,)
-
+        assert isinstance(modelo_ridge.coef, np.ndarray)
+        assert modelo_ridge.coef.shape == (n_features,)
 
 #============= Fazer ainda =================
 class TestRightResults():
