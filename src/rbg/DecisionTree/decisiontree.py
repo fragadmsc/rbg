@@ -73,6 +73,7 @@ class Regression:
         if min_samples_leaf <1:
             raise ValueError("min_samples_leaf must be at least one")
         if max_leaf is not None and not isinstance (max_leaf, (int, np.integer)):
+            print ("olha ai o max_leaf", max_leaf)
             raise TypeError("max_leaf must be an integer")
         if max_leaf != None and max_leaf <1:
             raise ValueError("You must have at least one leaf node")    
@@ -100,6 +101,7 @@ class Regression:
         self.S_alg = None
         self.G_big = None
         self.g_small = None
+        self.pai = None
         if max_leaf:
             self.max_splits = max_leaf - 1
         else:
@@ -163,8 +165,9 @@ class Regression:
         self.S_alg= np.ones(self.n,dtype=int) * -1
         self.G_big = np.full(self.n, None, dtype=object)
         self.g_small = np.ones(self.n,dtype=float) * -1.0
+        self.pai = np.ones(self.n,dtype=int) * -1 
         if self.max_leaf == None:
-            self.max_leaf = (self.n+ 1)/2  # talvez tenha um +1 ou -1 ai, sei la. Mas eh o maximo de folhas que poderiamos ter. Como eu tenho o minimo de nos por folha...
+            self.max_leaf = (self.n+ 1)//2  # talvez tenha um +1 ou -1 ai, sei la. Mas eh o maximo de folhas que poderiamos ter. Como eu tenho o minimo de nos por folha...
             self.max_splits = self.max_leaf - 1
 
     def splitter(self, X,y,node,defenitive = False):
@@ -277,6 +280,7 @@ class Regression:
                 self.start[left] = self.start[node]
                 self.end[left] = possible_cuts[gratest_purity_gain_overall_index,3]
                 self.node_depth[left] = self.node_depth[node] +1 
+                self.pai[left] = node
 
                 if (self.end[left] - self.start[left]) >= self.min_samples_split and (self.max_depth == None or self.node_depth[left] < self.max_depth) and self.impurity[left] > epsolon:
                     self.aux_purity_gain[left] = 1
@@ -286,6 +290,7 @@ class Regression:
                 self.start[right]= possible_cuts[gratest_purity_gain_overall_index,3] #might need to review that
                 self.end[right] = self.end[node]
                 self.node_depth[right] = self.node_depth[node] +1 
+                self.pai[right] = node
 
                 if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth == None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
                     self.aux_purity_gain[right] = 1
@@ -374,10 +379,12 @@ class Regression:
                         break # everything on the left child. Besides being prohibited, it would cause index error in the next lines.
                     else:
                         m+=1
-                prevision_left = np.mean(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
-                prevision_right = np.mean(y_c_p[self.start[node]+m+1:self.end[node]]) 
+                #prevision_left = np.mean(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
+                #prevision_right = np.mean(y_c_p[self.start[node]+m+1:self.end[node]]) 
                 
                 if m+1 >=  self.min_samples_leaf and len(median)+1 - (m +1) >= self.min_samples_leaf: # checking if the left child and right child both have the minimum amount of samples
+                    prevision_left = np.mean(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
+                    prevision_right = np.mean(y_c_p[self.start[node]+m+1:self.end[node]]) 
                     left_mse = MSE(y_c_p[self.start[node]:self.start[node]+m+1],prevision_left) 
                     right_mse = MSE(y_c_p[self.start[node]+m+1:self.end[node]],prevision_right)
                     current_purity_gain = self.impurity[node] - ((m+1)/ (len(median) +1)* left_mse + ((len(median)+1)-(m+1))/(len(median)+1)*right_mse)
@@ -627,9 +634,10 @@ class RegressionTree(Regression):
         
         """
 
-        alfas_oficial = self.cuts_and_alfas(X,Y)
+        alfas_oficial = self.cuts_and_alfas()
 
-        k_fold = KFold(random_state = 41)
+        number_splits = min(5,Y.shape[0])
+        k_fold = KFold(random_state = 41, n_splits = number_splits)
         k = k_fold.split(X.copy())
 
         list_test_X =[] 
@@ -734,13 +742,30 @@ class RegressionTree(Regression):
         while self.nodes_bellow[0] >1:
             if self.G_big[0][0] > max(alfa_list, key = lambda x:x[0])[0]+epsolon:
                 alfa_list.append(self.G_big[0])
+            copi = self.nodes_bellow[self.G_big[0][1]] 
             self.nodes_bellow[self.G_big[0][1]] = 1 
             self.S_alg[self.G_big[0][1]] = (self.impurity[self.G_big[0][1]])*(self.end[self.G_big[0][1]] - self.start[self.G_big[0][1]])/(self.end[0]) 
             self.G_big[self.G_big[0][1]] = [np.inf,self.G_big[0][1]]
-            _ = find_S(0)# here we could do something a lot better 
-            _ = find_N(0)# if simply traced the track of the fathers 
-            _ = find_g(0)# begause if we had that, only the ones that need
-            _ = find_G(0)# to be changed will be visit. In this way, we are visiting the whole tree all the time
+            pr_node = self.G_big[0][1]
+
+            while pr_node != 0:
+                pr_node= self.pai[pr_node]
+                self.nodes_bellow[pr_node] =  self.nodes_bellow[self.children_left[pr_node]]+self.nodes_bellow[self.children_right[pr_node]]
+                self.S_alg[pr_node] = self.S_alg[self.children_left[pr_node]]+self.S_alg[self.children_right[pr_node]]
+                self.g_small[pr_node] = ((self.impurity[pr_node]*(self.end[pr_node] - self.start[pr_node])/(self.end[0])) - self.S_alg[pr_node])/(self.nodes_bellow[pr_node] - 1)
+                L = self.G_big[self.children_left[pr_node]]
+                R = self.G_big[self.children_right[pr_node]]
+                
+                if R[0] > L[0]:
+                    self.G_big[pr_node]=[L[0],L[1]] 
+                else:
+                    self.G_big[pr_node] = [R[0],R[1]]
+                
+                if self.G_big[pr_node][0] >self.g_small[pr_node]:
+                    self.G_big[pr_node] = [self.g_small[pr_node],pr_node]               
+
+
+         
 
         return alfa_list
 
