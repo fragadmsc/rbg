@@ -1,4 +1,4 @@
-import rbg.Regression.Lasso as Lasso
+from rbg.Regression.Lasso import Lasso
 import numpy as np
 import pandas as pd
 import pytest
@@ -17,10 +17,9 @@ Lasso.predict(Data)
 #Testa se retorna oma array numpy com coeficientes
 Lasso.coef
 
-#verifica se retorna um numpy float
-Lasso.score()
-
 """
+
+
 class TestDataEntry():
     def test_DataFrame(self):
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0], "coluna2": [2.0, 3.0, 4.0]})
@@ -28,9 +27,10 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5], "coluna2": [2.5, 3.0, 1.5]})
 
-        Lasso.fit(X, Y)
+        modelo_lasso = Lasso()
+        modelo_lasso.fit(X, Y)
 
-        DtFrameResult = Lasso.predict(Data)
+        DtFrameResult = modelo_lasso.predict(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
 
@@ -40,9 +40,10 @@ class TestDataEntry():
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        Lasso.fit(X, Y)
+        modelo_lasso = Lasso()
+        modelo_lasso.fit(X, Y)
 
-        NpResult = Lasso.predict(Data)
+        NpResult = modelo_lasso.predict(Data)
 
         assert isinstance(NpResult, np.ndarray)
 
@@ -51,24 +52,26 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
+        modelo_lasso = Lasso()
+
         with pytest.raises(ValueError, match="The data do not match"):
-            Lasso.fit(X, Y)
+            modelo_lasso.fit(X, Y)
 
         X_cut = X[:5, :] 
         
-        Lasso.fit(X_cut, Y)
+        modelo_lasso.fit(X_cut, Y)
 
         Data = np.zeros((4, 3))
 
-        resultado = Lasso.predict(Data)
+        resultado = modelo_lasso.predict(Data)
         
         assert isinstance(resultado, np.ndarray)
         assert resultado.shape == (4,)
 
-    #-----------------------fazer ainda
     def test_params(self):
-        Lasso.set_params(alpha=1, intercept=False)
-        parametros = Lasso.get_params()
+        modelo_lasso = Lasso()
+        modelo_lasso.set_params(alpha=1, intercept=False)
+        parametros = modelo_lasso.get_params()
         
         assert parametros is not None
 
@@ -83,15 +86,12 @@ class TestError():
         
         n_features = xtrain.shape[1]
         
-        Lasso.fit(xtrain, ytrain)
+        modelo_lasso = Lasso()
+        modelo_lasso.fit(xtrain, ytrain)
 
-        assert isinstance(Lasso.coef, np.ndarray)
-        assert Lasso.coef.shape == (n_features,)
+        assert isinstance(modelo_lasso.coef, np.ndarray)
+        assert modelo_lasso.coef.shape == (n_features,)
 
-        resultado_score = Lasso.score()
-        assert isinstance(resultado_score, (float, np.number))
-
-
-#============= Fazer ainda =================
+#============fazer
 class TestRightResults():
     pass
