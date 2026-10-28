@@ -140,4 +140,45 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     return np.array(scores)
         
         
-# implementar busca de hiperparametros
+class GridSearch:
+    def __init__(self, model, param_grid, cv, metrics):
+        self.model = model
+        self.param_grid = param_grid # dicionario 
+        # nome do parametro : [valor1, valor2, ...]
+        self.cv = cv
+        self.metrics = metrics
+        
+        self.best_params_ = None
+        self.best_model_ = None
+        self.best_score_ = None
+        
+    def _gen_combs(self):
+        combinations = [{}]
+        for key, values in self.param_grid.items():
+            new_combs = []
+            for comb in combinations:
+                for val in values:
+                    new_comb = comb.copy()
+                    new_comb[key]=val
+                    new_combs.append(new_comb)
+            combinations = new_combs
+        return combinations
+    
+    def fit(self, X, y):
+        X = np.asarray(X)
+        y =np.asarray(y)
+        best_score = float('inf') # assumindo q queremos minimizar o erro
+        for params in self._gen_combs():
+            model = self.model(**params) 
+            scores = cv_score(model, X, y, self.cv, self.metrics)
+            total_score = np.sum(scores)
+            if total_score < best_score:
+                best_score = total_score
+                self.best_params_ = params
+                self.best_model_ = model
+    
+        self.best_model_.fit(X, y)
+        self.best_score_ = best_score
+        
+    def predict(self, X):
+        return self.best_model_.predict(X)
