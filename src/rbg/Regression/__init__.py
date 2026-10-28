@@ -1,9 +1,9 @@
 """Regression models, with one module per estimator.
 
 Import models from their modules, as in rbg.Classification:
-    from rbg.Regression.LinearRegression import LinearRegression
-    from rbg.Regression.RidgeRegression import RidgeRegression
-    from rbg.Regression.LassoRegression import LassoRegression
-    from rbg.Regression.PolynomialRegression import PolynomialRegression
+    from rbg.Regression.Linear import Linear
+    from rbg.Regression.Ridge import Ridge
+    from rbg.Regression.Lasso import Lasso
+    from rbg.Regression.Polynomial import Polynomial
     from rbg.Regression.GLM import GLM
 """

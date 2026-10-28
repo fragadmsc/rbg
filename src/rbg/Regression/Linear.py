@@ -3,7 +3,7 @@ import numpy as np
 from rbg.Regression.linearmodel import LinearModel
 
 
-class LinearRegression(LinearModel):
+class Linear(LinearModel):
     """Ordinary least-squares regression with optional classical inference.
 
     Inference assumes uncorrelated errors with constant variance.

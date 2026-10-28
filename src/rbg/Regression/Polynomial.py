@@ -1,10 +1,10 @@
 import numpy as np
 
-from rbg.Regression.LinearRegression import LinearRegression
-from rbg.Regression.RidgeRegression import RidgeRegression
+from rbg.Regression.Linear import Linear
+from rbg.Regression.Ridge import Ridge
 
 
-class PolynomialRegression():
+class Polynomial():
     """Combine per-feature polynomial powers with a selected regression model.
 
     Expand each feature separately, without cross-feature interactions or a
@@ -34,14 +34,14 @@ class PolynomialRegression():
             raise ValueError("degrees must be a nonempty sequence of positive integers.")
 
         models = {
-            "linear": LinearRegression,
-            "ridge": RidgeRegression,
+            "linear": Linear,
+            "ridge": Ridge,
         }
 
         if method == "lasso":
-            from rbg.Regression.LassoRegression import LassoRegression
+            from rbg.Regression.Lasso import Lasso
 
-            models["lasso"] = LassoRegression
+            models["lasso"] = Lasso
 
         if method not in models:
             raise ValueError("method must be 'linear', 'ridge', or 'lasso'.")
