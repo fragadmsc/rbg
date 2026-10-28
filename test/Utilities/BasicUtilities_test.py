@@ -1,6 +1,6 @@
 ﻿import numpy as np
 import pytest
-
+from rbg.Utilities import Matrix_design
 from rbg.ModelSelection.crossvalidation import Resample
 
 
@@ -50,3 +50,25 @@ class TestBootstrap:
         assert len(resultado) == qte
         for amostra in resultado:
             assert len(amostra) == size
+
+
+class TestMatrixdesign:
+    def test_dimensoes_e_parametros(self):
+            X = np.array([
+                [2.0, 3.0], 
+                [4.0, 5.0],
+                [6.0, 7.0]
+            ])
+            n_amostras = X.shape[0]
+            n_features = X.shape[1]
+            
+            resultado_base = Matrix_design(X, degree=1, intercept=False)
+            assert isinstance(resultado_base, np.ndarray)
+            assert resultado_base.shape == (n_amostras, n_features)
+            
+            resultado_intercept = Matrix_design(X, degree=1, intercept=True)
+            assert resultado_intercept.shape == (n_amostras, n_features + 1)
+            
+            resultado_poly = Matrix_design(X, degree=2, intercept=True)
+            assert resultado_poly.shape[0] == n_amostras
+            assert resultado_poly.shape[1] > n_features + 1
