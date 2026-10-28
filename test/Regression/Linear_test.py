@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 '''
-#faça apenas um metodo para testa, mas de pass
 Linear.set_params(intecept = False)
 Linear.get_params()
 
@@ -16,14 +15,11 @@ Linear.predict(Data)
 
 #Testa se retorna oma array numpy com coeficientes
 Linear.coef
-
-
 '''
 
 
 class TestDataEntry():
     def test_DataFrame(self):
-        # Utilizando valores contínuos para o Y já que se trata de Regressão
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0], "coluna2": [2.0, 3.0, 4.0]})
         Y = pd.Series([10.5, 20.5, 30.5]) 
 
