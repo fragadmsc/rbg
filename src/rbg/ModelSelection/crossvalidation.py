@@ -86,73 +86,61 @@ def Resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state 
         resamples.append((train_idxs)) # acho q o bootstrap devia retornar os testes tbm, se ele for usado como um metodo de cv
     return resamples # isso gasta mais memoria do que o yield, mas os testes pedem pra retornar uma lista ou array
 
-def KFold(data_size, k : int = 5, shuffle : bool = False, random_state = None):
+class KFold:
     """K-Fold Cross Validation.
     
     Separates the dataset in k folds and uses k-1 folds as train and 1 fold as test.
-
-    Args:
-        data_size: the size of the dataset. It can also be an array.
-        k (int, optional): the number of folds. Defaults to 5.
-        shuffle (bool, optional): if True, the data will be shuffled. Defaults to False.
-        random_state (int, optional): a seed used for shuffling. Defaults to None.
-
-    Raises:
-        ValueError: if 'data_size' is not an integer or a dataset.
-        ValueError: if 'n_splits' is not an integer larger than 1 and less than the size of the dataset.
-
-    Yields:
-        'data_size' tuples Tuple(np.ndarray, np.ndarray): test_idxs, train_idxs 
     """
-    if type(data_size) == np.ndarray or type(data_size) == list:
-        n_samples = len(data_size)
-    elif type(data_size) == int:
-        n_samples = data_size
-    else:
-        raise ValueError("'data_size' must be an integer or a dataset.")
-    if type(k) is not int or k <= 1 or k > n_samples:
-        raise ValueError("'n_splits' must be an integer larger than 1 and less than the size of the dataset.")
-    idxs = np.arange(n_samples)
-    if shuffle:
-        rng = np.random.default_rng(random_state)
-        idxs = rng.permutation(idxs)
-    idx_sets = np.array_split(idxs, k)
-    for i in range(k):
-        test_idxs = idx_sets[i]
-        train_idxs = np.setdiff1d(idxs, test_idxs)
-        yield test_idxs, train_idxs # eu acho que faz mais sentido sair primeiro os treinos e depois os testes, 
-                                    # mas so tá passando nos testes desse jeito
+    def __init__(self, k : int = 5, shuffle : bool = False, random_state = None):
+        self.k = k
+        self.shuffle = shuffle
+        self.random_state = random_state
+        
+    def split(self, data_size):
+        if type(data_size) == np.ndarray or type(data_size) == list:
+            n_samples = len(data_size)
+        elif type(data_size) == int:
+            n_samples = data_size
+        else:
+            raise ValueError("'data_size' must be an integer or a dataset.")
+        if type(self.k) is not int or self.k <= 1 or self.k > n_samples:
+            raise ValueError("'n_splits' must be an integer larger than 1 and less than the size of the dataset.")
+        idxs = np.arange(n_samples)
+        if self.shuffle:
+            rng = np.random.default_rng(self.random_state)
+            idxs = rng.permutation(idxs)
+        idx_sets = np.array_split(idxs, self.k)
+        for i in range(self.k):
+            test_idxs = idx_sets[i]
+            train_idxs = np.setdiff1d(idxs, test_idxs)
+            yield test_idxs, train_idxs 
 
-def LOOCV(data_size):
+class LOOCV:
     """Leave-One-Out Cross Validation
     
     Take one sample and uses it as the testing set. Is a great option if the dataset is small enough.
-
-    Args:
-        data_size: the size of the dataset. It can also be an array.
-
-    Raises:
-        ValueError: if 'data_size' is not an integer or a dataset.
-
-    Yields:
-        'data_size' tuples Tuple(test_idxs, train_idxs): 
     """
-    if type(data_size) == np.ndarray or type(data_size) == list:
-        x = len(data_size)
-    elif type(data_size) == int:
-        x = data_size
-    else:
-        raise ValueError("'data_size' must be an integer or a dataset.")
-    return KFold(data_size = x, k = x)
+    def __init__(self):
+        pass
+    
+    def split(self, data_size):
+        if type(data_size) == np.ndarray or type(data_size) == list:
+            x = len(data_size)
+        elif type(data_size) == int:
+            x = data_size
+        else:
+            raise ValueError("'data_size' must be an integer or a dataset.")
+        return KFold(k=x).split(data_size = x)
 
 def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     """Returns a list of scores given a machine learning model, a cross-validation method and a metric.
     
     Typical usage example:
-        list_of_scores = cv_score(ex_model, X, y, KFold(10), "accuracy")
+        list_of_scores = cv_score(ex_model, X, y, KFold(X, 10), "MSE")
+        list_of_scores = cv_score(ex_model2, X, y, LOOCV, "MSE")
 
     Args:
-        model: a machine learning model with method .fit and .predict
+        model: a machine learning model with methods .fit and .predict
         X (np.ndarray): input of the dataset.
         y (np.ndarray): output of the dataset.
         cv_method: a cross-validation method, KFold or LOOCV.
@@ -163,7 +151,7 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     """
     # conferir depois se o metrics(y_pred, y_test) ta certo
     scores = []
-    for idxs_train, idxs_test in cv_method.split(X):
+    for idxs_train, idxs_test in cv_method.split(X): 
         X_train = X[idxs_train]
         X_test = X[idxs_test]
         y_train = y[idxs_train]
@@ -178,10 +166,9 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
         
         
 class GridSearch:
-    def __init__(self, model, param_grid, cv, metrics):
+    def __init__(self, model, param_grid, metrics, cv = KFold):
         self.model = model
-        self.param_grid = param_grid # dicionario 
-        # nome do parametro : [valor1, valor2, ...]
+        self.param_grid = param_grid 
         self.cv = cv
         self.metrics = metrics
         
@@ -206,14 +193,53 @@ class GridSearch:
         y =np.asarray(y)
         best_score = float('inf') # assumindo q queremos minimizar o erro
         for params in self._gen_combs():
-            model = self.model(**params) 
-            scores = cv_score(model, X, y, self.cv, self.metrics)
-            total_score = np.sum(scores)
+            cur_model = self.model(**params) 
+            scores = cv_score(cur_model, X, y, self.cv, self.metrics)
+            total_score = np.mean(scores)
             if total_score < best_score:
                 best_score = total_score
                 self.best_params_ = params
-                self.best_model_ = model
+        self.best_model_ = self.model(**self.best_params_)
+        self.best_model_.fit(X, y)
+        self.best_score_ = best_score
+        
+    def predict(self, X):
+        return self.best_model_.predict(X)
     
+class RandomizedSearch:
+    def __init__(self, model, param_dist, metrics, n_iter : int = 10, cv = None, random_state = None): 
+        self.model = model
+        self.param_dist = param_dist
+        self.metrics = metrics
+        self.n_iter = n_iter
+        self.cv = cv
+        self.random_state = random_state
+        
+        self.best_params_ = None
+        self.best_model_ = None
+        self.best_score_ = None
+               
+    def fit(self, X, y):
+        X = np.asarray(X)
+        y = np.asarray(y)
+        rng = np.random.default_rng(self.random_state)
+        best_score = float('inf')
+        for _ in range(self.n_iter):
+            params ={}
+            for key, value in self.param_dist.items():
+                if callable(value):
+                    params[key] = value(rng)
+                elif isinstance(value, list):
+                    params[key] = rng.choice(value)
+                else:
+                    raise TypeError(f"The parameter '{key}' must be a list or a function (callable).")
+            model = self.model(**params)
+            scores = cv_score(model, X, y, self.cv, self.metrics)
+            total = np.mean(scores)
+            if total < best_score:
+                best_score = total
+                self.best_params_ = params
+                self.best_model_ = model(**params)        
         self.best_model_.fit(X, y)
         self.best_score_ = best_score
         
