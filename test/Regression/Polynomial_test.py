@@ -1,6 +1,7 @@
 """Check exact polynomial expansions and dimensional contracts."""
 import unittest
 import numpy as np
+import pytest
 from rbg.Regression.Polynomial import Polynomial
 
 ''' Guia dos testes basicos
@@ -25,7 +26,7 @@ class TestDataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        modelo_poly = Polynomial()
+        modelo_poly = Polynomial([1, 1])
         modelo_poly.fit(X, Y)
 
         NpResult = modelo_poly.predict(Data)
@@ -37,9 +38,9 @@ class TestError:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_poly = Polynomial()
+        modelo_poly = Polynomial([1, 1, 1])
 
-        with pytest.raises(ValueError, match="The data do not match"):
+        with pytest.raises(ValueError, match="same number of observations"):
             modelo_poly.fit(X, Y)
 
         X_cut = X[:5, :] 
@@ -54,8 +55,8 @@ class TestError:
         assert resultado.shape == (4,)
 
     def test_params(self):
-        modelo_poly = Polynomial()
-        modelo_poly.set_params(intecept=False)
+        modelo_poly = Polynomial([1, 1])
+        modelo_poly.set_params(fit_intercept=False)
         parametros = modelo_poly.get_params()
         
         assert parametros is not None
@@ -69,7 +70,7 @@ class TestError:
         ])
         ytrain = np.array([10.0, 12.0, 20.0, 22.0])
         
-        modelo_poly = Polynomial()
+        modelo_poly = Polynomial([1, 1])
         modelo_poly.fit(xtrain, ytrain)
 
         # testa se retorna uma array numpy com coeficientes

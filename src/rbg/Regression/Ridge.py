@@ -10,8 +10,21 @@ class Ridge(LinearModel):
     biased by shrinkage and does not establish ordinary t tests or intervals.
     """
 
+    _parameter_attributes = {**LinearModel._parameter_attributes, "alpha": "_alpha"}
 
-    def fit(self, X: np.ndarray, y: np.ndarray, alpha: float=1.0) -> np.ndarray:
+    def __init__(self, fit_intercept=True, inference=False, alpha=1.0):
+        super().__init__(fit_intercept=fit_intercept, inference=inference)
+        self.set_params(alpha=alpha)
+
+    def set_params(self, **params):
+        if "alpha" in params:
+            alpha = params["alpha"]
+            if isinstance(alpha, (bool, np.bool_)) or not isinstance(alpha, (int, float, np.integer, np.floating)) or not np.isfinite(alpha) or alpha < 0:
+                raise ValueError("Alpha must be finite and nonnegative.")
+        return super().set_params(**params)
+
+
+    def fit(self, X: np.ndarray, y: np.ndarray, alpha: float | None = None) -> np.ndarray:
         """Estimate coefficients and calculate inference statistics if requested.
 
         Each call replaces the previous fit and cached inference results.
@@ -30,10 +43,10 @@ class Ridge(LinearModel):
             ValueError: If alpha or training inputs are invalid, or requested
                 inference fails its rank or residual degrees-of-freedom checks.
         """
-        self._alpha = alpha
+        self._alpha = self._alpha if alpha is None else alpha
         if not isinstance(self._alpha, (int,float,np.integer,np.floating)):
             raise ValueError("Alpha must be a numeric scalar.")
-        if not np.isfinite(self._alpha) or alpha < 0:
+        if not np.isfinite(self._alpha) or self._alpha < 0:
             raise ValueError("Alpha must be finite and nonnegative.")
         self._prepare_training_data(X, y)
         if self._fit_done == False:

@@ -6,6 +6,8 @@ import numpy as np
 class BaseEstimator(ABC):
     """Abstract base class with shared data storage and residual calculations."""
 
+    _parameter_attributes = {"fit_intercept": "_intercept", "inference": "_inference"}
+
     def __init__(self, fit_intercept: bool = True, inference: bool = False) -> None:
         """Configure intercept fitting and inference.
 
@@ -18,6 +20,37 @@ class BaseEstimator(ABC):
         self._inference_done = False
         self._residuals = None
         self._fit_done = False
+
+    def get_params(self) -> dict:
+        """Return the model configuration, excluding learned coefficients."""
+        return {name: getattr(self, attribute) for name, attribute in self._parameter_attributes.items()}
+
+    def set_params(self, **params):
+        """Update configuration and invalidate a previous fit.
+
+        Raises:
+            ValueError: If a parameter name or value is invalid.
+        """
+        unknown = set(params) - self._parameter_attributes.keys()
+        if unknown:
+            raise ValueError(f"Unknown parameter(s): {', '.join(sorted(unknown))}.")
+        for name in ("fit_intercept", "inference"):
+            if name in params and not isinstance(params[name], bool):
+                raise ValueError(f"{name} must be a boolean.")
+        for name, value in params.items():
+            setattr(self, self._parameter_attributes[name], value)
+        if params:
+            self._fit_done = False
+            self._inference_done = False
+            self._residuals = None
+        return self
+
+    @property
+    def coef(self) -> np.ndarray:
+        """Return fitted coefficients, including the intercept when enabled."""
+        if not self._fit_done:
+            raise RuntimeError("The model has not been fitted yet.")
+        return self._beta.copy()
 
     def _prepare_training_data(self, X: np.ndarray, y: np.ndarray) -> None:
         """Validate and store training data, resetting previous fit results.

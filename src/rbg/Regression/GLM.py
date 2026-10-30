@@ -13,6 +13,14 @@ class GLM(BaseEstimator):
     Multivariate coefficients are ordered by response component when flattened:
     beta.ravel(order="F"). Fisher information must use the same order.
     """
+
+    _parameter_attributes = {
+        **BaseEstimator._parameter_attributes,
+        "family": "_family",
+        "tol": "_tol",
+        "max_iter": "_max_iter",
+    }
+
     def __init__(
         self, family, fit_intercept=True, inference=False, tol=1e-6, max_iter=100
     ):
@@ -31,6 +39,17 @@ class GLM(BaseEstimator):
         self._family = family
         self._tol = tol
         self._max_iter = max_iter
+
+    def set_params(self, **params):
+        if "tol" in params:
+            tol = params["tol"]
+            if isinstance(tol, (bool, np.bool_)) or not isinstance(tol, (int, float, np.integer, np.floating)) or not np.isfinite(tol) or tol <= 0:
+                raise ValueError("tol must be finite and positive.")
+        if "max_iter" in params:
+            iterations = params["max_iter"]
+            if isinstance(iterations, (bool, np.bool_)) or not isinstance(iterations, (int, np.integer)) or iterations <= 0:
+                raise ValueError("max_iter must be a positive integer.")
+        return super().set_params(**params)
 
     def _prepare_training_data(self, X, y):
         """Prepare scalar or vector responses without changing other estimators."""
