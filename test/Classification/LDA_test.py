@@ -99,7 +99,7 @@ class TestError():
         Y_treino = np.array([0, 0, 1, 1, 0, 1])
 
         n_features = X_treino.shape[1]
-        
+
         modelo_lda = LDA([0,1])
         modelo_lda.fit(X_treino, Y_treino)
 
