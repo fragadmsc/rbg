@@ -10,7 +10,7 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
 
-        modelo_knn = KNN(classes=[1, 2])
+        modelo_knn = KNN([1, 2])
         modelo_knn.fit(X, Y)
 
         DtFrameResult = modelo_knn.predict(Data)
@@ -20,12 +20,12 @@ class TestDataEntry():
         assert np.isin(DtFrameResult, [1, 2]).all()
 
     def test_Numpy(self):
-        X = np.array([[1.0], [2.], [3.0]])
+        X = np.array([[1.0], [2.0], [3.0]])
         Y = np.array([1, 2, 1])
 
         Data = np.array([[1.5], [2.0], [0.5]])
 
-        modelo_knn = KNN(classes=[1, 2])
+        modelo_knn = KNN([1, 2])
         modelo_knn.fit(X, Y)
 
         NpResult = modelo_knn.predict(Data)
@@ -54,7 +54,7 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_knn = KNN(classes=[0])
+        modelo_knn = KNN([0])
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_knn.fit(X, Y)
@@ -70,7 +70,7 @@ class TestError():
         assert resultado.shape == (4,)
 
     def test_params(self):
-        modelo_knn = KNN(classes=[0])
+        modelo_knn = KNN([0])
         modelo_knn.set_params(k = 5)
 
         di = modelo_knn.get_params()
@@ -113,7 +113,7 @@ class TestRightResults():
 
         Data = np.array([[1.5],[8.5],[1.0],[9.0]])
 
-        modelo_knn = KNN([0,1],k=1)
+        modelo_knn = KNN([0, 1], k=1)
         modelo_knn.fit(X, y)
 
         resultado = modelo_knn.predict(Data)
@@ -127,7 +127,7 @@ class TestRightResults():
 
         Data = np.array([[1.5, 1.5],[8.5, 8.5]])
 
-        modelo_knn = KNN([0,1],k=1)
+        modelo_knn = KNN([0, 1], k=1)
         modelo_knn.fit(X, y)
 
         resultado = modelo_knn.predict(Data)
@@ -141,7 +141,7 @@ class TestRightResults():
 
         Data = np.array([[5.0], [6.0]])
 
-        modelo_knn = KNN([0,1],k=1)
+        modelo_knn = KNN([0, 1], k=1)
         modelo_knn.fit(X, y)
 
         resultado = modelo_knn.predict(Data)
@@ -155,7 +155,7 @@ class TestRightResults():
 
         Data = np.array([[2.0]])
 
-        modelo_knn = KNN([0,1],k=2)
+        modelo_knn = KNN([0, 1], k=2)
         modelo_knn.fit(X, y)
 
         resultado = modelo_knn.predict(Data)
