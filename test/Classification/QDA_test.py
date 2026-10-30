@@ -1,114 +1,53 @@
-from rbg.Classification.QDA import QDA as QDA
 import numpy as np
 import pandas as pd
 import pytest
 
-class TestDataEntry():
-    def test_DataFrame(self):
-        X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
-        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
-
-        Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5]})
-
-        modelo_qda = QDA()
-        modelo_qda.fit(X, Y)
-
-        DtFrameResult = modelo_qda.predict(Data)
-        
-        assert isinstance(DtFrameResult, np.ndarray)
-
-    def test_Numpy(self):
-        X = np.array([1.0, 2.0, 3.0])
-        Y = pd.DataFrame({"coluna2": ['contaminated', 'drinkable', 'contaminated']})
-
-        Data = np.array([1.5, 2.0, 0.5])
-
-        modelo_qda = QDA()
-        modelo_qda.fit(X, Y)
-
-        NpResult = modelo_qda.predict(Data)
-
-        assert isinstance(NpResult, np.ndarray)
+from rbg.Classification.QDA import QDA
 
 
-class TestError():
-    def test_MatchingDim(self):
-        X = np.zeros((10, 3)) 
-        Y = np.zeros(5)       
-        
-        modelo_qda = QDA()
-
-        with pytest.raises(ValueError, match="The data do not match"):
-            modelo_qda.fit(X, Y)
-
-        X_cut = X[:5, :] 
-        
-        modelo_qda.fit(X_cut, Y)
-
-        Data = np.zeros((4, 3))
-
-        resultado = modelo_qda.predict(Data)
-        
-        assert resultado.shape == (4,)
+@pytest.fixture
+def samples():
+    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1], [3, 3], [3, 4], [4, 3], [4, 4]], dtype=float)
+    y = np.array(["contaminated"] * 4 + ["drinkable"] * 4)
+    return X, y
 
 
-    def test_params(self):
-        pass
+def test_DataFrame(samples):
+    X, y = samples
+    model = QDA(labels=np.unique(y))
+    model.fit(pd.DataFrame(X), pd.Series(y))
+    assert isinstance(model.predict(pd.DataFrame(X[:3])), np.ndarray)
 
-    def test_attributes(self):
 
-        X_train = np.array([
-            [1.5, 2.0], 
-            [1.6, 1.9], 
-            [8.5, 9.0], 
-            [8.6, 9.1]
-        ])
-        Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
-        
-        modelo_qda = QDA()
-        modelo_qda.fit(X_train, Y_train)
+def test_Numpy(samples):
+    X, y = samples
+    model = QDA(labels=np.unique(y))
+    model.fit(X, y)
+    assert isinstance(model.predict(X[:3]), np.ndarray)
 
-        
-        assert isinstance(modelo_qda.labels, np.ndarray)
-        assert np.array_equal(np.unique(modelo_qda.labels), np.unique(Y_train))
-    
 
-        
-    def test_method(self):
-        X_train = np.array([
-            [1.5, 2.0], 
-            [1.6, 1.9], 
-            [8.5, 9.0], 
-            [8.6, 9.1]
-        ])
-        Y_train = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable'])
-        
-        modelo_qda = QDA()
-        modelo_qda.fit(X_train, Y_train)
+def test_MatchingDim(samples):
+    X, y = samples
+    model = QDA(labels=np.unique(y))
+    with pytest.raises(ValueError, match="The data do not match"):
+        model.fit(X, y[:-1])
+    model.fit(X, y)
+    assert model.predict(X[:4]).shape == (4,)
 
-        label = modelo_qda.labels[0]
 
-        n_features = X_train.shape[1]  # Corrigido de size[0] para shape[1] para refletir o número de features
+def test_attributes(samples):
+    X, y = samples
+    model = QDA(labels=np.unique(y))
+    model.fit(X, y)
+    np.testing.assert_array_equal(model.labels, np.unique(y))
 
-        cov_matrix = modelo_qda.cov_matrix(k=label)
-        assert isinstance(cov_matrix, np.ndarray)
-        assert cov_matrix.shape == (n_features, n_features)
 
-        mean_array = modelo_qda.mean_array(k=label)
-        assert isinstance(mean_array, np.ndarray)
-        assert mean_array.shape == (n_features,)
-
-        prior = modelo_qda.prior(k=label)
-        assert isinstance(prior, (float, np.number))
-
-        k_function = modelo_qda.k_functions(k=label)
-        assert callable(k_function)
-
-        amostra_teste = X_train[0]
-        resultado_func = k_function(amostra_teste)
-        
-        assert isinstance(resultado_func, (float, np.number))
-
-#============= Fazer ainda =================
-class TestRightResults():
-    pass
+def test_method(samples):
+    X, y = samples
+    model = QDA(labels=np.unique(y))
+    model.fit(X, y)
+    label = model.labels[0]
+    assert model.cov_matrix(label).shape == (2, 2)
+    assert model.mean_array(label).shape == (2,)
+    assert isinstance(model.prior(label), (float, np.number))
+    assert isinstance(model.k_functions(label)(X[0]), (float, np.number))

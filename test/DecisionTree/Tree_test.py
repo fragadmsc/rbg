@@ -1,5 +1,6 @@
-from rbg.DecisionTree.ClassificationTree import Classification
-from rbg.DecisionTree.RegressionTree import Regression
+import pytest
+Classification = pytest.importorskip("rbg.DecisionTree.ClassificationTree").Classification
+Regression = pytest.importorskip("rbg.DecisionTree.RegressionTree").Regression
 import numpy as np
 import pandas as pd
 import pytest

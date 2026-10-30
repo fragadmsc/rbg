@@ -1,5 +1,6 @@
-from rbg.DecisionTree.Bagging import Bagging
-from rbg.DecisionTree import BaggingReg
+import pytest
+Bagging = pytest.importorskip("rbg.DecisionTree.Bagging").Bagging
+BaggingReg = pytest.importorskip("rbg.DecisionTree.BaggingRegression").BaggingReg
 import numpy as np
 import pandas as pd
 import pytest

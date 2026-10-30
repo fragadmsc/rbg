@@ -4,11 +4,11 @@ from rbg.Classification.classifier import Classifier
 class KNN(Classifier):
     """K-nearest neighbors classifier for categorical labels."""
 
-    def __init__(self, classes, k=3, reference_class = None):
+    def __init__(self, labels, k=3, reference_class = None):
         """Initialize the classifier with class labels and the number of neighbors.
 
         Args:
-            classes: Unique class labels supported by the classifier.
+            labels: Unique class labels supported by the classifier.
             k: Number of nearest neighbors used to classify each observation.
                 Defaults to 3.
             reference_class: Reference label used to initialize the base
@@ -18,7 +18,7 @@ class KNN(Classifier):
             ValueError: If the class labels or reference label are invalid,
                 as defined by the base classifier.
         """
-        Classifier.__init__(self, classes, reference_class)
+        Classifier.__init__(self, labels, reference_class)
         self.set_params(k)
 
     def set_params(self, k):
@@ -57,7 +57,7 @@ class KNN(Classifier):
             X: Numerical training feature matrix of shape
                 (n_samples, n_features). All values must be finite.
             y: One-dimensional array of class labels of shape (n_samples,).
-                All labels must belong to the classes defined at initialization.
+                All labels must belong to the set declared at initialization.
 
         Raises:
             ValueError: If X or y has an invalid dimension, X contains
@@ -79,7 +79,7 @@ class KNN(Classifier):
                 raise ValueError("X must have only finite values.")
         if y.ndim != 1:
             raise ValueError("y must be one-dimensional.")
-        if not np.isin(y, self._classes).all():
+        if not np.isin(y, self._labels).all():
             raise ValueError("y contains unknown class labels.")
         if X.shape[0] != y.shape[0]:
             raise ValueError("The data do not match.")
@@ -169,8 +169,8 @@ class KNN(Classifier):
                 Class label with the highest frequency. Ties are resolved by
                 selecting the first class returned by np.unique.
             """
-            classes, counts =  np.unique(prediction, return_counts=True)
-            return classes[np.argmax(counts)]
+            labels, counts = np.unique(prediction, return_counts=True)
+            return labels[np.argmax(counts)]
 
-        predicted_classes = np.array([final_class(neighbors) for neighbors in prediction])
-        return predicted_classes
+        predicted_labels = np.array([final_class(neighbors) for neighbors in prediction])
+        return predicted_labels

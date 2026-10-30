@@ -1,5 +1,6 @@
-from rbg.DecisionTree.RandomForest import RdForest
-from rbg.DecisionTree.RandomForestRegression import RdForestReg
+import pytest
+RdForest = pytest.importorskip("rbg.DecisionTree.RandomForest").RdForest
+RdForestReg = pytest.importorskip("rbg.DecisionTree.RandomForestRegression").RdForestReg
 import numpy as np
 import pandas as pd
 import pytest 

@@ -1,4 +1,4 @@
-import rbg.Unsupervised.PCA as PCA
+from rbg.Unsupervised.PCA import PCA
 import numpy as np
 import pandas as pd
 import pytest
@@ -10,10 +10,10 @@ class TestDataEntry():
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5], "coluna2": [2.5, 3.0, 1.5]})
 
-        PCA.set_params(n_components=1)
-        PCA.fit(X)
+        model = PCA(n_components=1)
+        model.fit(X)
 
-        DtFrameResult = PCA.transform(Data)
+        DtFrameResult = model.transform(Data)
 
         assert isinstance(DtFrameResult, np.ndarray)
 
@@ -22,10 +22,10 @@ class TestDataEntry():
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        PCA.set_params(n_components=1)
-        PCA.fit(X)
+        model = PCA(n_components=1)
+        model.fit(X)
 
-        NpResult = PCA.transform(Data)
+        NpResult = model.transform(Data)
 
         assert isinstance(NpResult, np.ndarray)
 
@@ -40,13 +40,13 @@ class TestError():
             [4.2, 5.3, 2.2]
         ])
 
-        PCA.set_params(n_components=2)
-        PCA.fit(X)
+        model = PCA(n_components=2)
+        model.fit(X)
 
-        with pytest.raises(ValueError, match="The data do not match"):
-            PCA.transform(np.zeros((4, 2)))
+        with pytest.raises(ValueError, match="expected 3 features"):
+            model.transform(np.zeros((4, 2)))
 
-        resultado = PCA.transform(np.zeros((4, 3)))
+        resultado = model.transform(np.zeros((4, 3)))
 
         assert resultado.shape == (4, 2)
 
@@ -59,19 +59,15 @@ class TestError():
             [4.2, 5.3, 2.2]
         ])
 
-        PCA.set_params(n_components=5)
+        model = PCA(n_components=5)
 
         with pytest.raises(ValueError):
-            PCA.fit(X)
+            model.fit(X)
 
     def test_params(self):
-        PCA.set_params(n_components=2)
+        model = PCA(n_components=2)
 
-        di = PCA.get_params()
-
-        assert type(di) == dict
-
-        assert di['n_components'] == 2
+        assert model.n_components == 2
 
     def test_attributes(self):
         X_train = np.array([
@@ -86,25 +82,25 @@ class TestError():
         n_features = X_train.shape[1]
         k = 2
 
-        PCA.set_params(n_components=k)
-        PCA.fit(X_train)
+        model = PCA(n_components=k)
+        model.fit(X_train)
 
-        assert isinstance(PCA.components, np.ndarray)
-        assert PCA.components.shape == (k, n_features)
+        assert isinstance(model.components, np.ndarray)
+        assert model.components.shape == (k, n_features)
 
-        assert isinstance(PCA.explained_variance, np.ndarray)
-        assert PCA.explained_variance.shape == (k,)
+        assert isinstance(model.explained_variance, np.ndarray)
+        assert model.explained_variance.shape == (k,)
 
-        assert isinstance(PCA.explained_variance_ratio, np.ndarray)
-        assert PCA.explained_variance_ratio.shape == (k,)
+        assert isinstance(model.explained_variance_ratio, np.ndarray)
+        assert model.explained_variance_ratio.shape == (k,)
 
-        assert isinstance(PCA.mean, np.ndarray)
-        assert PCA.mean.shape == (n_features,)
+        assert isinstance(model.mean, np.ndarray)
+        assert model.mean.shape == (n_features,)
 
-        projetado = PCA.transform(X_train)
+        projetado = model.transform(X_train)
         assert projetado.shape == (n_samples, k)
 
-        reconstruido = PCA.inverse_transform(projetado)
+        reconstruido = model.inverse_transform(projetado)
         assert isinstance(reconstruido, np.ndarray)
         assert reconstruido.shape == (n_samples, n_features)
 
@@ -122,11 +118,11 @@ class TestRightResults():
     ])
 
     def test_fit(self):
-        PCA.set_params(n_components=2)
-        PCA.fit(self.X)
+        model = PCA(n_components=2)
+        model.fit(self.X)
 
         np.testing.assert_allclose(
-            PCA.mean,
+            model.mean,
             np.array([1.9375, 2.075, 0.9]),
             atol=1e-9,
             err_msg="The mean do not match"
@@ -138,40 +134,40 @@ class TestRightResults():
         ])
 
         np.testing.assert_allclose(
-            PCA.components,
+            model.components,
             ExpectedComponents,
             atol=1e-9,
             err_msg="The components do not match"
         )
 
         np.testing.assert_allclose(
-            PCA.explained_variance,
+            model.explained_variance,
             np.array([1.5116746234066816, 0.06373935157251642]),
             atol=1e-9,
             err_msg="The explained variance do not match"
         )
 
     def test_explained_variance_ratio(self):
-        PCA.set_params(n_components=3)
-        PCA.fit(self.X)
+        model = PCA(n_components=3)
+        model.fit(self.X)
 
         np.testing.assert_allclose(
-            PCA.explained_variance_ratio,
+            model.explained_variance_ratio,
             np.array([0.957297058812328, 0.04036417152618929, 0.00233876966148274]),
             atol=1e-9,
             err_msg="The explained variance ratio do not match"
         )
 
         np.testing.assert_allclose(
-            PCA.explained_variance_ratio.sum(),
+            model.explained_variance_ratio.sum(),
             1.0,
             atol=1e-9,
             err_msg="The explained variance ratio do not sum to 1"
         )
 
     def test_transform(self):
-        PCA.set_params(n_components=2)
-        PCA.fit(self.X)
+        model = PCA(n_components=2)
+        model.fit(self.X)
 
         ExpectedTrain = np.array([
             [0.6883124837993695, -0.19345585749214955],
@@ -185,7 +181,7 @@ class TestRightResults():
         ])
 
         np.testing.assert_allclose(
-            PCA.transform(self.X),
+            model.transform(self.X),
             ExpectedTrain,
             atol=1e-9,
             err_msg="The transform do not match"
@@ -198,15 +194,15 @@ class TestRightResults():
         ])
 
         np.testing.assert_allclose(
-            PCA.transform(Data),
+            model.transform(Data),
             ExpectedData,
             atol=1e-9,
             err_msg="The transform do not match"
         )
 
     def test_inverse_transform(self):
-        PCA.set_params(n_components=2)
-        PCA.fit(self.X)
+        model = PCA(n_components=2)
+        model.fit(self.X)
 
         ExpectedReconstruction = np.array([
             [2.5123690855541057, 2.4000852211024166, 1.1739422888987017],
@@ -220,17 +216,17 @@ class TestRightResults():
         ])
 
         np.testing.assert_allclose(
-            PCA.inverse_transform(PCA.transform(self.X)),
+            model.inverse_transform(model.transform(self.X)),
             ExpectedReconstruction,
             atol=1e-9,
             err_msg="The inverse transform do not match"
         )
 
-        PCA.set_params(n_components=3)
-        PCA.fit(self.X)
+        model = PCA(n_components=3)
+        model.fit(self.X)
 
         np.testing.assert_allclose(
-            PCA.inverse_transform(PCA.transform(self.X)),
+            model.inverse_transform(model.transform(self.X)),
             self.X,
             atol=1e-9,
             err_msg="The inverse transform do not match"

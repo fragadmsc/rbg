@@ -124,6 +124,9 @@ class PCA:
         else:
             k = p
 
+        if k > min(n, p):
+            raise ValueError("n_components cannot exceed the available rank.")
+
         self._components = V[:k, :]
         self._explained_variance = explained_variance[:k]
         self._explained_variance_ratio = explained_variance_ratio[:k]

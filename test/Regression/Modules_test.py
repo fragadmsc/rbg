@@ -55,7 +55,7 @@ class TestRegressionModules(unittest.TestCase):
 
     def test_logistic_uses_extracted_glm(self) -> None:
         """Classification initializes against the same GLM base definition."""
-        model = Logistic(classes=[0, 1])
+        model = Logistic(labels=[0, 1])
         self.assertIsInstance(model, GLM)
         self.assertIsInstance(model, BaseEstimator)
         self.assertFalse(model._fit_done)
