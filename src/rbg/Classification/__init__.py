@@ -1,1 +1,1 @@
-#from . import KNN, LDA, LogisticRegression, QDA
+import KNN, LDA, LogisticRegression, QDA
