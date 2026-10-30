@@ -52,7 +52,7 @@ class TestError():
         
         modelo_linear = Linear()
 
-        with pytest.raises(ValueError, match="The data do not match"):
+        with pytest.raises(ValueError, match="same number of observations"):
             modelo_linear.fit(X, Y)
 
         X_cut = X[:5, :] 
@@ -68,7 +68,7 @@ class TestError():
 
     def test_params(self):
         modelo_linear = Linear()
-        modelo_linear.set_params(intecept=False)
+        modelo_linear.set_params(fit_intercept=False)
         parametros = modelo_linear.get_params()
         
         assert parametros is not None
@@ -88,7 +88,7 @@ class TestError():
         modelo_linear.fit(xtrain, ytrain)
 
         assert isinstance(modelo_linear.coef, np.ndarray)
-        assert modelo_linear.coef.shape == (n_features,)
+        assert modelo_linear.coef.shape == (n_features + 1,)
         
 #============= Fazer ainda =================
 class TestRightResults():

@@ -46,7 +46,44 @@ class Polynomial():
         if method not in models:
             raise ValueError("method must be 'linear', 'ridge', or 'lasso'.")
 
+        self._method = method
         self._model = models[method](fit_intercept=fit_intercept)
+
+    def get_params(self) -> dict:
+        """Return polynomial degrees, estimator choice and intercept setting."""
+        params = {
+            "degrees": self._degrees.copy(),
+            "method": self._method,
+            "fit_intercept": self._model.get_params()["fit_intercept"],
+        }
+        if self._method in ("ridge", "lasso"):
+            params["alpha"] = self._model.get_params()["alpha"]
+        return params
+
+    def set_params(self, **params):
+        """Update configuration and replace any previously fitted estimator."""
+        unknown = set(params) - {"degrees", "method", "fit_intercept", "alpha"}
+        if unknown:
+            raise ValueError(f"Unknown parameter(s): {', '.join(sorted(unknown))}.")
+        if params:
+            current = self.get_params()
+            current.update(params)
+            if not isinstance(current["fit_intercept"], bool):
+                raise ValueError("fit_intercept must be a boolean.")
+            alpha = current.pop("alpha", None)
+            if current["method"] == "linear" and "alpha" in params:
+                raise ValueError("alpha is only available for ridge or lasso.")
+            if current["method"] == "linear":
+                alpha = None
+            self.__init__(**current)
+            if alpha is not None:
+                self._model.set_params(alpha=alpha)
+        return self
+
+    @property
+    def coef(self) -> np.ndarray:
+        """Return coefficients for expanded features, with intercept first."""
+        return self._model.coef
 
     def _transform(self, X):
         """Expand features into their individual polynomial powers.

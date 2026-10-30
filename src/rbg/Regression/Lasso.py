@@ -1,5 +1,6 @@
 import numpy as np
 
+from rbg.ModelSelection.crossvalidation import Resample
 from rbg.Regression.linearmodel import LinearModel
 from rbg.Utilities import CoordinateDescent
 
@@ -16,7 +17,20 @@ class Lasso(LinearModel, CoordinateDescent):
     required solver settings must be initialized according to its interface.
     """
 
-    def fit(self, X: np.ndarray, y: np.ndarray, alpha: float = 1.0) -> np.ndarray:
+    _parameter_attributes = {**LinearModel._parameter_attributes, "alpha": "_alpha"}
+
+    def __init__(self, fit_intercept=True, inference=False, alpha=1.0):
+        super().__init__(fit_intercept=fit_intercept, inference=inference)
+        self.set_params(alpha=alpha)
+
+    def set_params(self, **params):
+        if "alpha" in params:
+            alpha = params["alpha"]
+            if isinstance(alpha, (bool, np.bool_)) or not isinstance(alpha, (int, float, np.integer, np.floating)) or not np.isfinite(alpha) or alpha < 0:
+                raise ValueError("Alpha must be finite and nonnegative.")
+        return super().set_params(**params)
+
+    def fit(self, X: np.ndarray, y: np.ndarray, alpha: float | None = None) -> np.ndarray:
         """Prepare scaled features and delegate the L1 fit to CoordinateDescent.
 
         Args:
@@ -33,10 +47,10 @@ class Lasso(LinearModel, CoordinateDescent):
                 coefficients with an invalid shape or nonfinite values.
             NotImplementedError: If inference is requested.
         """
-        self._alpha = alpha
+        self._alpha = self._alpha if alpha is None else alpha
         if not isinstance(self._alpha, (int,float,np.integer,np.floating)):
             raise ValueError("Alpha must be a numeric scalar.")
-        if not np.isfinite(self._alpha) or alpha < 0:
+        if not np.isfinite(self._alpha) or self._alpha < 0:
             raise ValueError("Alpha must be finite and nonnegative.")
 
         self._prepare_training_data(X, y)
@@ -95,8 +109,9 @@ class Lasso(LinearModel, CoordinateDescent):
         return super().inference()
 
     def _compute_inference(self) -> None:
-        """Estimate coefficient covariance by pairs bootstrap.
+        """Estimate coefficient covariance using paired samples from Resample.
 
+        Resample with replacement, applying each index array to both X and y.
         Use fresh models with inference disabled to preserve the original fit.
         Estimate error variance from the original residuals and active parameter
         count. This approximation may be biased and does not guarantee valid
@@ -110,10 +125,15 @@ class Lasso(LinearModel, CoordinateDescent):
         self._d = np.count_nonzero(features_beta) + int(self._intercept)
         if self._n <= self._d:
             raise ValueError("Residual degrees of freedom must be positive.")
-        rng = np.random.default_rng(self._seed)
         betas_boot = np.zeros((self._n_bootstrap, self._p))
-        for i in range(self._n_bootstrap):
-            indices = rng.choice(self._n, size=self._n, replace=True)
+        samples = Resample(
+            X=self._X_input,
+            size=self._n,
+            n_resamples=int(self._n_bootstrap),
+            random_state=self._seed,
+            replace=True,
+        )
+        for i, indices in enumerate(samples):
             X_boot = self._X_input[indices]
             y_boot = self._y[indices]
             model_boot = Lasso(fit_intercept=self._intercept, inference=False)

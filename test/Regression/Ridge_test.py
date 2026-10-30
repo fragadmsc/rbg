@@ -55,7 +55,7 @@ class TestError():
         
         modelo_ridge = Ridge()
 
-        with pytest.raises(ValueError, match="The data do not match"):
+        with pytest.raises(ValueError, match="same number of observations"):
             modelo_ridge.fit(X, Y)
 
         X_cut = X[:5, :] 
@@ -71,7 +71,7 @@ class TestError():
 
     def test_params(self):
         modelo_ridge = Ridge()
-        modelo_ridge.set_params(alpha=1, intercept=False) # Corrigido de intecerpt para intercept
+        modelo_ridge.set_params(alpha=1, fit_intercept=False)
         parametros = modelo_ridge.get_params()
         
         assert parametros is not None
@@ -91,7 +91,7 @@ class TestError():
         modelo_ridge.fit(xtrain, ytrain)
 
         assert isinstance(modelo_ridge.coef, np.ndarray)
-        assert modelo_ridge.coef.shape == (n_features,)
+        assert modelo_ridge.coef.shape == (n_features + 1,)
 
 #============= Fazer ainda =================
 class TestRightResults():
