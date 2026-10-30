@@ -27,7 +27,8 @@ class TestError:
         data_size = 10
         #verifica o tamanho correto
         with pytest.raises(ValueError):
-            list(KFold(data_size=data_size, k=k_invalido))
+            kf = KFold(k = k_invalido)
+            list(kf.split(data_size))
 
 
 class TestRightResults:
@@ -36,8 +37,10 @@ class TestRightResults:
         data_size = 100
         k_esperado = 5
         indice_total_esperado = set(range(data_size))
+
+        kf = KFold(k = k_esperado)
         
-        dobras = list(KFold(data_size=data_size, k=k_esperado))
+        dobras = list(kf.split(data_size))
         
         #se o KFold gerou a quantidade correta de iterações
         assert len(dobras) == k_esperado
@@ -56,7 +59,9 @@ class TestRightResults:
         data_size = 50
         indice_total_esperado = set(range(data_size))
         
-        dobras = list(LOOCV(data_size=data_size))
+        loocv = LOOCV()
+        
+        dobras = list(loocv.split(data_size))
         
         assert len(dobras) == data_size
         
