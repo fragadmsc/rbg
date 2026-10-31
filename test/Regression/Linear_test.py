@@ -1,10 +1,9 @@
-import rbg.Regression.Linear as Linear
+from rbg.Regression.Linear import Linear
 import numpy as np
 import pandas as pd
 import pytest
 
 '''
-#faça apenas um metodo para testa, mas de pass
 Linear.set_params(intecept = False)
 Linear.get_params()
 
@@ -16,22 +15,20 @@ Linear.predict(Data)
 
 #Testa se retorna oma array numpy com coeficientes
 Linear.coef
-
-
 '''
 
 
 class TestDataEntry():
     def test_DataFrame(self):
-        # Utilizando valores contínuos para o Y já que se trata de Regressão
         X = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0], "coluna2": [2.0, 3.0, 4.0]})
         Y = pd.Series([10.5, 20.5, 30.5]) 
 
         Data = pd.DataFrame({"coluna1": [1.5, 2.0, 0.5], "coluna2": [2.5, 3.0, 1.5]})
 
-        Linear.fit(X, Y)
+        modelo_linear = Linear()
+        modelo_linear.fit(X, Y)
 
-        DtFrameResult = Linear.predict(Data)
+        DtFrameResult = modelo_linear.predict(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
 
@@ -41,9 +38,10 @@ class TestDataEntry():
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        Linear.fit(X, Y)
+        modelo_linear = Linear()
+        modelo_linear.fit(X, Y)
 
-        NpResult = Linear.predict(Data)
+        NpResult = modelo_linear.predict(Data)
 
         assert isinstance(NpResult, np.ndarray)
 
@@ -52,25 +50,28 @@ class TestError():
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        with pytest.raises(ValueError, match="The data do not match"):
-            Linear.fit(X, Y)
+        modelo_linear = Linear()
+
+        with pytest.raises(ValueError, match="same number of observations"):
+            modelo_linear.fit(X, Y)
 
         X_cut = X[:5, :] 
         
-        Linear.fit(X_cut, Y)
+        modelo_linear.fit(X_cut, Y)
 
         Data = np.zeros((4, 3))
 
-        resultado = Linear.predict(Data)
+        resultado = modelo_linear.predict(Data)
         
         assert isinstance(resultado, np.ndarray)
         assert resultado.shape == (4,)
 
-    #=============Terminar-------------------
     def test_params(self):
-        Linear.set_params(intecept = False)
-        Linear.get_params()
-
+        modelo_linear = Linear()
+        modelo_linear.set_params(fit_intercept=False)
+        parametros = modelo_linear.get_params()
+        
+        assert parametros is not None
 
     def test_attributes(self):
         xtrain = np.array([
@@ -83,11 +84,11 @@ class TestError():
         
         n_features = xtrain.shape[1]
         
-        Linear.fit(xtrain, ytrain)
+        modelo_linear = Linear()
+        modelo_linear.fit(xtrain, ytrain)
 
-        assert isinstance(Linear.coef, np.ndarray)
-        assert Linear.coef.shape == (n_features,)
-
+        assert isinstance(modelo_linear.coef, np.ndarray)
+        assert modelo_linear.coef.shape == (n_features + 1,)
         
 #============= Fazer ainda =================
 class TestRightResults():

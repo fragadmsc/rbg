@@ -1,5 +1,5 @@
 import pytest
-import rbg.Preprocessing as Prep
+from rbg.Preprocessing import Standard
 import numpy as np
 import pandas as pd
 
@@ -9,7 +9,7 @@ import pandas as pd
 MEpsylon = 10e-9
 
 class TestDataEntry():
-    @pytest.mark.parametrize("func", [Prep.Standard])
+    @pytest.mark.parametrize("func", [Standard])
     def test_DataFrame(self,func):
         Data = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
         
@@ -17,7 +17,7 @@ class TestDataEntry():
         
         assert isinstance(DtFrameResult, np.ndarray)
 
-    @pytest.mark.parametrize("func", [Prep.Standard])
+    @pytest.mark.parametrize("func", [Standard])
     def test_Numpy(self,func):
         Data = np.ndarray([1.0,2.0,3.0])
 
@@ -34,7 +34,7 @@ class TestFunctionality():
 
         #testa elemento por elemento da array
         np.testing.assert_allclose(
-            Prep.Standard(Data), 
+            Standard(Data), 
             ExpectedResult, 
             atol=MEpsylon,
             err_msg="O calculo divergiu da matriz esperada acima do limite de MEpsylon."

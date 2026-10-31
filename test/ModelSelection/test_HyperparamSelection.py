@@ -81,3 +81,5 @@ def test_HyperparamSelection():
     score_combinacao_inicial = matriz[0, 0]
     
     assert isinstance(score_combinacao_inicial, (float, np.number))
+
+#100th commit 

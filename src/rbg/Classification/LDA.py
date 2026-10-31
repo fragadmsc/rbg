@@ -9,15 +9,15 @@ class LDA(Classifier):
     classes.
     """
 
-    def __init__(self, classes, reference_class=None):
+    def __init__(self, labels, reference_class=None):
         """Initialize the classifier with the supported class labels.
 
         Args:
-            classes: Unique class labels supported by the classifier.
+            labels: Unique class labels supported by the classifier.
             reference_class: Reference label used to initialize the base
                 classifier.
         """
-        Classifier.__init__(self, classes, reference_class)
+        Classifier.__init__(self, labels, reference_class)
 
     def fit(self, X, y):
         """Estimate class means and the shared covariance matrix from training data.
@@ -26,7 +26,7 @@ class LDA(Classifier):
             X: Numerical training feature matrix of shape
                 (n_samples, n_features). All values must be finite.
             y: One-dimensional array of class labels of shape (n_samples,).
-                All labels must belong to the classes defined at initialization.
+                All labels must belong to the set declared at initialization.
 
         Raises:
             ValueError: If X or y has an invalid dimension, X contains
@@ -50,7 +50,7 @@ class LDA(Classifier):
                 raise ValueError("X must have only finite values.")
         if y.ndim != 1:
             raise ValueError("y must be one-dimensional.")
-        if not np.isin(y, self._classes).all():
+        if not np.isin(y, self._labels).all():
             raise ValueError("y contains unknown class labels.")
         if X.shape[0] != y.shape[0]:
             raise ValueError("The data do not match.")
@@ -64,7 +64,6 @@ class LDA(Classifier):
             raise ValueError("y must be at least two classes.")
         if X.shape[0] <= self.labels.size:
             raise ValueError("There must be more samples to estimate covariance.")
-
         self._X_train = X
         self._y_train = y
 
@@ -101,6 +100,7 @@ class LDA(Classifier):
         Returns:
             Pooled covariance matrix of shape (n_features, n_features).
         """
+    
         matriz = np.zeros((self._X_train.shape[1], self._X_train.shape[1]))
         detours = [self._X_train[self._y_train == k] - self.mean_array(k) for k in self.labels]
         products = [detour.T @ detour for detour in detours]
