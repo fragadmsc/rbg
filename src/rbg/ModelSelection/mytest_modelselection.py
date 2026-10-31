@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from rbg.ModelSelection.crossvalidation import GridSearch, KFold, LOOCV, RandomizedSearch
+from rbg.Utilities.crossvalidation import GridSearch, KFold, LOOCV, RandomizedSearch
 
 class ToyModel:
     def __init__(self, param1=1,param2=10):

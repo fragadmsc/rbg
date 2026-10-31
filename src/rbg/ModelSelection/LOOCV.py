@@ -1,3 +1,6 @@
+from .KFold import KFold
+import numpy as np
+
 class LOOCV:
     """Leave-One-Out Cross Validation
     

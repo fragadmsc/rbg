@@ -18,7 +18,7 @@ for test_indx, train_indx in KFold(data_size,k= 5):
 import pytest
 import numpy as np
 
-from rbg.ModelSelection.crossvalidation import KFold,LOOCV
+from rbg.Utilities.crossvalidation import KFold,LOOCV
 
 class TestError:
     

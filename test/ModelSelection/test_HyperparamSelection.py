@@ -1,23 +1,24 @@
 '''
-HyperparamSelection.set_params(modelo = modelo_generico, hyperparametros = {parametro1 = [1,2,3,4] , parametro2 = ['1','2']}, tecnica_de_particao = Kfold, metrics = MSE)
-HyperparamSelection
+GridSearch.set_params(modelo = modelo_generico, hyperparametros = {parametro1 = [1,2,3,4] , parametro2 = ['1','2']}, tecnica_de_particao = Kfold, metrics = MSE)
+GridSearch
 
 #adiciona os dados na classe
 Hyperparams.fit(X,Y)
 
 #a matriz retornaria os melhores hyperparametros
-melhor_hyperparametro = HyperparamSelection.best_hyperparams
+melhor_hyperparametro = GridSearch.best_hyperparams
 
 
 #aqui a matriz guardaria o valor da metrica retornado de cada seleção de parametros
-matriz = HyperparamSelection.matrix_value
+matriz = GridSearch.matrix_value
 
 '''
 
 import pytest
 import numpy as np
-from rbg.ModelSelection import HyperparamSelection
-from rbg.Utilities import MSE,KFold
+from rbg.ModelSelection import GridSearch, KFold, LOOCV
+from rbg.Utilities import MSE, Resample
+from rbg.Classification import KNN
 
 
 def test_HyperparamSelection():
@@ -29,11 +30,11 @@ def test_HyperparamSelection():
         [3.0, 6.0], 
         [4.0, 8.0]
     ])
-    Y_treino = np.array([10.0, 20.0, 30.0, 40.0])
+    Y_treino = np.array(['azul','azul', 'amarelo', 'vermelho'])
 
     #inicializando a classe
-    seletor = HyperparamSelection(
-        modelo=HyperparamSelection, 
+    seletor = GridSearch(
+        modelo=KNN(labels = ['azul','amarelo','vermelho']), 
         hyperparametros=hiperparametros_injetados, 
         tecnica_de_particao=KFold, 
         metrics=MSE
