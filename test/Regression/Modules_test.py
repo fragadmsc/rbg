@@ -4,12 +4,12 @@ import unittest
 import numpy as np
 
 from rbg.Classification.Logistic import Logistic
-from rbg.Regression.baseestimator import BaseEstimator
-from rbg.Regression.GLM import GLM
-from rbg.Regression.Linear import Linear
-from rbg.Regression.linearmodel import LinearModel
-from rbg.Regression.Polynomial import Polynomial
-from rbg.Regression.Ridge import Ridge
+from rbg.Regression import BaseEstimator
+from rbg.Regression import GLM
+from rbg.Regression import Linear
+from rbg.Regression import LinearModel
+from rbg.Regression import Polynomial
+from rbg.Regression import Ridge
 
 
 class TestRegressionModules(unittest.TestCase):

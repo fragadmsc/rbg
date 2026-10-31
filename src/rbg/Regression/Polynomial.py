@@ -1,7 +1,7 @@
 import numpy as np
 
-from rbg.Regression.Linear import Linear
-from rbg.Regression.Ridge import Ridge
+from .Linear import Linear
+from .Ridge import Ridge
 
 
 class Polynomial():

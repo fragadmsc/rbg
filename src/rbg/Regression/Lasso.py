@@ -1,7 +1,7 @@
 import numpy as np
 
-from rbg.ModelSelection.crossvalidation import Resample
-from rbg.Regression.linearmodel import LinearModel
+from rbg.Utilities import Resample
+from .linearmodel import LinearModel
 from rbg.Utilities import CoordinateDescent
 
 

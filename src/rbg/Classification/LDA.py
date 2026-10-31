@@ -1,5 +1,5 @@
 import numpy as np
-from rbg.Classification.classifier import Classifier
+from .classifier import Classifier
 
 class LDA(Classifier):
     """Linear discriminant analysis classifier for categorical labels.

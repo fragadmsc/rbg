@@ -1,6 +1,6 @@
 import warnings
 import numpy as np
-import ExponentialFamily
+from .ExponentialFamily import ExponentialFamily
 
 class FisherScoring:
     """Fisher scoring for GLM"""

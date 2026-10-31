@@ -1,5 +1,5 @@
 import numpy as np
-from rbg.Classification.classifier import Classifier
+from .classifier import Classifier
 
 class KNN(Classifier):
     """K-nearest neighbors classifier for categorical labels."""

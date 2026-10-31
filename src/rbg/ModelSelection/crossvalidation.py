@@ -78,22 +78,6 @@ class KFold:
             train_idxs = np.setdiff1d(idxs, test_idxs)
             yield test_idxs, train_idxs 
 
-class LOOCV:
-    """Leave-One-Out Cross Validation
-    
-    Take one sample and uses it as the testing set. Is a great option if the dataset is small enough.
-    """
-    def __init__(self):
-        pass
-    
-    def split(self, data_size):
-        if type(data_size) == np.ndarray or type(data_size) == list:
-            x = len(data_size)
-        elif type(data_size) == int:
-            x = data_size
-        else:
-            raise ValueError("'data_size' must be an integer or a dataset.")
-        return KFold(k=x).split(data_size = x)
 
 def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     """Returns a list of scores given a machine learning model, a cross-validation method and a metric.

@@ -8,10 +8,10 @@ import unittest
 
 import numpy as np
 
-from rbg.Regression.GLM import GLM
-from rbg.Regression.Linear import Linear
-from rbg.Regression.Ridge import Ridge
-from rbg.Utilities.CoordinateDescent import ExponentialFamily
+from rbg.Regression import GLM
+from rbg.Regression import Linear
+from rbg.Regression import Ridge
+from rbg.Utilities import ExponentialFamily
 
 
 def gaussian_family() -> ExponentialFamily:

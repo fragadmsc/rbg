@@ -1,5 +1,5 @@
 # from rbg.Utilities import Matrix_design, Resample
-from rbg.Utilities.Ressample import Resample
+from rbg.Utilities import Resample
 from rbg.Utilities import Matrix_design
 
 

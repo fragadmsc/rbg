@@ -1,7 +1,7 @@
 import numpy as np
-from rbg.Regression.regressao import GLM
-from rbg.Utilities.CoordinateDescent import ExponentialFamily
-from rbg.Classification.classifier import Classifier
+from rbg.Regression import GLM
+from rbg.Utilities import ExponentialFamily
+from rbg.Classification import Classifier
 
 class LogisticRegression(Classifier, GLM):
     """Multinomial logistic classifier using a reference-class GLM.
