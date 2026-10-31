@@ -1,6 +1,6 @@
 import numpy as np
 from rbg.Regression.GLM import GLM
-from rbg.Utilities.utilities import ExponentialFamily
+from rbg.Utilities.CoordinateDescent import ExponentialFamily
 from rbg.Classification.classifier import Classifier
 
 class Logistic(Classifier, GLM):

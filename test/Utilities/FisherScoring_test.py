@@ -1,7 +1,7 @@
 """Known-solution test for Fisher scoring with an intercept-only logistic model."""
 import numpy as np
 
-from rbg.Utilities.utilities import ExponentialFamily, FisherScoring
+from rbg.Utilities.CoordinateDescent import ExponentialFamily, FisherScoring
 
 
 def test_logistic_intercept_only() -> None:

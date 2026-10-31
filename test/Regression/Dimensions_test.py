@@ -11,7 +11,7 @@ import numpy as np
 from rbg.Regression.GLM import GLM
 from rbg.Regression.Linear import Linear
 from rbg.Regression.Ridge import Ridge
-from rbg.Utilities.utilities import ExponentialFamily
+from rbg.Utilities.CoordinateDescent import ExponentialFamily
 
 
 def gaussian_family() -> ExponentialFamily:

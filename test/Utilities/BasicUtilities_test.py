@@ -1,7 +1,5 @@
 # from rbg.Utilities import Matrix_design, Resample
-from rbg.ModelSelection.crossvalidation import Resample
-from rbg.Utilities import *
-import rbg.Utilities as utilities
+from rbg.Utilities.Ressample import Resample
 from rbg.Utilities import Matrix_design
 
 

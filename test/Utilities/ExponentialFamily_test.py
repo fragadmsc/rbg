@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from rbg.Utilities.utilities import ExponentialFamily
+from rbg.Utilities.CoordinateDescent import ExponentialFamily
 
 
 class TestExponentialFamilyDimensions(unittest.TestCase):

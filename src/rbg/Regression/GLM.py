@@ -1,7 +1,7 @@
 import numpy as np
 
 from rbg.Regression.baseestimator import BaseEstimator
-from rbg.Utilities.utilities import FisherScoring
+from rbg.Utilities.CoordinateDescent import FisherScoring
 
 
 class GLM(BaseEstimator):
