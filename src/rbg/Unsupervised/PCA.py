@@ -20,6 +20,27 @@ class PCA:
         self._explained_variance: np.ndarray | None = None
         self._explained_variance_ratio: np.ndarray | None = None
 
+    def set_params(self, n_components: int | float | None = None) -> "PCA":
+        """Set the number of components to keep.
+
+        Args:
+            n_components: None for all components, an int for a fixed count,
+                or a float in (0, 1) for a target cumulative variance ratio.
+
+        Returns:
+            The instance.
+        """
+        self.n_components = n_components
+        return self
+
+    def get_params(self) -> dict:
+        """Return the model hyperparameters.
+
+        Returns:
+            Dict mapping parameter name to its value.
+        """
+        return {"n_components": self.n_components}
+    
     @property
     def mean(self) -> np.ndarray:
         """Empirical mean of each feature, shape (n_features,)."""
@@ -67,7 +88,7 @@ class PCA:
         if self._mean is None:
             self._mean = np.mean(X_arr, axis=0)
         elif X_arr.shape[1] != self._mean.shape[0]:
-            raise ValueError(f"expected {self._mean.shape[0]} features, got {X_arr.shape[1]}.")
+            raise ValueError(f"The data do not match: expected {self._mean.shape[0]} features, got {X_arr.shape[1]}.")
         return X_arr - self._mean
 
     def _svd_flip(self, V: np.ndarray) -> np.ndarray:
@@ -115,6 +136,8 @@ class PCA:
         if isinstance(nc, int):
             if nc <= 0:
                 raise ValueError("n_components must be positive.")
+            if nc > min(n, p):
+                raise ValueError("n_components cannot exceed min(n_samples, n_features).")
             k = nc
         elif isinstance(nc, float):
             if not 0 < nc < 1:
