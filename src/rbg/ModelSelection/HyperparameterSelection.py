@@ -16,9 +16,9 @@ class GridSearch:
             to try as values.
             metrics (callable): a scoring function that takes true targets and predictions and returns a single
             float score.
-            cv (class or callable): Cross-Validation method used to split the data. 
+            cv (class or callable): Cross-Validation method used to split the data. KFold or LOOCV.
             greater_is_better (bool, optional): control parameter for the evaluation metric. Defaults to False.
-            For metrics such as Accuracy, Recall, R², it must be True.
+            For metrics such as Accuracy, Recall, R², precision, F-1 score, it must be True.
             For metrics such as MSE, RMSE, MAE, it must be False.
         """
         self.model = model
