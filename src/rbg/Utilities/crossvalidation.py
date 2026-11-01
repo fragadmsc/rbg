@@ -79,4 +79,4 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
         score = metrics(y_pred, y_test)
 
         scores.append(score)
-    return np.array(scores)
+    return sum(scores)/len(scores)

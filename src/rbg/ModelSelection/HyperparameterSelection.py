@@ -3,7 +3,24 @@ from .KFold import KFold
 from rbg.Utilities import cv_score
 
 class GridSearch:
-    def __init__(self, model, param_grid, metrics, cv = KFold):
+    def __init__(self, model, param_grid, metrics, cv, greater_is_better = False):
+        """Exhaustive search over specified parameter values for an estimator.
+        
+        Tests all possible mathematical combinations from a hyperparemeter dictionary
+        to find the best configuration. After finding the best combination 
+        through cross-validation, the winning estimator is refitted using the entire dataset.
+
+        Args:
+            model (class or object): The model to be optimized. It must have 'fit' and 'predict' methods.
+            param_grid (dict): dictionary with parameter names (str) as keys and lists of parameter settings
+            to try as values.
+            metrics (callable): a scoring function that takes true targets and predictions and returns a single
+            float score.
+            cv (class or callable): Cross-Validation method used to split the data. 
+            greater_is_better (bool, optional): control parameter for the evaluation metric. Defaults to False.
+            For metrics such as Accuracy, Recall, R², it must be True.
+            For metrics such as MSE, RMSE, MAE, it must be False.
+        """
         self.model = model
         self.param_grid = param_grid 
         self.cv = cv
@@ -12,6 +29,7 @@ class GridSearch:
         self.best_params_ = None
         self.best_model_ = None
         self.best_score_ = None
+        self.greater_is_better = greater_is_better
         
     def _gen_combs(self):
         combinations = [{}]
@@ -27,15 +45,24 @@ class GridSearch:
 
     def fit(self, X, y):
         X = np.asarray(X)
-        y =np.asarray(y)
-        best_score = float('inf') # assumindo q queremos minimizar o erro
-        for params in self._gen_combs():
-            current_model = self.model(**params) 
-            scores = cv_score(current_model, X, y, self.cv, self.metrics)
-            total_score = np.mean(scores)
-            if total_score < best_score:
-                best_score = total_score
-                self.best_params_ = params
+        y = np.asarray(y)
+        if self.greater_is_better:
+            best_score = float('-inf')
+            for params in self._gen_combs:
+                current_model = self.model(**params) 
+                score = cv_score(current_model, X, y, self.cv, self.metrics)
+                if score > best_score:
+                    best_score = score
+                    self.best_params_ = params
+        else:
+            best_score = float('inf') # assumindo q queremos minimizar o erro
+            for params in self._gen_combs():
+                current_model = self.model(**params) 
+                score = cv_score(current_model, X, y, self.cv, self.metrics)
+                if score < best_score:
+                    best_score = score
+                    self.best_params_ = params
+            
         self.best_model_ = self.model(**self.best_params_)
         self.best_model_.fit(X, y)
         self.best_score_ = best_score
