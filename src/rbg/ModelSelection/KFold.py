@@ -18,7 +18,7 @@ class KFold:
         else:
             raise ValueError("'data_size' must be an integer or a dataset.")
         if type(self.k) is not int or self.k <= 1 or self.k > n_samples:
-            raise ValueError("'n_splits' must be an integer larger than 1 and less than the size of the dataset.")
+            raise ValueError("'k' must be an integer larger than 1 and less than the size of the dataset.")
         idxs = np.arange(n_samples)
         if self.shuffle:
             rng = np.random.default_rng(self.random_state)
@@ -27,4 +27,4 @@ class KFold:
         for i in range(self.k):
             test_idxs = idx_sets[i]
             train_idxs = np.setdiff1d(idxs, test_idxs)
-            yield test_idxs, train_idxs 
+            yield train_idxs, test_idxs

@@ -24,14 +24,14 @@ class GridSearch:
                     new_combs.append(new_comb)
             combinations = new_combs
         return combinations
-    
+
     def fit(self, X, y):
         X = np.asarray(X)
         y =np.asarray(y)
         best_score = float('inf') # assumindo q queremos minimizar o erro
         for params in self._gen_combs():
-            cur_model = self.model(**params) 
-            scores = cv_score(cur_model, X, y, self.cv, self.metrics)
+            current_model = self.model(**params) 
+            scores = cv_score(current_model, X, y, self.cv, self.metrics)
             total_score = np.mean(scores)
             if total_score < best_score:
                 best_score = total_score
