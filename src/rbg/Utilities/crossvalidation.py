@@ -18,7 +18,7 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     X = np.asarray(X)
     y = np.asarray(y)
     if len(X) != len(y):
-        raise ValueError("X and y dimensions must match.")
+        raise ValueError("X and y must have the same number of rows.")
     if isinstance(test_size, int):
         if test_size < 0 or test_size > len(X):
             raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
@@ -47,7 +47,42 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     
     return X_train, X_test, y_train, y_test
 
+# de acordo com a seção 4.5.1 das notas do rodrigo:
+def train_val_test_split(X : np.ndarray, y : np.ndarray, val_size = 0.2, test_size = 0.2, 
+                         shuffle = True, random_state = None):
+    """
+    Splits arrays or matrices into random train, validation, and test subsets.
+    """
+    X = np.asarray(X)
+    y = np.asarray(y)
+    
+    if X.shape[0] != y.shape[0]:
+        raise ValueError("X and y must have the same number of rows.")
+    n_samples = X.shape[0]
+    n_test = int(n_samples*test_size)
+    n_val = int(n_samples*val_size)
+    
+    if n_test+n_val>= n_samples:
+        raise ValueError("The sum of test_size and val_size leaves no samples for training.")
 
+    idxs = np.arange(n_samples)
+    
+    if shuffle:
+        rng = np.random.default_rng(random_state)
+        idxs = rng.permutation(idxs)
+        
+    test_idxs = idxs[:n_test]
+    val_idxs = idxs[n_test : n_test + n_val]
+    train_idxs = idxs[n_test + n_val:]
+    
+    X_train = X[train_idxs]
+    X_val = X[val_idxs]
+    X_test = X[test_idxs]
+    y_train = y[train_idxs]
+    y_val = y[val_idxs]
+    y_test = y[test_idxs]
+    
+    return X_train, X_val, X_test, y_train, y_val, y_test
 
 def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     """Returns a list of scores given a machine learning model, a cross-validation method and a metric.
