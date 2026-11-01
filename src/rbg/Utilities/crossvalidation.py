@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, shuffle = True, random_state = None):
     """
     Divides the dataset between a training set and a testing set.
@@ -54,7 +53,7 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     """Returns a list of scores given a machine learning model, a cross-validation method and a metric.
     
     Typical usage example:
-        list_of_scores = cv_score(ex_model, X, y, KFold(X, 10), "MSE")
+        list_of_scores = cv_score(ex_model, X, y, KFold(10), "MSE")
         list_of_scores = cv_score(ex_model2, X, y, LOOCV, "MSE")
 
     Args:
@@ -67,7 +66,6 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     Returns:
         np.ndarray: a list of scores.
     """
-    # conferir depois se o metrics(y_pred, y_test) ta certo
     scores = []
     for idxs_train, idxs_test in cv_method.split(X): 
         X_train = X[idxs_train]
@@ -79,6 +77,6 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
         y_pred = model.predict(X_test)
         
         score = metrics(y_pred, y_test)
+
         scores.append(score)
     return np.array(scores)
-        
