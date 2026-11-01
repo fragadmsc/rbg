@@ -31,6 +31,7 @@ class GridSearch:
         self.best_params_ = None
         self.best_model_ = None
         self.best_score_ = None
+        self.greater_is_better = greater_is_better
         
         
     def _gen_combs(self):
