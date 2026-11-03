@@ -7,7 +7,7 @@ class GridSearch:
     def __init__(self, model, param_grid, metrics, cv, greater_is_better = False):
         """Exhaustive search over specified parameter values for an estimator.
         
-        Tests all possible mathematical combinations from a hyperparemeter dictionary
+        Tests all possible mathematical combinations from a hyperparameter dictionary
         to find the best configuration. After finding the best combination 
         through cross-validation, the winning estimator is refitted using the entire dataset.
 

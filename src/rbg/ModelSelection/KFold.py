@@ -40,7 +40,7 @@ class StratifiedKFold:
         """Initializes a Stratified KFold instance.
 
         Args:
-            n_splits (int, optional): number of folds. Defaults to 5.
+            k (int, optional): number of folds. Defaults to 5.
             shuffle (bool, optional): _description_. Defaults to False.
             random_state (_type_, optional): _description_. Defaults to None.
         """
@@ -65,8 +65,8 @@ class StratifiedKFold:
         if X.shape[0] != y.shape[0]:
             raise ValueError("X and y must have the same number of rows!")
         n_samples = X.shape[0]
-        if self.n_splits > n_samples:
-            raise ValueError(f"Number of splits ({self.n_splits}) cannot be greater than the number of samples ({n_samples}).")
+        if self.k > n_samples:
+            raise ValueError(f"Number of splits ({self.k}) cannot be greater than the number of samples ({n_samples}).")
         rng = np.random.default_rng(self.random_state)
         all_indices = np.arange(n_samples)
         unique_classes = np.unique(y)
@@ -76,10 +76,10 @@ class StratifiedKFold:
             # separamos os indices nos k folds, como se as amostras nessa classe correspondessem a um unico dataset:
             if self.shuffle:
                 cls_indices = rng.permutation(cls_indices)
-            folds = np.array_split(cls_indices, self.n_splits)
+            folds = np.array_split(cls_indices, self.k)
             class_folds.append(folds)
             
-        for i in range(self.n_splits):
+        for i in range(self.k):
             test_idxs_list = []
             for folds in class_folds:
                 test_idxs_list.append(folds[i])
