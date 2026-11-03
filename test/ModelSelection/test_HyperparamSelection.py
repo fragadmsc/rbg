@@ -37,7 +37,7 @@ def test_HyperparamSelection():
         model=KNN(labels = ['azul','amarelo','vermelho']), 
         param_grid=hiperparametros_injetados, 
         cv=KFold(k=2), 
-        metrics=Acurracy,
+        metrics=Accuracy,
         greater_is_better=True
     )
     
