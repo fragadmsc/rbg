@@ -48,8 +48,7 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     return X_train, X_test, y_train, y_test
 
 # de acordo com a seção 4.5.1 das notas do rodrigo:
-def train_val_test_split(X : np.ndarray, y : np.ndarray, val_size = 0.2, test_size = 0.2, 
-                         shuffle = True, random_state = None):
+def train_val_test_split(X : np.ndarray, y : np.ndarray, val_size = 0.2, test_size = 0.2, shuffle = True, random_state = None):
     """
     Splits arrays or matrices into random train, validation, and test subsets.
     """
