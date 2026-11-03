@@ -1,6 +1,6 @@
 import numpy as np
 
-def resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state = None, replace = True):
+def Resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state = None, replace = True):
     """
     Returns resamples of the original dataset.
     If size = None and replace = True (by default), is a bootstrap.
