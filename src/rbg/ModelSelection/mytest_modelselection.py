@@ -1,6 +1,13 @@
 import numpy as np
 import pytest
-from rbg.Utilities.crossvalidation import GridSearch, KFold, LOOCV, RandomizedSearch
+from rbg.ModelSelection.KFold import KFold, StratifiedKFold
+from rbg.ModelSelection.LOOCV import LOOCV
+from rbg.ModelSelection.HyperparameterSelection import GridSearch, RandomizedSearch
+from rbg.Utilities.crossvalidation import train_test_split, train_val_test_split, cv_score
+from rbg.Utilities.Resample import resample
+
+# imports adicionais:
+# from rbg.Utilities
 
 class ToyModel:
     def __init__(self, param1=1,param2=10):
@@ -15,6 +22,29 @@ class ToyModel:
     
 def SimpleMSE(y_real, y_pred):
     return float(np.mean(y_real - y_pred)**2)
+
+# === TESTES KFOLD ===
+# testar k's invalidos, menores que 2 ou maiores que o dataset
+
+# testar se passar um dataset ele pega como data_size realmente o tamanho de X
+
+# testar reprodutibilidade
+
+# testar se ele realmente retorna primeiro treino, depois teste
+
+# ===TESTES KFOLD ESTRATIFICADO===
+
+# testar se realmente tem um carinha de cada classe no modelo final
+
+# testar reprodutibilidade
+
+#===TESTES LOOCV===
+
+# testar se realmente o tamanho do dataset de teste é 1
+
+# testar reprodutibilidade
+
+
 # tests GridSearch:
 def test_gera_combs():
     param_grid = {'param1':[1, 2, 3], 'param2':[10, 20]}

@@ -101,8 +101,9 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     Returns:
         np.ndarray: a list of scores.
     """
+    cv_obj = cv_method() if isinstance(cv_method, type) else cv_method
     scores = []
-    for idxs_train, idxs_test in cv_method.split(X): 
+    for idxs_train, idxs_test in cv_obj.split(X): 
         X_train = X[idxs_train]
         X_test = X[idxs_test]
         y_train = y[idxs_train]
