@@ -34,9 +34,9 @@ def test_HyperparamSelection():
 
     #inicializando a classe
     seletor = GridSearch(
-        modelo=KNN(labels = ['azul','amarelo','vermelho']), 
-        hyperparametros=hiperparametros_injetados, 
-        tecnica_de_particao=KFold, 
+        model=KNN(labels = ['azul','amarelo','vermelho']), 
+        param_grid=hiperparametros_injetados, 
+        cv=KFold, 
         metrics=MSE
     )
     

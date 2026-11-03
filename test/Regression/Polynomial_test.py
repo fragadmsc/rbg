@@ -26,7 +26,7 @@ class TestDataEntry:
 
         Data = np.array([[1.5, 2.5], [2.0, 3.0], [0.5, 1.5]])
 
-        modelo_poly = Polynomial([1, 1])
+        modelo_poly = Polynomial()
         modelo_poly.fit(X, Y)
 
         NpResult = modelo_poly.predict(Data)
@@ -38,7 +38,7 @@ class TestError:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_poly = Polynomial([1, 1, 1])
+        modelo_poly = Polynomial()
 
         with pytest.raises(ValueError, match="same number of observations"):
             modelo_poly.fit(X, Y)
@@ -55,7 +55,7 @@ class TestError:
         assert resultado.shape == (4,)
 
     def test_params(self):
-        modelo_poly = Polynomial([1, 1])
+        modelo_poly = Polynomial()
         modelo_poly.set_params(fit_intercept=False)
         parametros = modelo_poly.get_params()
         
@@ -70,7 +70,7 @@ class TestError:
         ])
         ytrain = np.array([10.0, 12.0, 20.0, 22.0])
         
-        modelo_poly = Polynomial([1, 1])
+        modelo_poly = Polynomial()
         modelo_poly.fit(xtrain, ytrain)
 
         # testa se retorna uma array numpy com coeficientes
@@ -98,11 +98,11 @@ class TestPolynomialTransform(unittest.TestCase):
                     np.testing.assert_array_equal(original, X)
 
     def test_transform_empty_batch_preserves_columns(self) -> None:
-        result = Polynomial([2, 3])._transform(np.empty((0, 2)))
+        result = Polynomial()._transform(np.empty((0, 2)))
         self.assertEqual(result.shape, (0, 5))
 
     def test_transform_rejects_wrong_dimensions(self) -> None:
-        model = Polynomial([2, 3])
+        model = Polynomial()
         for X in (np.array(2), np.array([2, 3]), np.ones((2, 2, 1)),
                   np.ones((3, 1)), np.ones((3, 3))):
             with self.subTest(shape=X.shape):
@@ -116,7 +116,7 @@ class TestPolynomialTransform(unittest.TestCase):
         for method in ("linear", "ridge"):
             for intercept in (True, False):
                 with self.subTest(method=method, intercept=intercept):
-                    model = Polynomial([2, 1], method=method, fit_intercept=intercept)
+                    model = Polynomial(method=method, fit_intercept=intercept)
                     p = 3 + int(intercept)
                     options = {"alpha": 0.1} if method == "ridge" else {}
                     beta = model.fit(X, y, **options)
