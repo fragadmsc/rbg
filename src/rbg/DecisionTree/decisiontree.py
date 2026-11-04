@@ -379,6 +379,7 @@ class ConstructionTree(Regression, Classification):
         possible_cuts = np.array(possible_cuts)
 
 
+
         if y_list.shape[0] == 0:
             return None 
         else:
@@ -421,6 +422,7 @@ class ConstructionTree(Regression, Classification):
 
                 if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth == None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
                     self.aux_purity_gain[right] = 1
+
                 return gratest_purity_gain_overall   
 
 
@@ -489,6 +491,8 @@ class ConstructionTree(Regression, Classification):
 
             
             """
+
+
             m = 0
             gratest_purity_gain_per_p = None
             associated_value_per_p = None
@@ -515,9 +519,12 @@ class ConstructionTree(Regression, Classification):
                     left_mse = self.custom_split(np.array(prevision_left),np.array(y_c_p[self.start[node]:self.start[node]+m+1])) 
                     right_mse = self.custom_split(np.array(prevision_right),np.array(y_c_p[self.start[node]+m+1:self.end[node]]))
                     current_purity_gain = self.impurity[node] - ((m+1)/ (len(median) +1)* left_mse + ((len(median)+1)-(m+1))/(len(median)+1)*right_mse)
+
+
+
                     if current_purity_gain >= self.min_impurity_decrease: # Checkgin if the purity gain is equal or greater than the minimum necessary
                         if  gratest_purity_gain_per_p: #If a value was already computed, we have to check if the new one is better
-                            if gratest_purity_gain_per_p >current_purity_gain:
+                            if gratest_purity_gain_per_p < current_purity_gain:
                                 gratest_purity_gain_per_p = current_purity_gain
                                 associated_value_per_p = median[m]
                                 new_end_begin = self.start[node] +m+1 # considerind [start , end)
@@ -598,6 +605,8 @@ class ConstructionTree(Regression, Classification):
               
                 self.aux_purity_gain[node_chosen_to_split] = -1 # turning it back to -1 
                 u = self.splitter(X,y,node_chosen_to_split, defenitive= True)
+
+
                 self.max_splits -=1
 
                 if self.aux_purity_gain[self.children_left[node_chosen_to_split]] == 1: 
@@ -691,7 +700,8 @@ class ConstructionTree(Regression, Classification):
         "purity_gain":self.purity_gain,
         "start":self.start,
         "end":self.end,
-        "aux_purity_gain":self.aux_purity_gain
+        "aux_purity_gain":self.aux_purity_gain,
+        "n": self.n
             }
         return dicto
     def _change_right_child(self,father,new_value):
