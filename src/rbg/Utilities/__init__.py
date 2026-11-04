@@ -1,4 +1,4 @@
-from .ClassificationMetrics import _safe_divide,_class_counts,Acurracy,Pressision,Reccal, F1Score
+from .ClassificationMetrics import _safe_divide,_class_counts,Acurracy,Pressision,Reccal, F1Score, Gini, classif_error,entropy,mode
 from .CoordinateDescent import CoordinateDescent
 from .crossvalidation import cv_score, train_test_split
 from .ExponentialFamily import ExponentialFamily
