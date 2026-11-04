@@ -1,6 +1,7 @@
 import numpy as np
 
-from Utilities import MSE, rss, RMSE, MAE, RSquare, Gini as gini, entropy as ent, classif_error as c_e, mode
+from Utilities import MSE, rss, RMSE, MAE, RSquare
+from ClassificationMetrics import Gini as gini, entropy as ent, classif_error as c_e, mode
 #from rgb.Utilities import MAE, RMSE, MSE, RSquare
 
 def Gini(_, y_true):
