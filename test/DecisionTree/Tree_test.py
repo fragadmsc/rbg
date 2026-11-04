@@ -1,5 +1,5 @@
-from rbg.DecisionTree.ClassificationTree import Classification
-from rbg.DecisionTree.RegressionTree import Regression
+from decisiontree import ClassificationTree as Classification
+from decisiontree import RegressionTree as Regression
 import numpy as np
 import pandas as pd
 import pytest
@@ -32,13 +32,13 @@ class TestClassificationTree:
     
     def test_params(self):
         modelo_classificacao = Classification()
-        modelo_classificacao.set_params(impurity='Gini', min_inpurity_decrease=0.1, max_depth=30)
+        modelo_classificacao.set_params(criterion_split='Gini', min_impurity_decrease=0.1, max_depth=30)
         
         params = modelo_classificacao.get_params()
         
         assert isinstance(params, dict)
-        assert params.get('impurity') == 'Gini'
-        assert params.get('min_inpurity_decrease') == 0.1
+        assert params.get('criterion_split') == 'Gini'
+        assert params.get('min_impurity_decrease') == 0.1
         assert params.get('max_depth') == 30
 
     def test_fit_and_predict(self):
@@ -70,13 +70,13 @@ class TestClassificationTree:
 class TestRegressionTree:
     
     def test_params(self):
-        modelo_regressao = Regression()
-        modelo_regressao.set_params(min_inpurity_decrease=0.1, max_depth=30)
+        modelo_regressao = Regression(criterion_split = "MAE", criterion_choose = "median")
+        modelo_regressao.set_params(min_impurity_decrease=0.1, max_depth=30)
         
         params = modelo_regressao.get_params()
         
         assert isinstance(params, dict)
-        assert params.get('min_inpurity_decrease') == 0.1
+        assert params.get('min_impurity_decrease') == 0.1
         assert params.get('max_depth') == 30
 
     def test_fit_and_predict(self):
@@ -98,6 +98,11 @@ class TestRegressionTree:
 
         modelo_regressao.fit(X, Y)
 
+        Data = np.array([[1.5, 2.0], [8.5, 9.0], [5.0, 5.0]])
+        resultado = modelo_regressao.predict(Data)
+
+        assert isinstance(resultado, np.ndarray)
+        assert resultado.shape == (3,)
         Data = np.array([[1.5, 2.0], [8.5, 9.0], [5.0, 5.0]])
         resultado = modelo_regressao.predict(Data)
 
