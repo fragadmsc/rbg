@@ -1,5 +1,5 @@
-from decisiontree import Bagging
-from decisiontree import BaggingReg
+from rbg.DecisionTree import Bagging
+from rbg.DecisionTree import BaggingReg
 import numpy as np
 import pandas as pd
 import pytest
@@ -141,8 +141,4 @@ class TestBaggingReg_Error:
         assert params.get('min_impurity_decrease') == 0.1
         assert params.get('max_depth') == 30
         params = modelo_bagging_reg.get_params()
-        
-        assert isinstance(params, dict)
-        assert params.get('n_trees') == 100
-        assert params.get('min_inpurity_decrease') == 0.1
-        assert params.get('max_depth') == 30
+

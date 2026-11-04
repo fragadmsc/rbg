@@ -55,7 +55,7 @@ def _class_counts(y_pred: np.ndarray, y_true: np.ndarray ) -> tuple:
     fn = confusion.sum(axis=1) - tp
     return tp, fp, fn
 
-def Acurracy(y_pred: np.ndarray, y_true: np.ndarray ) -> float:
+def Accuracy(y_pred: np.ndarray, y_true: np.ndarray ) -> float:
     """Compute the accuracy.
 
     Args:
@@ -71,7 +71,7 @@ def Acurracy(y_pred: np.ndarray, y_true: np.ndarray ) -> float:
         raise ValueError("Accuracy undefined: empty arrays.")
     return float(np.mean(y_pred == y_true))
 
-def Pressision(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) -> np.ndarray:
+def Precision(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) -> np.ndarray:
     """Compute the precision of each class.
 
     Args:
@@ -86,7 +86,7 @@ def Pressision(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.
     tp, fp, _ = _class_counts(y_pred, y_true)
     return _safe_divide(tp, tp + fp, zero_division)
 
-def Reccal(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) -> np.ndarray:
+def Recall(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) -> np.ndarray:
     """Compute the recall of each class.
 
     Args:

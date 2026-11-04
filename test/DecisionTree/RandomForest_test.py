@@ -1,5 +1,5 @@
-from  decisiontree import RandomForest as RdForest
-from decisiontree import RandomForestRegression as RdForestReg
+from rbg.DecisionTree import RandomForest as RdForest
+from rbg.DecisionTree import RandomForestRegression as RdForestReg
 import numpy as np
 import pandas as pd
 import pytest 

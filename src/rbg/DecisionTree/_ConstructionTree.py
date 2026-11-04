@@ -2,9 +2,11 @@ import numpy as np
 from rbg.Utilities import Gini as gini, entropy as ent, classif_error as c_e, mode
 
 
-from _RegressionTree import Regression
-from _ClassificationTree import Classification
+from ._RegressionTree import Regression
+from ._ClassificationTree import Classification
 
+
+epsolon = 0.000000000001
 
 class ConstructionTree(Regression, Classification):
     """Base regression class for building a tree and fitting data."""

@@ -1,5 +1,5 @@
-from decisiontree import ClassificationTree as Classification
-from decisiontree import RegressionTree as Regression
+from rbg.DecisionTree import ClassificationTree as Classification
+from rbg.DecisionTree import RegressionTree as Regression
 import numpy as np
 import pandas as pd
 import pytest
@@ -65,7 +65,7 @@ class TestClassificationTree:
 
         assert isinstance(resultado, np.ndarray)
         assert resultado.shape == (2,)
-     def test_iniciate_class(self):
+    def test_iniciate_class(self):
 
         with pytest.raises(ValueError, match="The only split criterions avaiable for classification are Gini,classif_error,entropy, and Other"):
                   modelo_classificacao = Classification( max_depth = 34, max_leaf = 90, min_samples_leaf = 1, random_forest = False, min_impurity_decrease = 0.0001, criterion_split = "MAE",  min_samples_split = 2, custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Same", custom_evaluation = None )

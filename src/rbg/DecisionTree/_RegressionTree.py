@@ -1,7 +1,9 @@
 import numpy as np
 from rbg.Utilities import MSE, rss, RMSE, MAE, RSquare
-from rbg.Utilities import Gini as gini, entropy as ent, classif_error as c_e, mode
+from rbg.Utilities import mode
 
+
+epsolon = 0.000000000001
 
 class Regression:
     '''

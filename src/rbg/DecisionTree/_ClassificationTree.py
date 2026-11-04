@@ -1,7 +1,14 @@
 import numpy as np
-from rbg.Utilities import MSE, rss, RMSE, MAE, RSquare
 from rbg.Utilities import Gini as gini, entropy as ent, classif_error as c_e, mode
 
+def Gini(_, y_true):
+    return gini(y_true)
+def entropy(_, y_true):
+    return ent(y_true)
+def classif_error(_, y_true):
+    return c_e(y_true)
+
+epsolon = 0.000000000001
 
 class Classification:
     def __init__(self,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard",custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None):

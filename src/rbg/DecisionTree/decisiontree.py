@@ -1,9 +1,10 @@
 import numpy as np
 from rbg.Utilities import MSE, rss, RMSE, MAE, RSquare
 from rbg.Utilities import Gini as gini, entropy as ent, classif_error as c_e, mode
-from ModelSelection import resample, KFold
+from rbg.ModelSelection import KFold
+from rbg.Utilities import Resample
 
-from _ConstructionTree import ConstructionTree
+from ._ConstructionTree import ConstructionTree
 
 def Gini(_, y_true):
     return gini(y_true)
@@ -231,7 +232,7 @@ class BaggingBase(TreeBase):
             raise ValueError("The data do not match")
 
         self.qnt_samples = X.shape[0]
-        resamples = resample(X,n_resamples = self.n_trees,random_state = 42)
+        resamples = Resample(X,n_resamples = self.n_trees,random_state = 42)
         number_of_the_tree = 0 
 
         for _ ,(train, test) in enumerate(resamples):
