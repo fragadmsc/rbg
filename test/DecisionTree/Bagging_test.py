@@ -1,4 +1,4 @@
-from rbg.DecisionTree.Bagging import Bagging
+from rbg.DecisionTree import Bagging
 from rbg.DecisionTree import BaggingReg
 import numpy as np
 import pandas as pd
@@ -57,7 +57,7 @@ class TestBagging_Error:
         X = np.zeros((10, 3)) 
         Y = np.zeros(5)       
         
-        modelo_bagging = Bagging()
+        modelo_bagging = Bagging(criterion_split='classif_error')
 
         with pytest.raises(ValueError, match="The data do not match"):
             modelo_bagging.fit(X, Y)
@@ -73,14 +73,14 @@ class TestBagging_Error:
 
     def test_params(self):
         modelo_bagging = Bagging()
-        modelo_bagging.set_params(impurity='Gini', n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
+        modelo_bagging.set_params(criterion_split='classif_error', n_trees=10, min_impurity_decrease=0.1, max_depth=30)
         
         params = modelo_bagging.get_params()
         
         assert isinstance(params, dict)
-        assert params.get('impurity') == 'Gini'
-        assert params.get('n_trees') == 100
-        assert params.get('min_inpurity_decrease') == 0.1
+        assert params.get('criterion_split') == 'classif_error'
+        assert params.get('n_trees') == 10
+        assert params.get('min_impurity_decrease') == 0.1
         assert params.get('max_depth') == 30
 
 class TestBaggingReg_DataEntry:
@@ -131,12 +131,14 @@ class TestBaggingReg_Error:
         assert result.shape == (4,)
 
     def test_params(self):
-        modelo_bagging_reg = BaggingReg()
-        modelo_bagging_reg.set_params(n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
+        modelo_bagging_reg = BaggingReg(criterion_split = "MAE", criterion_choose = "median")
+        modelo_bagging_reg.set_params(n_trees=101, min_impurity_decrease=0.1, max_depth=30)
         
         params = modelo_bagging_reg.get_params()
         
         assert isinstance(params, dict)
-        assert params.get('n_trees') == 100
-        assert params.get('min_inpurity_decrease') == 0.1
+        assert params.get('n_trees') == 101
+        assert params.get('min_impurity_decrease') == 0.1
         assert params.get('max_depth') == 30
+        params = modelo_bagging_reg.get_params()
+

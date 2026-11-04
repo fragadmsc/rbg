@@ -55,7 +55,7 @@ def _class_counts(y_pred: np.ndarray, y_true: np.ndarray ) -> tuple:
     fn = confusion.sum(axis=1) - tp
     return tp, fp, fn
 
-def Acurracy(y_pred: np.ndarray, y_true: np.ndarray ) -> float:
+def Accuracy(y_pred: np.ndarray, y_true: np.ndarray ) -> float:
     """Compute the accuracy.
 
     Args:
@@ -71,7 +71,7 @@ def Acurracy(y_pred: np.ndarray, y_true: np.ndarray ) -> float:
         raise ValueError("Accuracy undefined: empty arrays.")
     return float(np.mean(y_pred == y_true))
 
-def Pressision(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) -> np.ndarray:
+def Precision(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) -> np.ndarray:
     """Compute the precision of each class.
 
     Args:
@@ -86,7 +86,7 @@ def Pressision(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.
     tp, fp, _ = _class_counts(y_pred, y_true)
     return _safe_divide(tp, tp + fp, zero_division)
 
-def Reccal(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) -> np.ndarray:
+def Recall(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) -> np.ndarray:
     """Compute the recall of each class.
 
     Args:
@@ -115,3 +115,61 @@ def F1Score(y_pred: np.ndarray, y_true: np.ndarray, zero_division: float = 0.0) 
     """
     tp, fp, fn = _class_counts(y_pred, y_true)
     return _safe_divide(2 * tp, 2 * tp + fp + fn, zero_division)
+
+def Gini(y_true:np.ndarray) :
+
+    if y_true.size == 0:
+        raise ValueError("The array is empty")
+    _,ocurrencies = np.unique(y_true,return_counts= True)
+    p = ocurrencies/len(y_true)
+
+    ind_gin = sum(pmk*(1-pmk) for pmk in p)
+
+    return ind_gin
+
+
+def classif_error(y_true:np.ndarray):
+
+    if y_true.size == 0:
+        raise ValueError("The array is empty")
+    _,ocurrencies = np.unique(y_true,return_counts= True)
+    p = ocurrencies/len(y_true)
+
+    return (1 -np.max(p))
+
+    
+
+
+def entropy(y_true:np.ndarray) :
+
+    if y_true.size == 0:
+        raise ValueError("The array is empty")
+    _,ocurrencies = np.unique(y_true,return_counts= True)
+    p = ocurrencies/len(y_true)
+
+    entropy_result = sum(pmk*np.log(pmk) for pmk in p)
+
+
+    return - entropy_result
+
+ 
+
+def mode(y_true:np.ndarray, axis = None):
+
+    y_true = np.asarray(y_true)
+
+    if axis is not None and y_true.ndim == 2:
+        n_samples = y_true.shape[1]
+        mode_results = []
+        for i in range(n_samples):
+            previsions_or_i = y_true[:,i]
+            values, cont = np.unique(previsions_or_i, return_counts=True)
+            ind = np.argmax(cont)
+            mode_results.append(values[ind])
+        return np.array(mode_results)
+
+    else:
+        values, cont = np.unique(y_true, return_counts = True)
+        ind = np.argmax(cont)
+        return values[ind]
+

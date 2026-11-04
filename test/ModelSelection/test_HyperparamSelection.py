@@ -17,7 +17,7 @@ matriz = GridSearch.matrix_value
 import pytest
 import numpy as np
 from rbg.ModelSelection import GridSearch, KFold, LOOCV
-from rbg.Utilities import MSE, Resample, Acurracy # devia ser accuracy
+from rbg.Utilities import MSE, Resample
 from rbg.Classification import KNN
 
 

@@ -1,5 +1,5 @@
-from rbg.DecisionTree.RandomForest import RdForest
-from rbg.DecisionTree.RandomForestRegression import RdForestReg
+from rbg.DecisionTree import RandomForest as RdForest
+from rbg.DecisionTree import RandomForestRegression as RdForestReg
 import numpy as np
 import pandas as pd
 import pytest 
@@ -23,6 +23,8 @@ RdForestReg.get_params()
 RdForestReg.fit(X,Y)
 RdForestReg.predict(Data)
 '''
+def divi_3(m):
+    return m/3
 
 class TestRdForest_DataEntry:
     def test_DataFrame(self):
@@ -75,15 +77,15 @@ class TestRdForest_Error:
     def test_params(self):
         features = 100
         modelo_rdforest = RdForest()
-        modelo_rdforest.set_params(impurity='Gini', m=features/3, n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
+        modelo_rdforest.set_params(criterion_split='Gini', factor_selection = divi_3, n_trees=100, min_impurity_decrease=0.1, max_depth=30)
         
         params = modelo_rdforest.get_params()
         
         assert isinstance(params, dict)
-        assert params.get('impurity') == 'Gini'
-        assert params.get('m') == features/3
+        assert params.get('criterion_split') == 'Gini'
+        assert params.get('factor_selection') == divi_3
         assert params.get('n_trees') == 100
-        assert params.get('min_inpurity_decrease') == 0.1
+        assert params.get('min_impurity_decrease') == 0.1
         assert params.get('max_depth') == 30
 
 
@@ -138,12 +140,14 @@ class TestRdForestReg_Error:
     def test_params(self):
         features = 100
         modelo_rdforest_reg = RdForestReg()
-        modelo_rdforest_reg.set_params(m=features/3, n_trees=100, min_inpurity_decrease=0.1, max_depth=30)
+        modelo_rdforest_reg.set_params( n_trees=100, min_impurity_decrease=0.1, max_depth=30)
         
         params = modelo_rdforest_reg.get_params()
+
+        
         
         assert isinstance(params, dict)
-        assert params.get('m') == features/3
+        assert params.get('factor_selection') == np.sqrt
         assert params.get('n_trees') == 100
-        assert params.get('min_inpurity_decrease') == 0.1
+        assert params.get('min_impurity_decrease') == 0.1
         assert params.get('max_depth') == 30
