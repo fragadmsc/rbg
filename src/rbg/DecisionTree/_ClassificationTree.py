@@ -1,5 +1,5 @@
 import numpy as np
-from rbg.Utilities import Gini as gini, entropy as ent, classif_error as c_e, mode
+from rbg.Utilities import Gini as gini, entropy as ent, classif_error as c_e, mode, error_rate
 
 def Gini(_, y_true):
     return gini(y_true)
@@ -11,7 +11,7 @@ def classif_error(_, y_true):
 epsolon = 0.000000000001
 
 class Classification:
-    def __init__(self,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard",custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None):
+    def __init__(self,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard",custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None):
         split ={
             'Standard':Gini,
             'Gini':Gini,
@@ -35,10 +35,7 @@ class Classification:
             raise ValueError ("The only split criterions avaiable for assinging y_pred are mode, median, min, and max")
         self.custom_choose  = y_pred.get(criterion_choose)
         evalu ={
-            'Standard':Gini,
-            'Gini':Gini,
-            'classif_error':classif_error,
-            'entropy':entropy,
+            'Standard':error_rate,
             'Same':self.custom_split,
             'Other':custom_evaluation
         
@@ -47,8 +44,8 @@ class Classification:
         if criterion_evaluation not in evalu:
             raise ValueError ("The only evaluation criterions avaiable for evaluating the tree are Gini, entropy, criterion_split, the Same as used in spliting and Other")
         self.custom_evaluation  = evalu.get(criterion_evaluation)
-        if criterion_evaluation !="Same":
-            raise Warning("It is possible, but probably inefficient to assaing a different method of evaluation")
+        if criterion_evaluation !="Standard":
+            raise Warning("It is possible, but probably inefficient to assaing a different method of error rate")
 
         self.criterion_split = criterion_split
         self.criterion_choose = criterion_choose
