@@ -128,14 +128,14 @@ class ConstructionTree(Regression, Classification):
         else:
             self.max_splits = None
         
-    def tree_structure(self,X):
+    def _tree_structure(self,X):
 
         """
-        Defines self.n, the number of nodes of the tree, according to the number os samples and previously
-        defined limitations (min_samples_leaf, max_depth, and max_leaf). The most limited criteria will define
+        Defines self.n, the number of nodes of the tree, according to the number of samples and previously
+        defined limitations (min_samples_leaf, max_depth, and max_leaf). The most restrictive criteria will define
         how many nodes the tree will have.
 
-        Defines the arrays size of  
+        Defines the sizes of the arrays  
             - self.children_left
             - self.children_right
             - self.feature 
@@ -143,11 +143,14 @@ class ConstructionTree(Regression, Classification):
             - self.threshold 
             - self.impurity 
             - self.value 
-            - self.purity_gain 
             - self.start 
             - self.end 
-            - self.values_per_leaf 
             - self.aux_purity_gain 
+            - self.nodes_below 
+            - self.S_alg
+            - self.G_big 
+            - self.g_small 
+            - self.father 
 
         Args:
             X: Sample matrix of shape (n_samples, p_feature)
@@ -168,7 +171,7 @@ class ConstructionTree(Regression, Classification):
             N = np.shape(X)[0]
             self.n = 2 * int(np.floor(N/self.min_samples_leaf) )-1 
         if self.max_leaf != None:
-            self.n = min(self.n, int(2*self.max_leaf-1)) # To get the most restrictive condition
+            self.n = min(self.n, int(2*self.max_leaf-1)) # The most restrictive condition
         self.children_left = np.ones(self.n,dtype=int) * -1 
         self.children_right = np.ones(self.n,dtype=int) * -1 
         self.feature = np.ones(self.n,dtype=int) * -1 
@@ -176,18 +179,16 @@ class ConstructionTree(Regression, Classification):
         self.threshold = np.full(self.n, np.nan)
         self.impurity = np.ones(self.n) * -1 
         self.value = np.full(self.n, None, dtype = object)
-        self.purity_gain = np.ones(self.n) * -1 
         self.start = np.ones(self.n,dtype=int) * -1
         self.end = np.ones(self.n,dtype=int) * -1
-        self.values_per_leaf = np.arange(self.n)# tirar
         self.aux_purity_gain = np.ones(self.n,dtype=int) * -1 
-        self.nodes_bellow = np.ones(self.n,dtype=int) * -1 
+        self.nodes_below = np.ones(self.n,dtype=int) * -1 
         self.S_alg= np.ones(self.n,dtype=int) * -1
         self.G_big = np.full(self.n, None, dtype=object)
         self.g_small = np.ones(self.n,dtype=float) * -1.0
-        self.pai = np.ones(self.n,dtype=int) * -1 
-        if self.max_leaf == None:
-            self.max_leaf = (self.n+ 1)//2  
+        self.father = np.ones(self.n,dtype=int) * -1 
+        if self.max_leaf is None:
+            self.max_leaf = (self.n+ 1)//2 
             self.max_splits = self.max_leaf - 1
 
     def splitter(self, X,y,node,defenitive = False):
