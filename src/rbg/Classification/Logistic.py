@@ -11,10 +11,11 @@ class Logistic(Classifier, GLM):
     Requires a GLM and Fisher-scoring solver supporting multivariate responses.
     """
 
-    def __init__(self, classes=None, reference_class = None,fit_intercept=True, inference = False):
+    def __init__(self, classes=None, reference_class=None, fit_intercept=True, inference=False, *, labels=None):
         """Configure labels and initialize the categorical GLM.
 
         Args:
+            labels: Compatibility alias for classes.
             classes: Optional unique class labels. If None, they are identified
                 automatically during fitting.
             reference_class: Reference label, defaulting to the first supplied.
@@ -24,6 +25,10 @@ class Logistic(Classifier, GLM):
         Raises:
             ValueError: If class labels or the reference label are invalid.
         """
+        if labels is not None:
+            if classes is not None:
+                raise ValueError("Provide only one of classes or labels.")
+            classes = labels
         Classifier.__init__(self, classes, reference_class)
         self._fit_intercept = fit_intercept
         self._inference = inference
@@ -60,8 +65,11 @@ class Logistic(Classifier, GLM):
             raise ValueError("y must be one-dimensional.")
         if X.shape[0] != y.shape[0]:
             raise ValueError("X and y must have the same number of observations.")
-        if self._labels is None:
-            self._set_labels(np.unique(y), self._reference_class)
+        observed_labels = np.unique(y)
+        if self._labels is None or not np.isin(observed_labels, self.labels).all():
+            labels = observed_labels if self.labels is None else np.unique(np.concatenate((self.labels, observed_labels)))
+            self._set_labels(labels, self._reference_class)
+            self._glm_initialized = False
         if len(self._labels) < 2:
             raise ValueError("At least two classes are required.")
         if not self._glm_initialized:
@@ -111,6 +119,35 @@ class Logistic(Classifier, GLM):
         pi = self.predict_proba(X)
         return self._labels[np.argmax(pi, axis=1)]
 
+    def k_function(self, k):
+        """Return the fitted probability function for class k."""
+        if not self._fit_done:
+            raise RuntimeError("The model has not been fitted yet.")
+        matches = np.flatnonzero(self._labels == k)
+        if not matches.size:
+            raise ValueError("Unknown class label.")
+        column = int(matches[0])
+
+        def probability(X):
+            X = np.asarray(X)
+            single = X.ndim == 1
+            result = self.predict_proba(X[None, :] if single else X)[:, column]
+            return float(result[0]) if single else result
+
+        return probability
+
+    def k_coef(self, k):
+        """Return class coefficients, or zeros for the reference class."""
+        if not self._fit_done:
+            raise RuntimeError("The model has not been fitted yet.")
+        matches = np.flatnonzero(self._labels == k)
+        if not matches.size:
+            raise ValueError("Unknown class label.")
+        column = int(matches[0])
+        if column == len(self._labels) - 1:
+            return np.zeros(self._beta.shape[0])
+        return self._beta[:, column].copy()
+
     inference = GLM.inference
     
     def _make_family(self):
@@ -123,7 +160,9 @@ class Logistic(Classifier, GLM):
         self._K = len(self._labels)
         def b(theta):
             """Return log(1 + sum(exp(theta))) per row of an (n, K-1) matrix."""
-            return np.log(1 + np.sum(np.exp(theta), axis=1))
+            return np.logaddexp.reduce(
+                np.column_stack((np.zeros(len(theta)), theta)), axis=1
+            )
         def b_prime(theta):
             """Return the (n, K-1) probabilities of the non-reference classes."""
             pi = np.exp(theta - b(theta)[:, None])

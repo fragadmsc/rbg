@@ -133,9 +133,9 @@ class Lasso(LinearModel, CoordinateDescent):
             random_state=self._seed,
             replace=True,
         )
-        for i, indices in enumerate(samples):
-            X_boot = self._X_input[indices]
-            y_boot = self._y[indices]
+        for i, (train_indices, _) in enumerate(samples):
+            X_boot = self._X_input[train_indices]
+            y_boot = self._y[train_indices]
             model_boot = Lasso(fit_intercept=self._intercept, inference=False)
             betas_boot[i] = model_boot.fit(X_boot, y_boot, self._alpha)
         self._residuals = e = self.residuals()
