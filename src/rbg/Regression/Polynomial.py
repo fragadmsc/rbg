@@ -12,11 +12,12 @@ class Polynomial():
     degrees [2, 3] produces columns x1, x1**2, x2, x2**2, x2**3.
     """
 
-    def __init__(self, degrees, method="linear", fit_intercept=True):
+    def __init__(self, degree=None, method="linear", fit_intercept=True, *, degrees=None):
         """Configure polynomial degrees and create the internal estimator.
 
         Args:
-            degrees: Sequence of positive integer degrees, one per input feature.
+            degree: Sequence of positive integer degrees, one per input feature.
+            degrees: Compatibility alias for degree; supply only one spelling.
             method: Estimator choice: 'linear', 'ridge', or 'lasso'.
             fit_intercept: Whether the internal estimator fits an intercept.
 
@@ -24,7 +25,9 @@ class Polynomial():
             ValueError: If degrees is not a nonempty one-dimensional sequence
                 of positive integers, or method is not supported.
         """
-        self._degrees = np.asarray(degrees)
+        if degree is not None and degrees is not None:
+            raise ValueError("Provide only one of degree or degrees.")
+        self._degrees = np.asarray(degree if degree is not None else degrees)
         if (
             self._degrees.ndim != 1
             or self._degrees.size == 0
