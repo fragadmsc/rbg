@@ -12,7 +12,7 @@ class ConstructionTree(Regression, Classification):
     """Base regression class for building a tree and fitting data."""
 
     def __init__(self,min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt, random_seed = 0, form = "regression"):
-        """Initializes the Regression Tree Strcuture 
+        """Initializes the Tree Structure
 
                  
         Args:
@@ -20,36 +20,55 @@ class ConstructionTree(Regression, Classification):
             min_impurity_decrease: The minimum purity gain to allow a split in a node.
             min_samples_split: The minimum number of samples in a node to allow a split.
             max_depth: The maximum depth the tree can grow.
-            min_samples_leaf: Minimum number of samples of each leaf. 
+            min_samples_leaf: The minimum number of samples required for each leaf node.
             max_leaf: Maximum number of leaves of the tree. 
+            random_forest: Boolean indicating whether it is a random forest or not. 
+            criterion_split: String indicating the metric used to calculate the split.
+            custom_split: Metric function to calculate the split.
+            criterion_choose: String indicating the metric used to choose the predicted value.
+            custom_choose: Metric function to choose the predicted value.
+            criterion_evaluation: String indicating the metric used to evaluate the error.
+            custom_evaluation: Metric function to evaluate the error.
+            factor_selection: Function to select the amount of features that can be selected to split a node.
+            random_seed: Random seed associated with the tree.
+            form: Indicated whether it is a classification or regression tree.
+
 
         Initializes the attributes:
         
             - self.min_impurity_decrease: The minimum purity gain to allow a split in a node.
             - self.min_samples_split: The minimum number of samples in a node to allow a split.
             - self.max_depth: The maximum depth the tree can grow.
-            - self.min_samples_leaf: Minimum number of samples of each leaf. 
-            - self.children_left: Array mapping each node to its left child or -1 (if it is a leaf)
-            - self.node_depth: Array mapping each node to its depth 
-            - self.children_right: Array mapping each node to its right child or -1 (if it is a leaf)
-            - self.feature: Array mapping each node to its predictor splitter 
-            - self.threshold: Array mapping each node to its value of split
-            - self.impurity: Array mapping each node to its impurity
-            - self.value: Array mapping each node to its predictor splitter 
-            - self.purity_gain_subtree: Array mapping each node to its purity gain compared to it's subtree leaves
-            - self.start: Array mapping each node to the first sample that falls on that node
-            - self.end: Array mapping each node to the last sample that falls on that node
-            - self.aux_purity_gain: Auxiliar array mapping each node to its' purity gain compated to both children
-            - self.max_leaf: Maximum number of leaves
-            - self.n: Number of nodes
-            - self.max_splits: Maximum number of splits
+            - self.min_samples_leaf: Minimum number of samples required for each leaf node.
+            - self.children_left: Array mapping each node to its left child or -1 (if it is a leaf).
+            - self.node_depth: Array mapping each node to its depth. 
+            - self.children_right: Array mapping each node to its right child or -1 (if it is a leaf).
+            - self.feature: Array mapping each node to its split feature index.
+            - self.threshold: Array mapping each node to its split threshold value.
+            - self.impurity: Array mapping each node to its impurity.
+            - self.value: Array mapping each node to its predicted value.
+            - self.start: Array mapping each node to the first sample that falls on that node.
+            - self.end: Array mapping each node to the last sample that falls on that node.
+            - self.aux_purity_gain: Auxiliary array indicating if it is possible to split each node.
+            - self.max_leaf: Maximum number of leaves.
+            - self.n: Number of nodes.
+            - self.random_forest: Boolean indicating if it is a random forest.
+            - self.nodes_below: Number of nodes in the subtree of root "i".
+            - self.S_alg: Parameter to prune a tree.
+            - self.G_big: Parameter to prune a tree.
+            - self.g_small: Parameter to prune a tree.
+            - self.father: Array mapping each node to its ancestor.
+            - self.form: Variable indicating whether it is a classification or regression tree.
+            - self.factor_selection: Function that determines the number of predictors to be analyzed.
+            - self.random_seed: Random seed associated with the tree, if applicable.
+            - self.max_splits: Maximum number of splits.
         
         Raises:
 
-            TypeError: If the parameter 'min_impurity_decrease' is not number, or if 
+            TypeError: If the parameter 'min_impurity_decrease' is not a number, or if 
             parameters 'max_depth, min_samples_split,min_samples_leaf.max_leaf 'are not integers
 
-            ValueError: If the integer parameter if smaller than it should be to generate a tree.
+            ValueError: If the integer parameter is smaller than it should be to generate a tree.
 
 
         """
@@ -62,7 +81,7 @@ class ConstructionTree(Regression, Classification):
         if isinstance(min_impurity_decrease, str):
              raise TypeError ("min_impurity_decrease should be a number")        
         if max_depth is not None and not isinstance(max_depth,(int,np.integer)):
-            raise TypeError("The param 'ma_depth' must be None or an integer.")
+            raise TypeError("The param 'max_depth' must be None or an integer.")
         if max_depth is not None and max_depth < 0:
             raise ValueError("'max_depth' must be greater or equal to zero.")
         if  not isinstance(min_samples_split, (int,np.integer)):
@@ -75,7 +94,7 @@ class ConstructionTree(Regression, Classification):
             raise ValueError("min_samples_leaf must be at least one")
         if max_leaf is not None and not isinstance (max_leaf, (int, np.integer)):
             raise TypeError("max_leaf must be an integer")
-        if max_leaf != None and max_leaf <1:
+        if max_leaf is not None and max_leaf <1:
             raise ValueError("You must have at least one leaf node")    
 
         self.min_impurity_decrease = min_impurity_decrease 
@@ -89,18 +108,17 @@ class ConstructionTree(Regression, Classification):
         self.threshold = None
         self.impurity = None
         self.value = None
-        self.purity_gain_subtree = None
         self.start = None
         self.end = None
         self.aux_purity_gain = None
         self.max_leaf = max_leaf
         self.n = None
         self.random_forest = random_forest
-        self.nodes_bellow = None
+        self.nodes_below = None
         self.S_alg = None
         self.G_big = None
         self.g_small = None
-        self.pai = None
+        self.father = None
         self.form = form
         self.factor_selection = factor_selection
         self.random_seed = random_seed
