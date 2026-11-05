@@ -4,7 +4,7 @@ from rbg.Classification.classifier import Classifier
 class KNN(Classifier):
     """K-nearest neighbors classifier for categorical labels."""
 
-    def __init__(self, labels, k=3, reference_class = None):
+    def __init__(self, labels=None, k=3, reference_class = None):
         """Initialize the classifier with class labels and the number of neighbors.
 
         Args:
@@ -79,14 +79,16 @@ class KNN(Classifier):
                 raise ValueError("X must have only finite values.")
         if y.ndim != 1:
             raise ValueError("y must be one-dimensional.")
-        if not np.isin(y, self._labels).all():
-            raise ValueError("y contains unknown class labels.")
         if X.shape[0] != y.shape[0]:
             raise ValueError("The data do not match.")
         if X.shape[0] == 0 or y.shape[0] == 0 or y.size == 0:
             raise ValueError("X and y must not be empty.")
         if X.shape[1] == 0:
             raise ValueError("X must have at least one feature.")
+        if self._labels is None:
+            self._set_labels(np.unique(y))
+        elif not np.isin(y, self._labels).all():
+            raise ValueError("y contains unknown class labels.")
 
         self._X_train = X
         self._y_train = y
