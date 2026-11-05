@@ -1,6 +1,13 @@
 import numpy as np
 import pytest
-from rbg.Utilities.crossvalidation import GridSearch, KFold, LOOCV, RandomizedSearch
+from rbg.ModelSelection.KFold import KFold, StratifiedKFold, GroupKFold
+from rbg.ModelSelection.LOOCV import LOOCV
+from rbg.ModelSelection.HyperparameterSelection import GridSearch, RandomizedSearch
+from rbg.Utilities.crossvalidation import train_test_split, train_val_test_split, cv_score
+from rbg.Utilities.Resample import Resample
+
+# imports adicionais:
+# from rbg.Utilities
 
 class ToyModel:
     def __init__(self, param1=1,param2=10):
@@ -15,7 +22,13 @@ class ToyModel:
     
 def SimpleMSE(y_real, y_pred):
     return float(np.mean(y_real - y_pred)**2)
-# tests GridSearch:
+
+
+
+# ====TESTES GRID SEARCH====
+
+# testa parametro greater is better funciona
+
 def test_gera_combs():
     param_grid = {'param1':[1, 2, 3], 'param2':[10, 20]}
     grid = GridSearch(model=ToyModel, param_grid=param_grid, cv=KFold(k=2), metrics = SimpleMSE)
@@ -40,7 +53,10 @@ def test_grid_fit_best_hyperp():
     predicoes = grid.predict(X)
     np.testing.assert_array_equal(predicoes, np.array([3.0, 3.0, 3.0, 3.0]))
 
-# tests RandomizedSearch:
+# ====TESTES RANDOMIZED SEARCH===
+
+# testa parametro greater is better funciona
+
 def test_randomized_search():
     X = np.array([[1.0],[2.0],[3.0],[4.0]])
     y = np.array([3.0, 3.0, 3.0, 3.0])
@@ -79,3 +95,12 @@ def test_randomized_reprod():
     
     assert rs1.best_params_ == rs2.best_params_
     assert rs1.best_score_ == rs2.best_score_
+    
+# ==== TESTES TRAIN TEST SPLIT====
+
+# ========== TESTES TRAIN VAL TEST SPLIT ===
+
+# ==== TESTES CV SCORE
+
+
+# ===== TESTES RESAMPLE====

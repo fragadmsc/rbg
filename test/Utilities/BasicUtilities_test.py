@@ -1,11 +1,12 @@
-# from rbg.Utilities import Matrix_design, Resample
+# from rbg.Utilities import matrix_design, Resample
 from rbg.Utilities import Resample
 from rbg.Utilities import MatrixDesign
+from rbg.Utilities import CoordinateDescent
 
 
 '''
 #a partir de uma array constroi uma matriz design
-Matrix_design(X, intecept = True)
+matrix_design(X, intecept = True)
 
 
 #Bootsratp
@@ -76,13 +77,13 @@ class TestMatrixdesign:
             n_amostras = X.shape[0]
             n_features = X.shape[1]
             
-            resultado_base = MatrixDesign(X, degree=1, intercept=False)
+            resultado_base = matrix_design(X, degree=1, intercept=False)
             assert isinstance(resultado_base, np.ndarray)
             assert resultado_base.shape == (n_amostras, n_features)
             
-            resultado_intercept = MatrixDesign(X, degree=1, intercept=True)
+            resultado_intercept = matrix_design(X, degree=1, intercept=True)
             assert resultado_intercept.shape == (n_amostras, n_features + 1)
             
-            resultado_poly = MatrixDesign(X, degree=2, intercept=True)
+            resultado_poly = matrix_design(X, degree=2, intercept=True)
             assert resultado_poly.shape[0] == n_amostras
             assert resultado_poly.shape[1] > n_features + 1

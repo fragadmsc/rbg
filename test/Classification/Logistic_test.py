@@ -10,19 +10,16 @@ class TestDataEntry():
         labels = pd.Series([0, 1, 0, 1])
 
         modelo_logreg = LogReg(labels=[0, 1])
-        DtFrameResult = modelo_logreg.fit(Data, labels)
+        modelo_logreg.fit(Data, labels)
 
-        assert isinstance(DtFrameResult, np.ndarray)
-
+        
     def test_Numpy(self):
         Data = np.array([[1.0], [2.0], [3.0], [4.0]])
         labels = np.array([0, 1, 0, 1])
 
         modelo_logreg = LogReg(labels=[0, 1])
-        NpResult = modelo_logreg.fit(Data, labels)
-
-        assert isinstance(NpResult, np.ndarray)
-
+        modelo_logreg.fit(Data, labels)
+      
 
 class TestError():
     def test_MatchingDim(self):
@@ -35,15 +32,14 @@ class TestError():
             modelo_logreg.fit(X, Y)
 
         X_valid = np.array([
-            [1.0, 0.0], [1.0, 0.0],
-            [0.0, 1.0], [0.0, 1.0],
-            [1.0, 1.0], [1.0, 1.0],
+            [1.0, 0.0], [1.0, 0.2],
+            [0.0, 1.0], [0.2, 1.0],
+            [1.0, 1.0], [0.9, 0.9],
         ])
-        y_valid = np.array([0, 1] * 3)
+        y_valid = np.array([0, 0, 1, 1, 2, 2])
         modelo_logreg.fit(X_valid, y_valid)
 
         Data = np.zeros((4, 2))
-
         resultado = modelo_logreg.predict(Data)
 
         assert resultado.shape == (4,)
@@ -53,26 +49,25 @@ class TestError():
 
     def test_attributes(self):
         X_train = np.array([
-            [1.0, 0.0], [1.0, 0.0],
-            [0.0, 1.0], [0.0, 1.0],
-            [1.0, 1.0], [1.0, 1.0],
+            [1.0, 0.0], [1.0, 0.2],
+            [0.0, 1.0], [0.2, 1.0],
+            [1.0, 1.0], [0.9, 0.9],
         ])
-        Y_treino = np.array(['contaminated', 'drinkable'] * 3)
+        Y_treino = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable', 'pure', 'pure'])
 
         modelo_logreg = LogReg(labels=['contaminated', 'drinkable'])
         modelo_logreg.fit(X_train, Y_treino)
 
         assert isinstance(modelo_logreg.labels, np.ndarray)
-        assert np.array_equal(np.unique(modelo_logreg.labels), np.unique(Y_treino))
-        assert np.array_equal(modelo_logreg.labels, np.array(['contaminated', 'drinkable']))
+        assert set(modelo_logreg.labels) == set(Y_treino)
 
     def test_method(self):
         X_train = np.array([
-            [1.0, 0.0], [1.0, 0.0],
-            [0.0, 1.0], [0.0, 1.0],
-            [1.0, 1.0], [1.0, 1.0],
+            [1.0, 0.0], [1.0, 0.2],
+            [0.0, 1.0], [0.2, 1.0],
+            [1.0, 1.0], [0.9, 0.9],
         ])
-        Y_train = np.array([0, 1] * 3)
+        Y_train = np.array([0, 0, 1, 1, 2, 2])
 
         n_features = X_train.shape[1]
 

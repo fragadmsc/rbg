@@ -4,31 +4,41 @@ import numpy as np
 class Classifier(ABC):
     """Abstract base class for classification models."""
 
-    def __init__(self, labels, reference_class=None):
+    def __init__(self, labels=None, reference_class=None):
         """Store class labels and move the reference class to the last position.
 
         Args:
-            labels: Nonempty one-dimensional sequence of unique class labels.
-            reference_class: Reference label. If None, use the first supplied
-                label, then move it to the end of the stored class order.
+        labels: Optional nonempty one-dimensional sequence of unique class labels.
+            If None, the class labels can be defined later during fitting.
+        reference_class: Reference label. If None, use the first supplied label,
+            then move it to the end of the stored class order.
 
         Raises:
-            ValueError: If labels is empty, not one-dimensional, contains
-                duplicates, or does not contain the reference label.
+            ValueError: If labels is empty, not one-dimensional, contains duplicates,
+                or does not contain the reference label.
         """
         self._fit_done = False
-        self._labels = np.asarray(labels)
-        if self._labels.ndim != 1 or self._labels.size == 0:
-            raise ValueError("labels must be a nonempty one-dimensional sequence.")
-        if np.unique(self._labels).size != self._labels.size:
-            raise ValueError("labels must contain unique labels.")
-        self.labels = self._labels.copy()
-        if reference_class is None:
-            reference_class = self._labels[0]
-        if reference_class not in self._labels:
-            raise ValueError("The reference class must be present in labels.")
+        self._labels = None
+        self.labels = None
         self._reference_class = reference_class
-        self._labels = np.concatenate((self._labels[self._labels != reference_class],self._labels[self._labels == reference_class],))
+
+        if labels is not None:
+            self._set_labels(labels, reference_class)
+
+    def _set_labels(self, labels, reference_class=None):
+        labels = np.asarray(labels)
+
+        if labels.ndim != 1 or labels.size == 0:
+           raise ValueError("labels must be a nonempty one-dimensional sequence.")
+        if np.unique(labels).size != labels.size:
+           raise ValueError("labels must contain unique labels.")
+        if reference_class is None:
+            reference_class = labels[0]
+        if reference_class not in labels:
+            raise ValueError("The reference class must be present in labels.")
+        self.labels = labels.copy()
+        self._reference_class = reference_class
+        self._labels = np.concatenate((labels[labels != reference_class],labels[labels == reference_class]))
 
     @abstractmethod
     def fit(self, X, y):
