@@ -11,7 +11,7 @@ epsolon = 0.000000000001
 class ConstructionTree(Regression, Classification):
     """Base regression class for building a tree and fitting data."""
 
-    def __init__(self,min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None, factor_selection = np.sqrt, random_seed = 0, form = "regression"):
+    def __init__(self,min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt, random_seed = 0, form = "regression"):
         """Initializes the Regression Tree Strcuture 
 
                  
