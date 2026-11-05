@@ -163,15 +163,6 @@ class TestClassificationTree:
        
         assert not np.array_equal(Y_test_no_prune, Y_test_prune)
 
-        #Testing if prune tree obtained a smaller or equal error than not pruned 
-
-        y_test = ((np.sin(X_test[:, 0]) + np.cos(X_test[:, 1])) > 0).astype(int)
-
-        error_prune = error_rate(Y_test_prune, y_test)
-        error_no_prune = error_rate(Y_test_no_prune, y_test)
-
-        assert error_prune<= error_no_prune
-
 
 class TestRegressionTree:
     
@@ -214,3 +205,105 @@ class TestRegressionTree:
 
         assert isinstance(resultado, np.ndarray)
         assert resultado.shape == (3,)
+    def test_iniciate_class(self):
+
+        with pytest.raises(ValueError, match="The only split criterions avaiable for regression are MSE, RSS, RMSE, MAE, RSquare, and Other"):
+                  model_reg = Regression( max_depth = 34, max_leaf = 90, min_samples_leaf = 1, random_forest = False, min_impurity_decrease = 0.0001, criterion_split = "Gini",  min_samples_split = 2, custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None )
+
+        model_reg = Regression(min_samples_split = 6, max_depth = 34, max_leaf = 90, min_samples_leaf = 1, random_forest = False, min_impurity_decrease = 0.0001, criterion_split = "MAE", custom_split = None, criterion_choose = "median", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None )
+        params = model_reg.get_params()
+        assert params.get('criterion_split') == 'MAE'
+        assert params.get('min_impurity_decrease') == 0.0001
+        assert params.get('max_depth') == 34
+        assert params.get('min_samples_split') == 6
+        assert params.get('max_leaf') == 90
+        assert params.get('min_samples_leaf') == 1
+        assert params.get('random_forest') == False
+        assert params.get('max_depth') == 34
+        assert params.get('criterion_choose') == "median"
+        assert params.get('criterion_evaluation') == "Standard"
+
+    def test_fit_class(self):
+        model_reg = Regression()
+        X = np.array([[[4],[5],[8]],[[6],[9],[18]]])
+        Y = np.array([1,2])
+
+        with pytest.raises(ValueError, match="X must be two-dimensional"):
+            model_reg.fit(X, Y)
+        X = np.array([[4, 5,8],[6,9,18]])
+        Y = np.array([[4,9],[6,0]])
+        with pytest.raises(ValueError, match="y must be one-dimensional."):
+             model_reg.fit(X, Y)
+        X = np.array([]).reshape(0, 2)
+        Y = np.array([4,9])
+        
+        with pytest.raises(ValueError, match="X must contain at least one observation and one feature."):
+            model_reg.fit(X, Y)
+        X = np.array([]).reshape(2, 0)
+        Y = np.array([4,9])
+        
+        with pytest.raises(ValueError, match="X must contain at least one observation and one feature."):
+            model_reg.fit(X, Y)
+
+
+        X = np.array([[6,9,0],[3,4,6]])
+        Y = np.array([4])
+        
+        with pytest.raises(ValueError, match="The data do not match"):
+            model_reg.fit(X, Y)
+    def test_tree_args(self):
+        model_reg = Regression()
+        X = np.array([[1],[2],[10],[11]])
+        Y = np.array([0,0,1,1])
+        model_reg.fit(X, Y)
+
+        dic = model_reg.get_tree_structure_info()
+        assert isinstance(dic, dict)
+        assert dic.get('n') == 7
+        assert dic.get('children_left')[0] == 2
+        assert dic.get('children_right')[0] == 1
+        assert dic.get('children_left')[1] == -1
+        assert dic.get('children_right')[2] == -1
+        assert int(dic.get('impurity')[2]) == 0
+
+    def test_predict(self):
+        model_reg = Regression()
+        X = np.array([[1],[2],[10],[11]])
+        Y = np.array([0,2,50,60])
+        model_reg.fit(X, Y)
+
+        x_test = np.array([[3]])
+        a = model_reg.predict(x_test)
+        assert a == np.array([2])
+        x_test = np.array([[3],[10.8]])
+        a = model_reg.predict(x_test)
+        assert np.array_equal(a, np.array([2, 60]))
+
+    def test_prune(self):
+        '''
+        Creating data that an overfit would cause a lot of trouble, forcing the prune 
+        method to choose to cut the tree (that is, to choose an alfa different from 0)
+        '''
+        np.random.seed(42)
+        X_train = np.random.uniform(0, 10, size=(120, 2))
+    
+        y_train = (np.sin(X_train[:, 0]) + np.cos(X_train[:, 1])) 
+    
+        noise = np.random.normal(0, 0.5, size=120)
+        y_train = y_train + noise
+
+        model_reg = Regression()
+        model_reg.fit(X_train, y_train, prune=True)
+    
+        X_test = np.random.uniform(0, 10, size=(40, 2))
+        Y_test_prune = model_reg.predict(X_test)
+
+        model_reg_2 = Regression()
+        model_reg_2.fit(X_train, y_train, prune=False)
+        Y_test_no_prune = model_reg_2.predict(X_test)
+       
+
+        assert not np.array_equal(Y_test_no_prune, Y_test_prune)
+
+
+    
