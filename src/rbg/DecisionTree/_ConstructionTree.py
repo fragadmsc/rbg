@@ -191,48 +191,42 @@ class ConstructionTree(Regression, Classification):
             self.max_leaf = (self.n+ 1)//2 
             self.max_splits = self.max_leaf - 1
 
-    def splitter(self, X,y,node,defenitive = False):
+    def _splitter(self, X,y,node,definitive = False):
 
         """
 
-        Algorithm designed to find the best predictor and the best value of that predictor
-        to partitionate a node. 
-        If the node is found to be the best one to be splitted, it will indeed be partitioned and 
-        generate two new nodes.
+        Designed to find the best predictor and the corresponding best threshold 
+        to partition a node. 
 
-        For a fixed node, the algorithm will iterate for every parameter. In each parameter, 
-        the method "_best_cut_value_for_fixed_p" will be called to find the best cut value 
-        of that parameter ( if it existis). Then, the chosen parameter to cut the node will be
-        selected. If defenitive = False, only the information of the impurity decrease will be returned.
-        If defenitive = True, it means that the node will actually be cut, therefore, its children
-        will be defined, and the node's attributes of threshold and features will be updated. Also, 
-        the sample matrix "X" will be updated, that is, its lines will re-arrenge themselves to simulate
-        the final partition of the sample datas in each leaf. Therefore, the y vector will have its
-        lines equally re-arrenged. Lsatly, it sets up left child and right child as possible future nodes
-        to be split.
+        If definitive is False, it only calculates and returns the impurity decrease (purity gain).
+        If definitive is True, the node will actually be cut, therefore, its children
+        will be defined, and the node's attributes of threshold and features will be updated.Also,
+        it reorders the dataset sample, and registers the created left child and right child as 
+        possible future nodes to be split (if applicable).
+
+
+        For a fixed node, the algorithm will iterate for every applicable predictor. In each predictor, 
+        the method "_best_cut_value_for_fixed_p" will be called to find the best threshold 
+        of that feature ( if it exists). Then, the chosen parameter to cut the node will be
+        selected. 
 
 
         Args:
             X: Sample matrix of shape (n_samples, p_feature).
             y: Vector of the observations of shape (n_samples,).
-            node: indice of the node that will be testedo or actually partitioned
-            defenitive: if "False" then splitter only find the best cut of the node. If "True", then
-            besides finding the best, it will actually cut the node and generate the new leaves.
+            node: index of the node that will be testedo or actually partitioned
+            definitive: if "False" then _splitter only find the best cut of the node. If "True", then
+            besides finding the best, it will actually cut the node and generate the child nodes.
         
         Returns:
-            None - > If there is no possible cut 
-            gratest_purity_gain_overall -> If there is a possible cut, returns the onw which
-            increses the purity the most
+            None: If there is no possible split
+            float: greatest_purity_gain_overall, the cut that increases the purity gain the most
 
-
-        
         """
 
         matri_list = [] 
         possible_cuts = [] 
         y_list = [] 
-
-        y_tam = int(y.shape[0])
 
         predictors = int(X.shape[1])
 
@@ -253,8 +247,8 @@ class ConstructionTree(Regression, Classification):
 
             X_c_p = X.copy()
             lines = X[self.start[node]:self.end[node]] #lines from the sample that are on the current node
-            ordered_ind = np.argsort(lines[:,predictor]) # incrising order index of those lines according to the predictor
-            final_lines = lines[ordered_ind] # re - arranged lines that are on "node" but in increasing order according to precidctor
+            ordered_ind = np.argsort(lines[:,predictor]) # increasing order index of those lines according to the predictor
+            final_lines = lines[ordered_ind] # re - arranged lines that are on "node" but in increasing order according to predictor
             col_pred = final_lines[:, predictor]
 
             X_c_p [self.start[node]:self.end[node]] = final_lines # re - arrenged matrix X
@@ -264,7 +258,7 @@ class ConstructionTree(Regression, Classification):
             final_y_lines = y_lines[ordered_ind]
             y_c_p [self.start[node]:self.end[node]] = final_y_lines
 
-            median = (col_pred[:-1] + col_pred[1:])/2 # Candidated for cut value. 
+            median = (col_pred[:-1] + col_pred[1:])/2 # Candidates for cut value. 
 
             self._best_cut_value_for_fixed_p(node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines)
 
@@ -278,15 +272,15 @@ class ConstructionTree(Regression, Classification):
         if y_list.shape[0] == 0:
             return None 
         else:
-            gratest_purity_gain_overall_index = np.argmax(possible_cuts[:,0])
-            gratest_purity_gain_overall = possible_cuts[gratest_purity_gain_overall_index,0]
-            if defenitive == False:
-                return gratest_purity_gain_overall
+            greatest_purity_gain_overall_index = np.argmax(possible_cuts[:,0])
+            greatest_purity_gain_overall = possible_cuts[greatest_purity_gain_overall_index,0]
+            if definitive == False:
+                return greatest_purity_gain_overall
             else:
-                X = matri_list[gratest_purity_gain_overall_index]
-                y = y_list[gratest_purity_gain_overall_index]
-                self.threshold[node] = possible_cuts[gratest_purity_gain_overall_index,1]
-                self.feature[node] = possible_cuts[gratest_purity_gain_overall_index,2]
+                X = matri_list[greatest_purity_gain_overall_index]
+                y = y_list[greatest_purity_gain_overall_index]
+                self.threshold[node] = possible_cuts[greatest_purity_gain_overall_index,1]
+                self.feature[node] = possible_cuts[greatest_purity_gain_overall_index,2]
                 r1 = np.max(self.children_right)
                 r2 = np.max(self.children_left)
                 right = max(r1,r2)+1
@@ -298,27 +292,27 @@ class ConstructionTree(Regression, Classification):
                 self.children_left[node] = left
                 self.children_right[node] = right
 
-                self.value[left] = possible_cuts[gratest_purity_gain_overall_index,6]
-                self.impurity[left] = possible_cuts[gratest_purity_gain_overall_index,4]
+                self.value[left] = possible_cuts[greatest_purity_gain_overall_index,6]
+                self.impurity[left] = possible_cuts[greatest_purity_gain_overall_index,4]
                 self.start[left] = self.start[node]
-                self.end[left] = possible_cuts[gratest_purity_gain_overall_index,3]
+                self.end[left] = possible_cuts[greatest_purity_gain_overall_index,3]
                 self.node_depth[left] = self.node_depth[node] +1 
-                self.pai[left] = node
+                self.father[left] = node
 
-                if (self.end[left] - self.start[left]) >= self.min_samples_split and (self.max_depth == None or self.node_depth[left] < self.max_depth) and self.impurity[left] > epsolon:
+                if (self.end[left] - self.start[left]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[left] < self.max_depth) and self.impurity[left] > epsolon:
                     self.aux_purity_gain[left] = 1
 
-                self.value[right] = possible_cuts[gratest_purity_gain_overall_index,7]
-                self.impurity[right] = possible_cuts[gratest_purity_gain_overall_index,5]
-                self.start[right]= possible_cuts[gratest_purity_gain_overall_index,3] #might need to review that
+                self.value[right] = possible_cuts[greatest_purity_gain_overall_index,7]
+                self.impurity[right] = possible_cuts[greatest_purity_gain_overall_index,5]
+                self.start[right]= possible_cuts[greatest_purity_gain_overall_index,3] #might need to review that
                 self.end[right] = self.end[node]
                 self.node_depth[right] = self.node_depth[node] +1 
-                self.pai[right] = node
+                self.father[right] = node
 
-                if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth == None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
+                if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
                     self.aux_purity_gain[right] = 1
 
-                return gratest_purity_gain_overall   
+                return greatest_purity_gain_overall 
 
 
     def _best_cut_value_for_fixed_p(self,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines):
