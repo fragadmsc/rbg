@@ -54,7 +54,7 @@ class TestError():
         
         modelo_lasso = Lasso()
 
-        with pytest.raises(ValueError, match="The data do not match"):
+        with pytest.raises(ValueError, match="same number of observations"):
             modelo_lasso.fit(X, Y)
 
         X_cut = X[:5, :] 
@@ -70,7 +70,7 @@ class TestError():
 
     def test_params(self):
         modelo_lasso = Lasso()
-        modelo_lasso.set_params(alpha=1, intercept=False)
+        modelo_lasso.set_params(alpha=1, fit_intercept=False)
         parametros = modelo_lasso.get_params()
         
         assert parametros is not None
@@ -90,7 +90,7 @@ class TestError():
         modelo_lasso.fit(xtrain, ytrain)
 
         assert isinstance(modelo_lasso.coef, np.ndarray)
-        assert modelo_lasso.coef.shape == (n_features,)
+        assert modelo_lasso.coef.shape == (n_features + 1,)
 
 #============fazer
 class TestRightResults():

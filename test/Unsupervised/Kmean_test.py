@@ -65,7 +65,7 @@ class TestKMean:
         assert modelo_kmean.clusters.shape == (n_amostras, )
 
         assert isinstance(modelo_kmean.centroids, np.ndarray)
-        assert modelo_kmean.centroids.shape == (k ,)
+        assert modelo_kmean.centroids.shape == (k, n_features)
 
         for centroid in modelo_kmean.centroids:
             assert len(centroid) == n_features

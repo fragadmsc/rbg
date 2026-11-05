@@ -34,6 +34,38 @@ class KMeans:
         self._labels: np.ndarray | None = None
         self._wss: float | None = None
 
+    def set_params(self, **params) -> "KMeans":
+        """Set hyperparameters (only the ones passed are changed).
+
+        Args:
+            **params: Any of ``k``, ``centroid_selection``, ``max_iter``, ``tol``, ``seed``.
+
+        Returns:
+            The instance.
+
+        Raises:
+            ValueError: If a parameter name is unknown.
+        """
+        for name, value in params.items():
+            if name not in ("k", "centroid_selection", "max_iter", "tol", "seed"):
+                raise ValueError(f"unknown parameter '{name}'.")
+            setattr(self, name, value)
+        return self
+
+    def get_params(self) -> dict:
+        """Return the hyperparameters.
+
+        Returns:
+            Dict mapping parameter name to its value.
+        """
+        return {
+            "k": self.k,
+            "centroid_selection": self.centroid_selection,
+            "max_iter": self.max_iter,
+            "tol": self.tol,
+            "seed": self.seed,
+        }
+    
     @property
     def centroids(self) -> np.ndarray:
         """Centroid coordinates learned during fit.
@@ -114,10 +146,14 @@ class KMeans:
         """
         n, p = X.shape
 
-        if isinstance(self.centroid_selection, str) and self.centroid_selection != "Kmeans++":
-            raise ValueError("centroid_selection must be 'Kmeans++' or coordinates.")
-
-        if self.centroid_selection != "Kmeans++":
+        if isinstance(self.centroid_selection, str):
+            if self.centroid_selection not in ("Kmeans++", "Kmean++"):
+                raise ValueError("centroid_selection must be 'Kmeans++' or coordinates.")
+            use_kmeanspp = True
+        else:
+            use_kmeanspp = False
+        
+        if not use_kmeanspp:
             centroids = np.asarray(self.centroid_selection, dtype=np.float64)
             if centroids.shape != (self.k, p):
                 raise ValueError(f"expected centroids of shape ({self.k}, {p}).")

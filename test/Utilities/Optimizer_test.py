@@ -1,5 +1,5 @@
 import pytest 
-from rbg.Utilities.Optimizer import AdamOptimizer
+from rbg.Utilities import AdamOptimizer
 
 class TestOptimizer():
     def test_with_function(self):

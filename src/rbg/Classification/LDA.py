@@ -1,5 +1,5 @@
 import numpy as np
-from rbg.Classification.classifier import Classifier
+from .classifier import Classifier
 
 class LDA(Classifier):
     """Linear discriminant analysis classifier for categorical labels.
@@ -64,7 +64,6 @@ class LDA(Classifier):
             raise ValueError("y must be at least two classes.")
         if X.shape[0] <= self.labels.size:
             raise ValueError("There must be more samples to estimate covariance.")
-
         self._X_train = X
         self._y_train = y
 
@@ -101,6 +100,7 @@ class LDA(Classifier):
         Returns:
             Pooled covariance matrix of shape (n_features, n_features).
         """
+    
         matriz = np.zeros((self._X_train.shape[1], self._X_train.shape[1]))
         detours = [self._X_train[self._y_train == k] - self.mean_array(k) for k in self.labels]
         products = [detour.T @ detour for detour in detours]
