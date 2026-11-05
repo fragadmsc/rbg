@@ -1,6 +1,6 @@
 # from rbg.Utilities import Matrix_design, Resample
 from rbg.Utilities import Resample
-from rbg.Utilities import Matrix_design
+from rbg.Utilities import MatrixDesign
 
 
 '''
@@ -76,13 +76,13 @@ class TestMatrixdesign:
             n_amostras = X.shape[0]
             n_features = X.shape[1]
             
-            resultado_base = Matrix_design(X, degree=1, intercept=False)
+            resultado_base = MatrixDesign(X, degree=1, intercept=False)
             assert isinstance(resultado_base, np.ndarray)
             assert resultado_base.shape == (n_amostras, n_features)
             
-            resultado_intercept = Matrix_design(X, degree=1, intercept=True)
+            resultado_intercept = MatrixDesign(X, degree=1, intercept=True)
             assert resultado_intercept.shape == (n_amostras, n_features + 1)
             
-            resultado_poly = Matrix_design(X, degree=2, intercept=True)
+            resultado_poly = MatrixDesign(X, degree=2, intercept=True)
             assert resultado_poly.shape[0] == n_amostras
             assert resultado_poly.shape[1] > n_features + 1

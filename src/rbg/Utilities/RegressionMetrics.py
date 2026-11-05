@@ -1,10 +1,6 @@
 """Regression evaluation metrics.
-
-Functions that compare predicted values against true target values and
-return a single scalar score. All functions expect two arrays of the same
-shape and operate element-wise.
+Functions that compare predicted values against true target values and return a single scalar score. All functions expect two arrays of the same shape and operate element-wise.
 """
-
 import numpy as np
 
 def rss(y_predict: np.ndarray, y_true: np.ndarray ) -> float:

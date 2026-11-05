@@ -6,3 +6,4 @@ from .FisherScoring import FisherScoring
 from .Optimizer import AdamOptimizer
 from .RegressionMetrics import rss, MSE, RMSE, MAE, RSquare
 from .Resample import Resample
+from .MatrixDesign import MatrixDesign

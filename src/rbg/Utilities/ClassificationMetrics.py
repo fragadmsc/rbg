@@ -1,10 +1,8 @@
 """Classification evaluation metrics.
-
 Functions that compare predicted class labels against true class labels.
-All functions expect two arrays of the same shape. Accuracy returns a single
-scalar score; Precision, Recall and F1 return one score per class, ordered
+All functions expect two arrays of the same shape. Accuracy returns a single scalar score; Precision, Recall and F1 return one score per class, ordered
 as np.unique of the labels found in y_pred and y_true combined.
-When a score is undefined (zero denominator), it is set to `zero_division`.
+When a score is undefined (zero denominator), it is set to 'zero_division'.
 """
 
 import numpy as np
