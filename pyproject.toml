@@ -16,6 +16,9 @@ dependencies = [
 ]
 
 
+[project.optional-dependencies]
+test = ["pytest>=9.0"]
+
 [project.scripts]
 rbg = "rbg:main"
 
