@@ -1,6 +1,6 @@
 import numpy as np
 
-from rbg.Regression.linearmodel import LinearModel
+from .linearmodel import LinearModel
 
 
 class Ridge(LinearModel):

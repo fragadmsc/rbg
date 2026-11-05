@@ -1,8 +1,5 @@
 import numpy as np
 
-from rbg.Utilities.Ressample import Resample
-
-
 def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, shuffle = True, random_state = None):
     """
     Divides the dataset between a training set and a testing set.
@@ -21,7 +18,7 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     X = np.asarray(X)
     y = np.asarray(y)
     if len(X) != len(y):
-        raise ValueError("X and y dimensions must match.")
+        raise ValueError("X and y must have the same number of rows.")
     if isinstance(test_size, int):
         if test_size < 0 or test_size > len(X):
             raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
@@ -50,74 +47,51 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     
     return X_train, X_test, y_train, y_test
 
-
-def KFold(data_size, k : int = 5, shuffle : bool = False, random_state = None):
-    """K-Fold Cross Validation.
-    
-    Separates the dataset in k folds and uses k-1 folds as train and 1 fold as test.
-
-    Args:
-        data_size: the size of the dataset. It can also be an array.
-        k (int, optional): the number of folds. Defaults to 5.
-        shuffle (bool, optional): if True, the data will be shuffled. Defaults to False.
-        random_state (int, optional): a seed used for shuffling. Defaults to None.
-
-    Raises:
-        ValueError: if 'data_size' is not an integer or a dataset.
-        ValueError: if 'n_splits' is not an integer larger than 1 and less than the size of the dataset.
-
-    Yields:
-        'data_size' tuples Tuple(np.ndarray, np.ndarray): test_idxs, train_idxs 
+# de acordo com a seção 4.5.1 das notas do rodrigo:
+def train_val_test_split(X : np.ndarray, y : np.ndarray, val_size = 0.2, test_size = 0.2, shuffle = True, random_state = None):
     """
-    if type(data_size) == np.ndarray or type(data_size) == list:
-        n_samples = len(data_size)
-    elif type(data_size) == int:
-        n_samples = data_size
-    else:
-        raise ValueError("'data_size' must be an integer or a dataset.")
-    if type(k) is not int or k <= 1 or k > n_samples:
-        raise ValueError("'n_splits' must be an integer larger than 1 and less than the size of the dataset.")
+    Splits arrays or matrices into random train, validation, and test subsets.
+    """
+    X = np.asarray(X)
+    y = np.asarray(y)
+    
+    if X.shape[0] != y.shape[0]:
+        raise ValueError("X and y must have the same number of rows.")
+    n_samples = X.shape[0]
+    n_test = int(n_samples*test_size)
+    n_val = int(n_samples*val_size)
+    
+    if n_test+n_val>= n_samples:
+        raise ValueError("The sum of test_size and val_size leaves no samples for training.")
+
     idxs = np.arange(n_samples)
+    
     if shuffle:
         rng = np.random.default_rng(random_state)
         idxs = rng.permutation(idxs)
-    idx_sets = np.array_split(idxs, k)
-    for i in range(k):
-        test_idxs = idx_sets[i]
-        train_idxs = np.setdiff1d(idxs, test_idxs)
-        yield test_idxs, train_idxs # eu acho que faz mais sentido sair primeiro os treinos e depois os testes, 
-                                    # mas so tá passando nos testes desse jeito
-
-def LOOCV(data_size):
-    """Leave-One-Out Cross Validation
+        
+    test_idxs = idxs[:n_test]
+    val_idxs = idxs[n_test : n_test + n_val]
+    train_idxs = idxs[n_test + n_val:]
     
-    Take one sample and uses it as the testing set. Is a great option if the dataset is small enough.
-
-    Args:
-        data_size: the size of the dataset. It can also be an array.
-
-    Raises:
-        ValueError: if 'data_size' is not an integer or a dataset.
-
-    Yields:
-        'data_size' tuples Tuple(test_idxs, train_idxs): 
-    """
-    if type(data_size) == np.ndarray or type(data_size) == list:
-        x = len(data_size)
-    elif type(data_size) == int:
-        x = data_size
-    else:
-        raise ValueError("'data_size' must be an integer or a dataset.")
-    return KFold(data_size = x, k = x)
+    X_train = X[train_idxs]
+    X_val = X[val_idxs]
+    X_test = X[test_idxs]
+    y_train = y[train_idxs]
+    y_val = y[val_idxs]
+    y_test = y[test_idxs]
+    
+    return X_train, X_val, X_test, y_train, y_val, y_test
 
 def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     """Returns a list of scores given a machine learning model, a cross-validation method and a metric.
     
     Typical usage example:
-        list_of_scores = cv_score(ex_model, X, y, KFold(10), "accuracy")
+        list_of_scores = cv_score(ex_model, X, y, KFold(10), "MSE")
+        list_of_scores = cv_score(ex_model2, X, y, LOOCV, "MSE")
 
     Args:
-        model: a machine learning model with method .fit and .predict
+        model: a machine learning model with methods .fit and .predict
         X (np.ndarray): input of the dataset.
         y (np.ndarray): output of the dataset.
         cv_method: a cross-validation method, KFold or LOOCV.
@@ -126,9 +100,9 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     Returns:
         np.ndarray: a list of scores.
     """
-    # conferir depois se o metrics(y_pred, y_test) ta certo
+    cv_obj = cv_method() if isinstance(cv_method, type) else cv_method
     scores = []
-    for idxs_train, idxs_test in cv_method.split(X):
+    for idxs_train, idxs_test in cv_obj.split(X): 
         X_train = X[idxs_train]
         X_test = X[idxs_test]
         y_train = y[idxs_train]
@@ -138,8 +112,6 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
         y_pred = model.predict(X_test)
         
         score = metrics(y_pred, y_test)
+
         scores.append(score)
-    return np.array(scores)
-        
-        
-# implementar busca de hiperparametros
+    return sum(scores)/len(scores)

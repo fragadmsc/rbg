@@ -18,7 +18,7 @@ for test_indx, train_indx in KFold(data_size,k= 5):
 import pytest
 import numpy as np
 
-from rbg.ModelSelection.crossvalidation import KFold,LOOCV
+from rbg.ModelSelection import KFold,LOOCV
 
 class TestError:
     
@@ -27,7 +27,8 @@ class TestError:
         data_size = 10
         #verifica o tamanho correto
         with pytest.raises(ValueError):
-            list(KFold(data_size, k=k_invalido))
+            kf = KFold(k = k_invalido)
+            list(kf.split(data_size))
 
 
 class TestRightResults:
@@ -37,7 +38,9 @@ class TestRightResults:
         k_esperado = 5
         indice_total_esperado = set(range(data_size))
 
-        dobras = list(KFold(data_size, k=k_esperado))
+        kf = KFold(k = k_esperado)
+        
+        dobras = list(kf.split(data_size))
         
         #se o KFold gerou a quantidade correta de iterações
         assert len(dobras) == k_esperado
@@ -56,7 +59,9 @@ class TestRightResults:
         data_size = 50
         indice_total_esperado = set(range(data_size))
         
-        dobras = list(LOOCV(data_size))
+        loocv = LOOCV()
+        
+        dobras = list(loocv.split(data_size))
         
         assert len(dobras) == data_size
         

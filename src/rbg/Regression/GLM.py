@@ -1,8 +1,8 @@
 import numpy as np
 
-from rbg.Regression.baseestimator import BaseEstimator
-from rbg.Utilities.utilities import FisherScoring
-
+from .baseestimator import BaseEstimator
+from rbg.Utilities import FisherScoring
+from .linearmodel import LinearModel
 
 class GLM(BaseEstimator):
 

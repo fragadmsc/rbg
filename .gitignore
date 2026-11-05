@@ -14,4 +14,4 @@ wheels/
 .pytest_cache
 
 #ide generated files
-.vscode
+.vscodeenv/

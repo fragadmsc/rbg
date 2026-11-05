@@ -8,10 +8,10 @@ from unittest.mock import patch
 
 import numpy as np
 
-from rbg.ModelSelection.crossvalidation import Resample
-from rbg.Regression.Linear import Linear
-from rbg.Regression.Polynomial import Polynomial
-from rbg.Regression.Ridge import Ridge
+from rbg.Utilities import Resample
+from rbg.Regression import Linear
+from rbg.Regression import Polynomial
+from rbg.Regression import Ridge
 
 
 class RegressionBehaviorChecks:

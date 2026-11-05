@@ -4,12 +4,12 @@ import unittest
 import numpy as np
 
 from rbg.Classification.Logistic import Logistic
-from rbg.Regression.baseestimator import BaseEstimator
-from rbg.Regression.GLM import GLM
-from rbg.Regression.Linear import Linear
-from rbg.Regression.linearmodel import LinearModel
-from rbg.Regression.Polynomial import Polynomial
-from rbg.Regression.Ridge import Ridge
+from rbg.Regression import BaseEstimator
+from rbg.Regression import GLM
+from rbg.Regression import Linear
+from rbg.Regression import LinearModel
+from rbg.Regression import Polynomial
+from rbg.Regression import Ridge
 
 
 class TestRegressionModules(unittest.TestCase):
@@ -55,7 +55,7 @@ class TestRegressionModules(unittest.TestCase):
 
     def test_logistic_uses_extracted_glm(self) -> None:
         """Classification initializes against the same GLM base definition."""
-        model = Logistic(labels=[0, 1])
+        model = Logistic(classes=[0, 1])
         self.assertIsInstance(model, GLM)
         self.assertIsInstance(model, BaseEstimator)
         self.assertFalse(model._fit_done)

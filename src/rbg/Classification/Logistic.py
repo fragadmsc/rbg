@@ -1,21 +1,21 @@
 import numpy as np
-from rbg.Regression.GLM import GLM
-from rbg.Utilities.utilities import ExponentialFamily
-from rbg.Classification.classifier import Classifier
+from rbg.Regression import GLM
+from rbg.Utilities import ExponentialFamily
+from .classifier import Classifier
 
 class Logistic(Classifier, GLM):
     """Multinomial logistic classifier using a reference-class GLM.
 
     Estimate K-1 coefficient vectors, fixing the reference-class coefficients
-    to zero. Probability columns follow self._labels, with the reference last.
+    to zero. Probability columns follow self._classes, with the reference last.
     Requires a GLM and Fisher-scoring solver supporting multivariate responses.
     """
 
-    def __init__(self, labels, reference_class = None,fit_intercept=True, inference = False):
+    def __init__(self, classes, reference_class = None,fit_intercept=True, inference = False):
         """Configure labels and initialize the categorical GLM.
 
         Args:
-            labels: Unique class labels. Multinomial fitting requires at least
+            classes: Unique class labels. Multinomial fitting requires at least
                 two classes; the caller must provide them.
             reference_class: Reference label, defaulting to the first supplied.
             fit_intercept: Whether to estimate an intercept for each modeled class.
@@ -24,7 +24,7 @@ class Logistic(Classifier, GLM):
         Raises:
             ValueError: If class labels or the reference label are invalid.
         """
-        Classifier.__init__(self, labels, reference_class)
+        Classifier.__init__(self, classes, reference_class)
         GLM.__init__(self, family=self._make_family(),
                      fit_intercept=fit_intercept, inference=inference)
 
@@ -48,21 +48,21 @@ class Logistic(Classifier, GLM):
         if y.ndim != 1:
             raise ValueError("y must be one-dimensional.")
 
-        if not np.isin(y, self._labels).all():
+        if not np.isin(y, self._classes).all():
             raise ValueError("y contains unknown class labels.")
 
-        Y = (y[:,None] == self._labels[:-1][None,:]).astype(float)
+        Y = (y[:,None] == self._classes[:-1][None,:]).astype(float)
         return GLM.fit(self, X, Y)
 
     def predict_proba(self, X):
-        """Return probabilities for all labels, including the reference.
+        """Return probabilities for all classes, including the reference.
 
         Args:
             X: Matrix of shape (n_new_samples, p_features), in training order.
 
         Returns:
             Probability matrix of shape (n_new_samples, K). Columns correspond
-            to self._labels; the final column is the reference probability.
+            to self._classes; the final column is the reference probability.
 
         Raises:
             RuntimeError: If the model has not been fitted.
@@ -87,37 +87,7 @@ class Logistic(Classifier, GLM):
             ValueError: If X has an incompatible shape.
         """
         pi = self.predict_proba(X)
-        return self._labels[np.argmax(pi, axis=1)]
-
-    def k_function(self, k):
-        """Return a function computing the fitted probability of label ``k``."""
-        if k not in self._labels:
-            raise ValueError("Unknown label.")
-        if not self._fit_done:
-            raise RuntimeError("The model has not been fitted yet.")
-        column = int(np.flatnonzero(self._labels == k)[0])
-
-        def probability(x):
-            x = np.asarray(x)
-            if x.ndim != 1:
-                raise ValueError("x must be a one-dimensional feature vector.")
-            return float(self.predict_proba(x[None, :])[0, column])
-
-        return probability
-
-    def k_coef(self, k):
-        """Return the coefficient vector for label ``k``.
-
-        The reference label has a zero vector by construction.
-        """
-        if k not in self._labels:
-            raise ValueError("Unknown label.")
-        if not self._fit_done:
-            raise RuntimeError("The model has not been fitted yet.")
-        column = int(np.flatnonzero(self._labels == k)[0])
-        if column == len(self._labels) - 1:
-            return np.zeros(self._beta.shape[0])
-        return self._beta[:, column].copy()
+        return self._classes[np.argmax(pi, axis=1)]
 
     inference = GLM.inference
     
@@ -128,7 +98,7 @@ class Logistic(Classifier, GLM):
             ExponentialFamily configured with the cumulant, gradient, Hessian,
             and inverse mean mapping for K-1 non-reference components.
         """
-        self._K = len(self._labels)
+        self._K = len(self._classes)
         def b(theta):
             """Return log(1 + sum(exp(theta))) per row of an (n, K-1) matrix."""
             return np.log(1 + np.sum(np.exp(theta), axis=1))

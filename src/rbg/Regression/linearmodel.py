@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-from rbg.Regression.baseestimator import BaseEstimator
+from .baseestimator import BaseEstimator
 
 
 class LinearModel(BaseEstimator):

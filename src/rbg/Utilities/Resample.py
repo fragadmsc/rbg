@@ -35,5 +35,5 @@ def Resample(X : np.ndarray, size = None, n_resamples : int = 100, random_state 
     for _ in range(n_resamples):
         train_idxs = rng.choice(all_idxs, size=size, replace=replace)
         test_idxs = np.setdiff1d(all_idxs, train_idxs)
-        resamples.append((train_idxs)) # acho q o bootstrap devia retornar os testes tbm, se ele for usado como um metodo de cv
+        resamples.append((train_idxs, test_idxs)) # acho q o bootstrap devia retornar os testes tbm, se ele for usado como um metodo de cv
     return resamples # isso gasta mais memoria do que o yield, mas os testes pedem pra retornar uma lista ou array

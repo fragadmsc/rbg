@@ -3,9 +3,9 @@ import unittest
 
 import numpy as np
 
-from rbg.Regression.GLM import GLM
-from rbg.Regression.Linear import Linear
-from rbg.Utilities.utilities import ExponentialFamily
+from rbg.Regression import GLM
+from rbg.Regression import Linear
+from rbg.Utilities import ExponentialFamily
 
 
 def gaussian_identity_family() -> ExponentialFamily:

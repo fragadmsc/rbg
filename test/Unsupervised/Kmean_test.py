@@ -29,14 +29,21 @@ KMean.centroids
 class TestKMean:
     
     def test_params(self):
-        modelo_kmean = KMeans(k=10, centroid_selection='Kmeans++', max_iter=100)
-        assert modelo_kmean.k == 10
-        assert modelo_kmean.centroid_selection == 'Kmeans++'
-        assert modelo_kmean.max_iter == 100
+        modelo_kmean = KMeans()
+        modelo_kmean.set_params(k=10, centroid_selection='Kmean++', max_iter=100)
+        
+        params = modelo_kmean.get_params()
+        
+        assert isinstance(params, dict)
+        assert params.get('k') == 10
+        assert params.get('centroid_selection') == 'Kmean++'
+        assert params.get('max_iter') == 100
 
         centroids = [(10.5, 11.4), (12.0, 1.4), (90.0, 43.12)]
-        modelo_kmean = KMeans(k=3, centroid_selection=centroids)
-        assert modelo_kmean.centroid_selection == centroids
+        modelo_kmean.set_params(k=10, centroid_selection=centroids)
+        
+        params = modelo_kmean.get_params()
+        assert params.get('centroid_selection') == centroids
 
     def test_fit_and_attributes(self):
         X = np.array([
@@ -50,7 +57,8 @@ class TestKMean:
         n_features = X.shape[1]
 
         k = 2
-        modelo_kmean = KMeans(k=k, centroid_selection='Kmeans++', max_iter=100)
+        modelo_kmean = KMeans()
+        modelo_kmean.set_params(k=k, centroid_selection='Kmean++', max_iter=100)
         
         modelo_kmean.fit(X)
         assert isinstance(modelo_kmean.clusters, np.ndarray)
