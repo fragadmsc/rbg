@@ -138,6 +138,39 @@ class TestClassificationTree:
         x_test = np.array([[3],[10]])
         a = modelo_classificacao.predict(x_test)
         assert np.array_equal(a, np.array([0, 1]))
+    def test_prune(self):
+        '''
+        Creating data that an overfit would cause a lot of trouble, forcing the prune 
+        method to choose to cut the tree (that is, to choose an alfa different from 0)
+        '''
+        np.random.seed(42)
+        X_train = np.random.uniform(0, 10, size=(120, 2))
+    
+        y_train = ((np.sin(X_train[:, 0]) + np.cos(X_train[:, 1])) > 0).astype(int)
+    
+        noise_idx = np.random.choice(120, size=30, replace=False)
+        y_train[noise_idx] = 1 - y_train[noise_idx]  # creating an extreme bad overfitting 
+
+        modelo_classificacao = Classification()
+        modelo_classificacao.fit(X_train, y_train, prune=True)
+    
+        X_test = np.random.uniform(0, 10, size=(40, 2))
+        Y_test_prune = modelo_classificacao.predict(X_test)
+
+        modelo_classificacao_2 = Classification()
+        modelo_classificacao_2.fit(X_train, y_train, prune=False)
+        Y_test_no_prune = modelo_classificacao_2.predict(X_test)
+       
+        assert not np.array_equal(Y_test_no_prune, Y_test_prune)
+
+        #Testing if prune tree obtained a smaller or equal error than not pruned 
+
+        y_test = ((np.sin(X_test[:, 0]) + np.cos(X_test[:, 1])) > 0).astype(int)
+
+        error_prune = error_rate(Y_test_prune, y_test)
+        error_no_prune = error_rate(Y_test_no_prune, y_test)
+
+        assert error_prune<= error_no_prune
 
 
 class TestRegressionTree:
