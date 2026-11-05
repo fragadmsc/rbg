@@ -1,5 +1,5 @@
 import numpy as np
-from .classifier import Classifier
+from rbg.Classification.classifier import Classifier
 
 class KNN(Classifier):
     """K-nearest neighbors classifier for categorical labels."""
@@ -87,6 +87,7 @@ class KNN(Classifier):
             raise ValueError("X and y must not be empty.")
         if X.shape[1] == 0:
             raise ValueError("X must have at least one feature.")
+
         self._X_train = X
         self._y_train = y
         self._fit_done = True
@@ -171,6 +172,5 @@ class KNN(Classifier):
             labels, counts = np.unique(prediction, return_counts=True)
             return labels[np.argmax(counts)]
 
-        predicted_classes = np.array([final_class(neighbors) for neighbors in prediction])
-        return predicted_classes
-
+        predicted_labels = np.array([final_class(neighbors) for neighbors in prediction])
+        return predicted_labels
