@@ -20,7 +20,7 @@ epsolon = 0.000000000001
                          
 
 class TreeBase(ConstructionTree):
-    def __init__(self, min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Same", custom_evaluation = None, factor_selection = np.sqrt , random_seed = 0, form = "regression" ): 
+    def __init__(self, min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt , random_seed = 0, form = "regression" ): 
         super().__init__( min_impurity_decrease =min_impurity_decrease , min_samples_split = min_samples_split , max_depth = max_depth  , min_samples_leaf =min_samples_leaf , max_leaf =  max_leaf , random_forest = random_forest, criterion_split = criterion_split , custom_split = custom_split , criterion_choose = criterion_choose , custom_choose = custom_choose, criterion_evaluation = criterion_evaluation , custom_evaluation = custom_evaluation, factor_selection = factor_selection,random_seed =random_seed, form=form  )
     def fit(self,X,Y, prune =False):
         super().tree_construction(X,Y)
@@ -199,7 +199,7 @@ class TreeBase(ConstructionTree):
           
 
 class BaggingBase(TreeBase):
-    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None,  factor_selection = np.sqrt, form = "regression"):
+    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None,  factor_selection = np.sqrt, form = "regression"):
         self.n_trees = n_trees
         if not isinstance(n_trees,int):
             raise TypeError("number of trees must be integer")
@@ -267,7 +267,7 @@ class BaggingBase(TreeBase):
         return self.custom_evaluation( y_hat_array,np.array(self.y_orig))
 
 class RandomForestBase(BaggingBase):
-    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = True,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None,factor_selection = np.sqrt,form = "regression"):
+    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = True,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None,factor_selection = np.sqrt,form = "regression"):
         super().__init__(n_trees = n_trees, min_impurity_decrease = min_impurity_decrease, min_samples_split = min_samples_split , max_depth = max_depth , min_samples_leaf = min_samples_leaf, max_leaf = max_leaf , random_forest = random_forest ,criterion_split = criterion_split, custom_split = custom_split, criterion_choose = criterion_choose , custom_choose = custom_choose, criterion_evaluation = criterion_evaluation , custom_evaluation = custom_evaluation,factor_selection = factor_selection, form = form)
 
 
@@ -276,22 +276,22 @@ class RandomForestBase(BaggingBase):
 
 
 class RegressionTree(TreeBase):
-    def __init__(self, min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None , factor_selection = np.sqrt):
+    def __init__(self, min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None , factor_selection = np.sqrt):
         super().__init__( min_impurity_decrease = min_impurity_decrease , min_samples_split = min_samples_split, max_depth = max_depth  , min_samples_leaf = min_samples_leaf , max_leaf =  max_leaf , random_forest =  random_forest, criterion_split = criterion_split, custom_split=custom_split , criterion_choose=criterion_choose , custom_choose=custom_choose , criterion_evaluation = criterion_evaluation, custom_evaluation= custom_evaluation,factor_selection=factor_selection, form = "regression")
 
 class ClassificationTree(TreeBase):
-    def __init__(self, min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Same", custom_evaluation = None, factor_selection = np.sqrt ):
+    def __init__(self, min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt ):
         super().__init__( min_impurity_decrease =  min_impurity_decrease  , min_samples_split =min_samples_split , max_depth=max_depth , min_samples_leaf=min_samples_leaf , max_leaf= max_leaf , random_forest=random_forest, criterion_split=criterion_split , custom_split=custom_split , criterion_choose =criterion_choose , custom_choose=custom_choose, criterion_evaluation=criterion_evaluation , custom_evaluation=custom_evaluation, factor_selection=factor_selection, form = "classification" )
 
 class BaggingReg(BaggingBase):
-    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None, factor_selection = np.sqrt):
+    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt):
         super().__init__(n_trees=n_trees, min_impurity_decrease=min_impurity_decrease, min_samples_split=min_samples_split, max_depth=max_depth , min_samples_leaf=min_samples_leaf , max_leaf= max_leaf, random_forest=random_forest,criterion_split=criterion_split, custom_split=custom_split, criterion_choose=criterion_choose , custom_choose=custom_choose, criterion_evaluation =criterion_evaluation , custom_evaluation =custom_evaluation, factor_selection=factor_selection, form = "regression")
     def get_params(self):
         dic = super().get_params()
         dic['n_trees'] = self.n_trees
         return dic
 class Bagging(BaggingBase):
-    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None, factor_selection = np.sqrt):
+    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt):
         super().__init__(n_trees=n_trees, min_impurity_decrease=min_impurity_decrease, min_samples_split=min_samples_split, max_depth=max_depth , min_samples_leaf=min_samples_leaf , max_leaf=max_leaf, random_forest=random_forest,criterion_split=criterion_split, custom_split=custom_split, criterion_choose=criterion_choose , custom_choose= custom_choose, criterion_evaluation=criterion_evaluation , custom_evaluation=custom_evaluation , factor_selection=factor_selection, form = "classification")
     def get_params(self):
         dic = super().get_params()
@@ -301,14 +301,14 @@ class Bagging(BaggingBase):
 
 
 class RandomForestRegression(RandomForestBase):
-    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = True,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None, factor_selection = np.sqrt):
+    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = True,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt):
         super().__init__(n_trees=n_trees, min_impurity_decrease=min_impurity_decrease, min_samples_split=min_samples_split, max_depth=max_depth , min_samples_leaf =min_samples_leaf , max_leaf=max_leaf, random_forest =random_forest,criterion_split=criterion_split, custom_split =custom_split, criterion_choose =criterion_choose , custom_choose = custom_choose, criterion_evaluation =criterion_evaluation , custom_evaluation =custom_evaluation , factor_selection = factor_selection, form = "regression")
     def get_params(self):
         dic = super().get_params()
         dic['n_trees'] = self.n_trees
         return dic
 class RandomForest(RandomForestBase):
-    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = True,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None, factor_selection = np.sqrt):
+    def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = True,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt):
         super().__init__(n_trees = n_trees, min_impurity_decrease = min_impurity_decrease, min_samples_split = min_samples_split, max_depth=max_depth , min_samples_leaf = min_samples_leaf , max_leaf=max_leaf, random_forest=random_forest,criterion_split=criterion_split, custom_split= custom_split, criterion_choose=criterion_choose ,custom_choose=custom_choose, criterion_evaluation =criterion_evaluation, custom_evaluation=custom_evaluation , factor_selection=factor_selection, form = "classification")
     def get_params(self):
         dic = super().get_params()
