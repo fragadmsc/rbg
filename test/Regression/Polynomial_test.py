@@ -1,5 +1,4 @@
 """Check exact polynomial expansions and dimensional contracts."""
-import unittest
 import numpy as np
 import pytest
 from rbg.Regression.Polynomial import Polynomial
@@ -89,7 +88,12 @@ class TestError:
         assert len(modelo_poly.coef) > 0
         assert modelo_poly.coef.ndim == 1
 
-class TestPolynomialTransform(unittest.TestCase):
+class TestPolynomialTransform:
+
+    @pytest.fixture(autouse=True)
+    def _subtest_context(self, subtests):
+        self.subtests = subtests
+
     def test_transform_known_combinations(self) -> None:
         cases = [
             ([1], [[2], [-3], [0]], [[2], [-3], [0]]),
@@ -101,23 +105,23 @@ class TestPolynomialTransform(unittest.TestCase):
         ]
         for degrees, X, expected in cases:
             for intercept in (True, False):
-                with self.subTest(degrees=degrees, X=X, intercept=intercept):
+                with self.subtests.test(degrees=degrees, X=X, intercept=intercept):
                     original = np.array(X, dtype=float)
                     result = Polynomial(degree=degrees, fit_intercept=intercept)._transform(original)
-                    self.assertEqual(result.shape, (len(X), sum(degrees)))
+                    assert result.shape == (len(X), sum(degrees))
                     np.testing.assert_array_equal(result, expected)
                     np.testing.assert_array_equal(original, X)
 
     def test_transform_empty_batch_preserves_columns(self) -> None:
         result = Polynomial(degree=[2, 3])._transform(np.empty((0, 2)))
-        self.assertEqual(result.shape, (0, 5))
+        assert result.shape == (0, 5)
 
     def test_transform_rejects_wrong_dimensions(self) -> None:
         model = Polynomial(degree=[2, 2])
         for X in (np.array(2), np.array([2, 3]), np.ones((2, 2, 1)),
                   np.ones((3, 1)), np.ones((3, 3))):
-            with self.subTest(shape=X.shape):
-                with self.assertRaises(ValueError):
+            with self.subtests.test(shape=X.shape):
+                with pytest.raises(ValueError):
                     model._transform(X)
 
     def test_polynomial_function_dimensions(self) -> None:
@@ -126,20 +130,17 @@ class TestPolynomialTransform(unittest.TestCase):
         y = 1 + 2 * X[:, 0] + X[:, 0]**2 - X[:, 1]
         for method in ("linear", "ridge"):
             for intercept in (True, False):
-                with self.subTest(method=method, intercept=intercept):
+                with self.subtests.test(method=method, intercept=intercept):
                     model = Polynomial(degree=[2, 1], method=method, fit_intercept=intercept)
                     p = 3 + int(intercept)
                     options = {"alpha": 0.1} if method == "ridge" else {}
                     beta = model.fit(X, y, **options)
-                    self.assertEqual(beta.shape, (p,))
+                    assert beta.shape == (p,)
                     for n in (1, 5):
-                        self.assertEqual(model.predict(X[:n]).shape, (n,))
-                    self.assertEqual(model.residuals().shape, (len(X),))
+                        assert model.predict(X[:n]).shape == (n,)
+                    assert model.residuals().shape == (len(X),)
                     inference_beta, variance, covariance, residuals = model.inference()
-                    self.assertEqual(inference_beta.shape, (p,))
-                    self.assertEqual(np.ndim(variance), 0)
-                    self.assertEqual(covariance.shape, (p, p))
-                    self.assertEqual(residuals.shape, (len(X),))
-                    
-if __name__ == "__main__":
-    unittest.main()
+                    assert inference_beta.shape == (p,)
+                    assert np.ndim(variance) == 0
+                    assert covariance.shape == (p, p)
+                    assert residuals.shape == (len(X),)
