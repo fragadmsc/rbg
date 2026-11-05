@@ -140,7 +140,6 @@ class ConstructionTree(Regression, Classification):
         
         """
 
-        #conserter: tem que ser o minimo de n dado (limitação de profundidade, limitação de numero de folhas, limitação de número de amostras por folha)
 
         if self.min_samples_leaf > np.shape(X)[0]:
             raise ValueError ("The minimum amount of samples leaf is greater than the amount of samples. Either collect more data, or change min_sample_leaf")
@@ -149,13 +148,13 @@ class ConstructionTree(Regression, Classification):
             self.n = min(int(2 * np.floor(N/self.min_samples_leaf) -1),int(2 **(self.max_depth +1)) - 1 )
         else:
             N = np.shape(X)[0]
-            self.n = 2 * int(np.floor(N/self.min_samples_leaf) )-1 # maybe change to ceil to be safe that it fits. Or maybe set everythng to max to guarantee.
+            self.n = 2 * int(np.floor(N/self.min_samples_leaf) )-1 
         if self.max_leaf != None:
-            self.n = min(self.n, int(2*self.max_leaf-1)) # I want the most restritive condition
+            self.n = min(self.n, int(2*self.max_leaf-1)) # To get the most restrictive condition
         self.children_left = np.ones(self.n,dtype=int) * -1 
         self.children_right = np.ones(self.n,dtype=int) * -1 
         self.feature = np.ones(self.n,dtype=int) * -1 
-        self.node_depth = np.ones(self.n,dtype=int) * -1 #impossible, so that is ok 
+        self.node_depth = np.ones(self.n,dtype=int) * -1 
         self.threshold = np.full(self.n, np.nan)
         self.impurity = np.ones(self.n) * -1 
         self.value = np.full(self.n, None, dtype = object)
@@ -170,7 +169,7 @@ class ConstructionTree(Regression, Classification):
         self.g_small = np.ones(self.n,dtype=float) * -1.0
         self.pai = np.ones(self.n,dtype=int) * -1 
         if self.max_leaf == None:
-            self.max_leaf = (self.n+ 1)//2  # talvez tenha um +1 ou -1 ai, sei la. Mas eh o maximo de folhas que poderiamos ter. Como eu tenho o minimo de nos por folha...
+            self.max_leaf = (self.n+ 1)//2  
             self.max_splits = self.max_leaf - 1
 
     def splitter(self, X,y,node,defenitive = False):
@@ -246,7 +245,7 @@ class ConstructionTree(Regression, Classification):
             final_y_lines = y_lines[ordered_ind]
             y_c_p [self.start[node]:self.end[node]] = final_y_lines
 
-            median = (col_pred[:-1] + col_pred[1:])/2 # Candidated for cut value. This will have to be chenged for classification (probably)
+            median = (col_pred[:-1] + col_pred[1:])/2 # Candidated for cut value. 
 
             self._best_cut_value_for_fixed_p(node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines)
 
@@ -379,16 +378,14 @@ class ConstructionTree(Regression, Classification):
             prev_l= None
             prev_r = None
             while m < len(median):
-                id_last_m = np.searchsorted(median, median[m], side = 'right') - 1  #since we are using an ordinated array, we can use a function that uses binary search to avoid recounting repeated medians.
+                id_last_m = np.searchsorted(median, median[m], side = 'right') - 1  #since it is an ordinated array, we can use a function that uses binary search to avoid recounting repeated medians.
                 if median[m] == median[id_last_m]:
                     m = id_last_m 
                 if median[m] == final_lines[m+1,predictor]:
-                    if m+1 == len(median): #Extremly important break. If it is true, then it means that we would try to split by letting 
-                        break # everything on the left child. Besides being prohibited, it would cause index error in the next lines.
+                    if m+1 == len(median): #Extremly important break. If it is true, then it means that we would try to split by letting everything on the left child. Besides being prohibited, it would cause index error in the next lines.
+                        break
                     else:
                         m+=1
-                #prevision_left = np.mean(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
-                #prevision_right = np.mean(y_c_p[self.start[node]+m+1:self.end[node]]) 
                 
                 if m+1 >=  self.min_samples_leaf and len(median)+1 - (m +1) >= self.min_samples_leaf: # checking if the left child and right child both have the minimum amount of samples
                     prevision_left = self.custom_choose(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
@@ -399,7 +396,7 @@ class ConstructionTree(Regression, Classification):
 
 
 
-                    if current_purity_gain >= self.min_impurity_decrease: # Checkgin if the purity gain is equal or greater than the minimum necessary
+                    if current_purity_gain >= self.min_impurity_decrease: # Checking if the purity gain is equal or greater than the minimum necessary
                         if  gratest_purity_gain_per_p: #If a value was already computed, we have to check if the new one is better
                             if gratest_purity_gain_per_p < current_purity_gain:
                                 gratest_purity_gain_per_p = current_purity_gain
@@ -458,8 +455,8 @@ class ConstructionTree(Regression, Classification):
         if X.shape[0] != y.shape[0]:
             raise ValueError("The data do not match")
         self.tree_structure(X)
-        self.value[0] = self.custom_choose(y) # considering just regression. Might be generlized later
-        self.impurity[0] = self.custom_split(self.value[0],y) # considering just regression. Might be generlized later
+        self.value[0] = self.custom_choose(y) 
+        self.impurity[0] = self.custom_split(self.value[0],y) 
         self.start[0] = 0
         self.end[0] = X.shape[0] # considerind [start , end)
         self.node_depth[0] = 0
