@@ -9,7 +9,7 @@ class TestDataEntry():
         Data = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0, 4.0]})
         labels = pd.Series([0, 1, 0, 1])
 
-        modelo_logreg = LogReg()
+        modelo_logreg = LogReg(labels=[0, 1])
         modelo_logreg.fit(Data, labels)
 
         
@@ -17,7 +17,7 @@ class TestDataEntry():
         Data = np.array([[1.0], [2.0], [3.0], [4.0]])
         labels = np.array([0, 1, 0, 1])
 
-        modelo_logreg = LogReg()
+        modelo_logreg = LogReg(labels=[0, 1])
         modelo_logreg.fit(Data, labels)
       
 
@@ -26,7 +26,7 @@ class TestError():
         X = np.zeros((10, 3))
         Y = np.zeros(5)
 
-        modelo_logreg = LogReg()
+        modelo_logreg = LogReg(labels=[0, 1])
 
         with pytest.raises(ValueError, match="same number of observations"):
             modelo_logreg.fit(X, Y)
@@ -55,7 +55,7 @@ class TestError():
         ])
         Y_treino = np.array(['contaminated', 'contaminated', 'drinkable', 'drinkable', 'pure', 'pure'])
 
-        modelo_logreg = LogReg()
+        modelo_logreg = LogReg(labels=['contaminated', 'drinkable'])
         modelo_logreg.fit(X_train, Y_treino)
 
         assert isinstance(modelo_logreg.labels, np.ndarray)
@@ -71,7 +71,7 @@ class TestError():
 
         n_features = X_train.shape[1]
 
-        modelo_logreg = LogReg()
+        modelo_logreg = LogReg(labels=[0, 1])
         modelo_logreg.fit(X_train, Y_train)
 
         label = modelo_logreg.labels[0]
