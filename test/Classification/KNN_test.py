@@ -113,7 +113,7 @@ class TestRightResults():
 
         Data = np.array([[1.5],[8.5],[1.0],[9.0]])
 
-        modelo_knn = KNN([0,1],k=1)
+        modelo_knn = KNN([0, 1], k=1)
         modelo_knn.fit(X, y)
 
         resultado = modelo_knn.predict(Data)
@@ -127,7 +127,7 @@ class TestRightResults():
 
         Data = np.array([[1.5, 1.5],[8.5, 8.5]])
 
-        modelo_knn = KNN([0,1],k=1)
+        modelo_knn = KNN([0, 1], k=1)
         modelo_knn.fit(X, y)
 
         resultado = modelo_knn.predict(Data)
@@ -141,7 +141,7 @@ class TestRightResults():
 
         Data = np.array([[5.0], [6.0]])
 
-        modelo_knn = KNN([0,1],k=1)
+        modelo_knn = KNN([0, 1], k=1)
         modelo_knn.fit(X, y)
 
         resultado = modelo_knn.predict(Data)
@@ -155,7 +155,7 @@ class TestRightResults():
 
         Data = np.array([[2.0]])
 
-        modelo_knn = KNN([0,1],k=2)
+        modelo_knn = KNN([0, 1], k=2)
         modelo_knn.fit(X, y)
 
         resultado = modelo_knn.predict(Data)
