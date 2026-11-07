@@ -22,50 +22,50 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     if isinstance(test_size, int):
         if test_size < 0 or test_size > len(X):
             raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+        n_test = test_size
     elif isinstance(test_size, float):
         if test_size < 0 or test_size > 1:
             raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+        n_test = int(np.ceil(test_size * len(X)))
     else:
         raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
 
     n_samples = len(X)
-    n_test = test_size * n_samples
-    
     idxs = np.arange(n_samples)
-    
     if shuffle:
         rng = np.random.default_rng(random_state)
-        idxs = rng.permutation()
-        
+        idxs = rng.permutation(idxs)
     test_idxs = idxs[:n_test]
     train_idxs = idxs[n_test:]
-    
     X_train = X[train_idxs]
     X_test = X[test_idxs]
     y_train = y[train_idxs]
     y_test = y[test_idxs]
-    
     return X_train, X_test, y_train, y_test
 
-# de acordo com a seção 4.5.1 das notas do rodrigo:
-def train_val_test_split(X : np.ndarray, y : np.ndarray, val_size = 0.2, test_size = 0.2, shuffle = True, random_state = None):
+def train_val_test_split(X : np.ndarray, y : np.ndarray = None, val_size = 0.2, test_size = 0.2, shuffle = True, random_state = None):
     """
     Splits arrays or matrices into random train, validation, and test subsets.
     """
     X = np.asarray(X)
-    y = np.asarray(y)
-    
-    if X.shape[0] != y.shape[0]:
-        raise ValueError("X and y must have the same number of rows.")
     n_samples = X.shape[0]
-    n_test = int(n_samples*test_size)
-    n_val = int(n_samples*val_size)
-    
-    if n_test+n_val>= n_samples:
+    if y is not None:
+        y = np.asarray(y)
+        if X.shape[0] != y.shape[0]:
+            raise ValueError("X and y must have the same number of rows.")
+    if isinstance(test_size, float):
+        n_test = int(np.ceil(n_samples * test_size))
+    else:
+        n_test = test_size
+    if isinstance(val_size, float):
+        n_val = int(np.ceil(n_samples * val_size))
+    else:
+        n_val = val_size
+    if n_test + n_val >= n_samples:
         raise ValueError("The sum of test_size and val_size leaves no samples for training.")
 
     idxs = np.arange(n_samples)
-    
+
     if shuffle:
         rng = np.random.default_rng(random_state)
         idxs = rng.permutation(idxs)
@@ -77,13 +77,14 @@ def train_val_test_split(X : np.ndarray, y : np.ndarray, val_size = 0.2, test_si
     X_train = X[train_idxs]
     X_val = X[val_idxs]
     X_test = X[test_idxs]
-    y_train = y[train_idxs]
-    y_val = y[val_idxs]
-    y_test = y[test_idxs]
-    
-    return X_train, X_val, X_test, y_train, y_val, y_test
-# padrao: y_pred, y_true
-def cv_score(model, X: np.ndarray, y: np.ndarray = None, cv_method = None, metrics = None, groups: np.ndarray = None):    
+    if y is not None:
+        y_train = y[train_idxs]
+        y_val = y[val_idxs]
+        y_test = y[test_idxs]
+        return X_train, X_val, X_test, y_train, y_val, y_test
+    return X_train, X_val, X_test
+
+def cv_score(model, X : np.ndarray, y : np.ndarray = None, cv_method = None, metrics = None, groups: np.ndarray = None):
     """Returns a list of scores given a machine learning model, a cross-validation method and a metric.
     
     Typical usage example:
@@ -103,14 +104,16 @@ def cv_score(model, X: np.ndarray, y: np.ndarray = None, cv_method = None, metri
     cv_obj = cv_method() if isinstance(cv_method, type) else cv_method
     scores = []
     if groups is not None:
-        splits = cv_obj.split(X, groups)
+        splits = cv_obj.split(X, y=y, groups=groups)
     else:
         splits = cv_obj.split(X, y)
 
     for idxs_train, idxs_test in splits:
-        X_train, X_test = X[idxs_train], X[idxs_test]
+        X_train = X[idxs_train]
+        X_test = X[idxs_test]
         if y is not None:
-            y_train, y_test = y[idxs_train], y[idxs_test]
+            y_train = y[idxs_train]
+            y_test = y[idxs_test]
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
             score = metrics(y_test, y_pred)

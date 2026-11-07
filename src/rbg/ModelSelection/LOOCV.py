@@ -20,4 +20,4 @@ class LOOCV:
             y = np.asarray(y)
             if x != y.shape[0]:
                 raise ValueError("X and y dimensions must match.")
-        return KFold(k=x).split(data_size = x)
+        return KFold(k=x).split(data_size = data_size, y = y)
