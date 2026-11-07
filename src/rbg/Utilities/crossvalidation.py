@@ -110,13 +110,7 @@ def cv_score(model, X : np.ndarray, y : np.ndarray = None, cv_method = None, met
     """
     cv_obj = cv_method() if isinstance(cv_method, type) else cv_method
     scores = []
-    if groups is not None:
-        splits = cv_obj.split(X, y=y, groups=groups)
-    else:
-        splits = cv_obj.split(X, y)
-
-    for idxs_train, idxs_test in splits:
-        fold_model = copy.deepcopy(model)
+    for idxs_train, idxs_test in cv_method.split(X, y): 
         X_train = X[idxs_train]
         X_test = X[idxs_test]
         if y is not None:

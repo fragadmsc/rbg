@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from rbg.Utilities.crossvalidation import cv_score
-from rbg.ModelSelection import KFold, StratifiedKFold
+from rbg.ModelSelection.KFold import KFold, StratifiedKFold
 
 
 class DummyModel:
