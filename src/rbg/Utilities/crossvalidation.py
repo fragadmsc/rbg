@@ -98,7 +98,7 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
         metrics: a metric.
 
     Returns:
-        np.ndarray: a list of scores.
+        float: the mean of the list of scores.
     """
     cv_obj = cv_method() if isinstance(cv_method, type) else cv_method
     scores = []
@@ -114,4 +114,4 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
         score = metrics(y_pred, y_test)
 
         scores.append(score)
-    return sum(scores)/len(scores)
+    return np.mean(scores)
