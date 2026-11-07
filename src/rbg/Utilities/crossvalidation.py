@@ -82,8 +82,8 @@ def train_val_test_split(X : np.ndarray, y : np.ndarray, val_size = 0.2, test_si
     y_test = y[test_idxs]
     
     return X_train, X_val, X_test, y_train, y_val, y_test
-
-def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
+# padrao: y_pred, y_true
+def cv_score(model, X: np.ndarray, y: np.ndarray = None, cv_method = None, metrics = None, groups: np.ndarray = None):    
     """Returns a list of scores given a machine learning model, a cross-validation method and a metric.
     
     Typical usage example:
@@ -102,16 +102,21 @@ def cv_score(model, X : np.ndarray, y : np.ndarray, cv_method, metrics):
     """
     cv_obj = cv_method() if isinstance(cv_method, type) else cv_method
     scores = []
-    for idxs_train, idxs_test in cv_method.split(X, y): 
-        X_train = X[idxs_train]
-        X_test = X[idxs_test]
-        y_train = y[idxs_train]
-        y_test = y[idxs_test]
-        
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        
-        score = metrics(y_pred, y_test)
+    if groups is not None:
+        splits = cv_obj.split(X, groups)
+    else:
+        splits = cv_obj.split(X, y)
 
+    for idxs_train, idxs_test in splits:
+        X_train, X_test = X[idxs_train], X[idxs_test]
+        if y is not None:
+            y_train, y_test = y[idxs_train], y[idxs_test]
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+            score = metrics(y_test, y_pred)
+        else:
+            model.fit(X_train)
+            y_pred = model.predict(X_test)
+            score = metrics(X_test, y_pred)
         scores.append(score)
     return np.mean(scores)
