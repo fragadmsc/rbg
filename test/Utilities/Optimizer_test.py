@@ -1,29 +1,23 @@
 import pytest 
 from rbg.Utilities import AdamOptimizer
 
-class TestOptimizer():
-    def test_with_function(self):
-        f = lambda x : (x+3)**2 # minimum at x = -3
 
-        learning_rate = 1e-3
+class TestOptimizer:
+    
+    @pytest.fixture
+    def optimizer(self):
+        learning_rate = 0.1 
         tolerance = 1e-5
         max_iterations = 1000
+        return AdamOptimizer(learning_rate, tolerance, max_iterations)
+
+    def test_with_function(self, optimizer):
+        f = lambda x: (x + 3)**2 
         
-        optimizer = AdamOptimizer(learning_rate, tolerance, max_iterations) #learning rate, tolerance, max iterations
+        assert optimizer.getmin(0, f) == pytest.approx(-3, abs=1e-3) 
 
-        assert abs(optimizer.getmin(0, f) + 3) < 1e-5 
+    def test_with_gradient(self, optimizer):
+        f = lambda x: (x + 3)**2 
+        g = lambda x: 2 * x + 6
 
-    def test_with_gradient(self):
-        #same as previous test, bu now we also pass on the gradient directly
-        f = lambda x : (x+3)**2 # minimum at x = -3
-        g = lambda x : 2*x + 6
-
-        learning_rate = 1e-3
-        tolerance = 1e-5
-        max_iterations = 1000
-        optimizer = AdamOptimizer(learning_rate, tolerance, max_iterations) #learning rate, tolerance, max iterations
-
-        assert abs(optimizer.getmin(0, f, g) + 3) < 1e-5 
-
-    def test_(self):
-        pass
+        assert optimizer.getmin(0, f, g) == pytest.approx(-3, abs=1e-5)

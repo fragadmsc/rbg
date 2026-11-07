@@ -45,7 +45,7 @@ class TestRightResults:
         #se o KFold gerou a quantidade correta de iterações
         assert len(dobras) == k_esperado
         
-        for test_indx, train_indx in dobras:
+        for train_indx,test_indx in dobras:
             set_test = set(test_indx)
             set_train = set(train_indx)
 
@@ -65,7 +65,7 @@ class TestRightResults:
         
         assert len(dobras) == data_size
         
-        for test_indx, train_indx in dobras:
+        for train_indx,test_indx in dobras:
             set_test = set(test_indx)
             set_train = set(train_indx)
 
