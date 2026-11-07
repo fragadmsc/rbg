@@ -214,7 +214,7 @@ class ConstructionTree(Regression, Classification):
         Args:
             X: Sample matrix of shape (n_samples, p_feature).
             y: Vector of the observations of shape (n_samples,).
-            node: index of the node that will be testedo or actually partitioned
+            node: index of the node that will be tested or actually partitioned
             definitive: if "False" then _splitter only find the best cut of the node. If "True", then
             besides finding the best, it will actually cut the node and generate the child nodes.
         
@@ -258,9 +258,9 @@ class ConstructionTree(Regression, Classification):
             final_y_lines = y_lines[ordered_ind]
             y_c_p [self.start[node]:self.end[node]] = final_y_lines
 
-            median = (col_pred[:-1] + col_pred[1:])/2 # Candidates for cut value. 
+            thresholds = (col_pred[:-1] + col_pred[1:])/2 # Candidates for cut value. 
 
-            self._best_cut_value_for_fixed_p(node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines)
+            self._best_cut_value_for_fixed_p(node,thresholds,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines)
 
 
         y_list = np.array(y_list)
@@ -304,7 +304,7 @@ class ConstructionTree(Regression, Classification):
 
                 self.value[right] = possible_cuts[greatest_purity_gain_overall_index,7]
                 self.impurity[right] = possible_cuts[greatest_purity_gain_overall_index,5]
-                self.start[right]= possible_cuts[greatest_purity_gain_overall_index,3] #might need to review that
+                self.start[right]= possible_cuts[greatest_purity_gain_overall_index,3] 
                 self.end[right] = self.end[node]
                 self.node_depth[right] = self.node_depth[node] +1 
                 self.father[right] = node
@@ -312,70 +312,43 @@ class ConstructionTree(Regression, Classification):
                 if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
                     self.aux_purity_gain[right] = 1
 
-                return greatest_purity_gain_overall 
+                return greatest_purity_gain_overall   
 
 
-    def _best_cut_value_for_fixed_p(self,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines):
+    def _best_cut_value_for_fixed_p(self,node,thresholds,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines):
             """
 
-            For a given predictior and node, the module finds that best cut value ( if it exists), and then:
-                - add to 'matri_list' the new X line ordered formed after the possible split (X_c_p)
-                - add to 'y_list' the new y line ordered (y_c_p) to match X_c_p
+            For a given predictor and node, the module finds that best cut value ( if it exists), and:
+                - add to 'matri_list' the reordered X matrix after the potential split (X_c_p).
+                - add to 'y_list' the reordered y vector to match X_c_p.
                 - add to 'possible_cuts' the best cut found, which is a list containing:
-                    * gratest_purity_gain_per_p: The best burity gain, over all value cuts, of the fixed parameter
-                    * associated_value_per_p: The value cut that maximized the purity gain
-                    * predictor: The fixed predictor
-                    * new_end_begin: The samples that originally belonged to the node ( that is being checked if can be splitted)
-                    will be divided between the left child and right child ( if the node is splitted). Since in X_c_p those samples
-                    are ordered according to the fixed parameter, then "new_end_begin" delimits the new "slice" of samples that
-                    belongs to the left child and right child. 
-                    * imp_left: impurity of the left child, according to this parameter
-                    * imp_right: impurity of the right child, according to this parameter
-                    * prev_l: prediction of the left child, according to this parameter
-                    * prev_r: prediction of the right child, according to this parameter
+                    * greatest_purity_gain_per_p: The best purity gain, over all cut values for this fixed predictor.
+                    * associated_value_per_p: The value cut that maximized the purity gain.
+                    * predictor: The fixed predictor index.
+                    * new_end_begin: The index delimiting the new "slice" of samples that belongs to the left child and right child. 
+                    * imp_left: impurity of the left child.
+                    * imp_right: impurity of the right child.
+                    * prev_l: prediction of the left child.
+                    * prev_r: prediction of the right child.
             
-            If, for a given cut value, the split violates any of the conditions 
+            If the split violates any of the conditions 
                 -'The minimum purity gain to allow a split in a node.'
                 -'Minimum number of samples of each leaf.'
-            Then this value cut will not be further considered to actually partition the sample space. 
-            If all of the cut values are invalid, then 'gratest_purity_gain_per_p' will remain as None,
-            and the fixed parameter will not be considered to partitionate the node. 
+            This value cut will be discarded. 
+            If all of the cut values are invalid, then 'greatest_purity_gain_per_p' will remain None,
+            and the fixed predictor will not be considered to partition the node. 
 
-            The current metrics for prediction is the mean values of the samples that fall on the region,
-            and the impurity is measured with MSE (so far).
-
-            Since the sequence of the possible cut values is calculated based on the ordinated sequence of 
-            the fixed predictor, there are (self.end[node] - self.start[node] -1) possible values. 
-            For Example, if "pi" is the predictor value of the samples, ordinated in final_lines , and "mj" the median 
-            values calculated as mj = (pj + p(j+1))/2, we would have:
-
-                    p1  p2   p3  p4  p5  p6  p7  p8  p9  p10 
-                      m1  m2   m3  m4  m5  m6  m7  m8  m9
-
-            Some "mj" values might be repeated. For example, if p1 = p2 = p3, then m1 = m2. Therefore,
-            in this cenario, instead of dividing de sample values according to the position m1, that is,
-            instead of testing 
-
-                    p1 | p2   p3  p4  p5  p6  p7  p8  p9  p10 
-                      m1   m2   m3  m4  m5  m6  m7  m8  m9
-            Since m1 = m2, and values are ordered, it means that the samples that would be on the left
-            child according to m1, should be actually the same according to m2. Therefore, whenever we are 
-            testing those "mj" values, we will take the last indice "k" from "median" , such that mj = mk,
-            and we will compare mk to p(k+1). If mk = p(k+1), then the cut on the sample will be indice 
-            "k+1":
-
-                    p1  p2  p3 | p4  p5  p6  p7  p8  p9  p10 
-                      m1  m2  m3  m4  m5  m6  m7  m8  m9
 
             Args:
                 - node: node evaluated for the split
-                - median: sequence of the possible cut values. 
+                - thresholds: sequence of the possible cut values. 
                 - matri_list: list of the X with its lines re-ordered to match the split
                 - possible_cuts: list of the possible cuts of the node
                 - y_list: list of the y with its lines re-ordered to match the split
                 - X_c_p: Matrix X with the lines re-ordered to match the split according to a fixed predictor
                 - y_c_p: vector y with the lines re-ordered to match the split according to a fixed predictor
                 - predictor: the fixed predictor
+                - final_lines:  rearranged lines from matrix X that are on "node" but in increasing order according to predictor
             
 
             
@@ -383,56 +356,55 @@ class ConstructionTree(Regression, Classification):
 
 
             m = 0
-            gratest_purity_gain_per_p = None
+            greatest_purity_gain_per_p = None
             associated_value_per_p = None
             new_end_begin = None
             imp_left = None
             imp_right = None
             prev_l= None
             prev_r = None
-            while m < len(median):
-                id_last_m = np.searchsorted(median, median[m], side = 'right') - 1  #since it is an ordinated array, we can use a function that uses binary search to avoid recounting repeated medians.
-                if median[m] == median[id_last_m]:
+            while m < len(thresholds):
+                id_last_m = np.searchsorted(thresholds, thresholds[m], side = 'right') - 1  # Since we are using a sorted array, we can use a function that uses binary search to avoid recounting repeated means.
+                if thresholds[m] == thresholds[id_last_m]:
                     m = id_last_m 
-                if median[m] == final_lines[m+1,predictor]:
-                    if m+1 == len(median): #Extremly important break. If it is true, then it means that we would try to split by letting everything on the left child. Besides being prohibited, it would cause index error in the next lines.
-                        break
-                    else:
+                if thresholds[m] == final_lines[m+1,predictor]: # the scenario that two sorted samples have the same predictor value. The mean of those two is the same as their value.
+                    if m+1 == len(thresholds): #Extremly important break. If it is true, then it means that we would try to split by letting 
+                        break # everything on the left child. Besides being prohibited, it would cause index error in the next lines.
+                    else: # if m+=1 is not out of range:
                         m+=1
                 
-                if m+1 >=  self.min_samples_leaf and len(median)+1 - (m +1) >= self.min_samples_leaf: # checking if the left child and right child both have the minimum amount of samples
+                if m+1 >=  self.min_samples_leaf and len(thresholds)+1 - (m +1) >= self.min_samples_leaf: # checking if the left child and right child both have the minimum amount of samples
                     prevision_left = self.custom_choose(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
                     prevision_right = self.custom_choose(y_c_p[self.start[node]+m+1:self.end[node]]) 
-                    left_mse = self.custom_split(np.array(prevision_left),np.array(y_c_p[self.start[node]:self.start[node]+m+1])) 
-                    right_mse = self.custom_split(np.array(prevision_right),np.array(y_c_p[self.start[node]+m+1:self.end[node]]))
-                    current_purity_gain = self.impurity[node] - ((m+1)/ (len(median) +1)* left_mse + ((len(median)+1)-(m+1))/(len(median)+1)*right_mse)
+                    left_impurity = self.custom_split(np.array(prevision_left),np.array(y_c_p[self.start[node]:self.start[node]+m+1])) 
+                    right_impurity = self.custom_split(np.array(prevision_right),np.array(y_c_p[self.start[node]+m+1:self.end[node]]))
+                    current_purity_gain = self.impurity[node] - ((m+1)/ (len(thresholds) +1)* left_impurity + ((len(thresholds)+1)-(m+1))/(len(thresholds)+1)*right_impurity)
 
 
 
                     if current_purity_gain >= self.min_impurity_decrease: # Checking if the purity gain is equal or greater than the minimum necessary
-                        if  gratest_purity_gain_per_p: #If a value was already computed, we have to check if the new one is better
-                            if gratest_purity_gain_per_p < current_purity_gain:
-                                gratest_purity_gain_per_p = current_purity_gain
-                                associated_value_per_p = median[m]
-                                new_end_begin = self.start[node] +m+1 # considerind [start , end)
-                                imp_left = left_mse
-                                imp_right = right_mse
+                        if  greatest_purity_gain_per_p is not None: #If a value was already computed, we have to check if the new one is better
+                            if greatest_purity_gain_per_p < current_purity_gain:
+                                greatest_purity_gain_per_p = current_purity_gain
+                                associated_value_per_p = thresholds[m]
+                                new_end_begin = self.start[node] +m+1 # considering [start , end)
+                                imp_left = left_impurity
+                                imp_right = right_impurity
                                 prev_l= prevision_left
                                 prev_r = prevision_right
                         else: # If no value was computed, the current is the best
-                            gratest_purity_gain_per_p = current_purity_gain
-                            associated_value_per_p = median[m]
-                            new_end_begin = self.start[node] +m+1 # considerind [start , end)
-                            imp_left = left_mse
-                            imp_right =right_mse
+                            greatest_purity_gain_per_p = current_purity_gain
+                            associated_value_per_p = thresholds[m]
+                            new_end_begin = self.start[node] +m+1 # considering [start , end)
+                            imp_left = left_impurity
+                            imp_right =right_impurity
                             prev_l= prevision_left
                             prev_r = prevision_right
                 m +=1
-            if gratest_purity_gain_per_p:
+            if greatest_purity_gain_per_p is not None:
                 matri_list.append(X_c_p)
-                possible_cuts.append([gratest_purity_gain_per_p,associated_value_per_p,predictor,new_end_begin,imp_left, imp_right,prev_l,prev_r])
-                y_list.append(y_c_p)    
-
+                possible_cuts.append([greatest_purity_gain_per_p,associated_value_per_p,predictor,new_end_begin,imp_left, imp_right,prev_l,prev_r])
+                y_list.append(y_c_p) 
     def tree_construction(self, X,y):
 
         """
