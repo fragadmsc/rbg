@@ -163,6 +163,40 @@ class TestClassificationTree:
        
         assert not np.array_equal(Y_test_no_prune, Y_test_prune)
 
+    def test_predictability(self):
+        np.random.seed(42)
+        X_train = np.random.uniform(0, 10, size=(120, 2))
+    
+        y_train = ((np.sin(X_train[:, 0]) + np.cos(X_train[:, 1])) > 0).astype(int)
+    
+        noise_idx = np.random.choice(120, size=30, replace=False)
+        y_train[noise_idx] = 1 - y_train[noise_idx]  # creating an extreme bad overfitting 
+
+        X_test = np.random.uniform(0, 10, size=(40, 2))
+
+        modelo_classificacao = Classification()
+        modelo_classificacao.fit(X_train, y_train, prune=True)
+    
+        Y_test_1 = modelo_classificacao.predict(X_test)
+
+        modelo_classificacao_2 = Classification()
+        modelo_classificacao_2.fit(X_train, y_train, prune = True)
+        Y_test_2 = modelo_classificacao_2.predict(X_test)
+
+        assert np.array_equal(Y_test_1, Y_test_2)
+
+
+        modelo_classificacao = Classification()
+        modelo_classificacao.fit(X_train, y_train)
+    
+        Y_test_1 = modelo_classificacao.predict(X_test)
+
+        modelo_classificacao_2 = Classification()
+        modelo_classificacao_2.fit(X_train, y_train)
+        Y_test_2 = modelo_classificacao_2.predict(X_test)
+       
+        assert np.array_equal(Y_test_1, Y_test_2)
+
 
 class TestRegressionTree:
     
@@ -304,6 +338,34 @@ class TestRegressionTree:
        
 
         assert not np.array_equal(Y_test_no_prune, Y_test_prune)
+    def test_predictability(self):
+        np.random.seed(42)
+        X_train = np.random.uniform(0, 10, size=(120, 2))
+    
+        y_train = (np.sin(X_train[:, 0]) + np.cos(X_train[:, 1])) 
+    
+        noise = np.random.normal(0, 0.5, size=120)
+        y_train = y_train + noise
+
+        model_reg = Regression()
+        model_reg.fit(X_train, y_train, prune=True)
+        model_reg2 = Regression()
+        model_reg2.fit(X_train, y_train, prune=True)
+        X_test = np.random.uniform(0, 10, size=(40, 2))
+        y_pred1 = model_reg.predict(X_test)
+        y_pred2 = model_reg2.predict(X_test)
+
+        assert np.array_equal(y_pred1, y_pred2)
+
+        model_reg = Regression()
+        model_reg.fit(X_train, y_train)
+        model_reg2 = Regression()
+        model_reg2.fit(X_train, y_train)
+        X_test = np.random.uniform(0, 10, size=(40, 2))
+        y_pred1 = model_reg.predict(X_test)
+        y_pred2 = model_reg2.predict(X_test)
+        assert np.array_equal(y_pred1, y_pred2)
+
 
 
     
