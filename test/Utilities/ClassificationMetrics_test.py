@@ -87,3 +87,13 @@ class TestMetrics:
             assert isinstance(resultado, np.ndarray)
         except ZeroDivisionError as e:
             pytest.fail(f"A função de Recall não tratou a divisão por zero. Erro: {e}")
+
+    def test_error_rate(self):
+        Y_real = np.array([0, 0, 1, 1, 2, 2])
+        Y_predicted = np.array([0, 1, 1, 1, 0, 2])
+        
+        resultado = error_rate(Y_predicted, Y_real)
+        
+        assert isinstance(resultado, (float, np.number))
+        assert 0.0 <= resultado <= 1.0
+        assert np.isclose(resultado, 1 - Accuracy(Y_predicted, Y_real))
