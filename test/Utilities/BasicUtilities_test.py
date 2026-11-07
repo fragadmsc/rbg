@@ -27,7 +27,7 @@ class TestBootstrap:
         (np.array([1, 2, 3, 4, 5]), 5, 10, True),
         (np.array([1, 2, 3, 4, 5, 6, 7, 8]), 3, 5, True),
         (np.array([10, 20, 30, 40]), 4, 2, False),        
-        (np.array([7, 8, 9]), 1, 3, True)
+        (np.array([7, 8, 9]), 1, 3, True) # esse q ta dando problema?
     ])
     def test_Resample_parametrizado(self, data, size, qte, replace):
         
@@ -38,32 +38,33 @@ class TestBootstrap:
         assert len(resultado) == qte
         
         for amostra in resultado:
-            assert len(amostra) == size
+            assert len(amostra) == 2 # retorna treino e teste
+            assert len(amostra[0]) == size ## indices de treino tem tamanho certo
 
 
+class TestCoordinateDescent:
+    def test_l1_shrinkage(self):
+        """Check a regular solution."""
+        X = np.eye(3)
+        y = np.array([3.0, 0.5, -2.0])
 
-def test_l1_shrinkage(CoordinateDescent):
-    """Check a regular solution."""
-    X = np.eye(3)
-    y = np.array([3.0, 0.5, -2.0])
+        beta = CoordinateDescent.solve(X, y, 1.0, False)
 
-    beta = CoordinateDescent.solve(X, y, 1.0, False)
-
-    assert isinstance(beta, np.ndarray)
-    assert beta.shape == (3,)
-    np.testing.assert_allclose(beta, [2.0, 0.0, -1.0], atol=1e-5)
+        assert isinstance(beta, np.ndarray)
+        assert beta.shape == (3,)
+        np.testing.assert_allclose(beta, [2.0, 0.0, -1.0], atol=1e-5)
 
 
-def test_unpenalized_intercept(CoordinateDescent):
-    """Intercept test"""
-    X = np.array([[1.0, -1.0], [1.0, 0.0], [1.0, 1.0]])
-    y = np.array([1.0, 4.0, 7.0])
+    def test_unpenalized_intercept(self):
+        """Intercept test"""
+        X = np.array([[1.0, -1.0], [1.0, 0.0], [1.0, 1.0]])
+        y = np.array([1.0, 4.0, 7.0])
 
-    beta = CoordinateDescent.solve(X, y, 2.0, True)
+        beta = CoordinateDescent.solve(X, y, 2.0, True)
 
-    assert isinstance(beta, np.ndarray)
-    assert beta.shape == (2,)
-    np.testing.assert_allclose(beta, [4.0, 2.0], atol=1e-5)
+        assert isinstance(beta, np.ndarray)
+        assert beta.shape == (2,)
+        np.testing.assert_allclose(beta, [4.0, 2.0], atol=1e-5)
 
 
 
