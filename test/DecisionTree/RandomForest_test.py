@@ -388,7 +388,7 @@ class TestRdForestReg_Error:
         assert dic.get('children_right')== None
     
     
-    def test_Bagging_vs_Tree(self):
+    def test_Bagging_vs_Random(self):
 
         np.random.seed(42)
 
