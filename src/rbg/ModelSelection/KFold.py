@@ -10,7 +10,7 @@ class KFold:
         self.shuffle = shuffle
         self.random_state = random_state
         
-    def split(self, data_size):
+    def split(self, data_size, y = None):
         if type(data_size) == np.ndarray or type(data_size) == list:
             n_samples = len(data_size)
         elif type(data_size) == int:
@@ -19,6 +19,11 @@ class KFold:
             raise ValueError("'data_size' must be an integer or a dataset.")
         if type(self.k) is not int or self.k <= 1 or self.k > n_samples:
             raise ValueError("'k' must be an integer larger than 1 and at most the size of the dataset.")
+        # Valida y apenas se for passado
+        if y is not None:
+            y = np.asarray(y)
+            if n_samples != y.shape[0]:
+                raise ValueError("X and y must have the same number of rows!")
         idxs = np.arange(n_samples)
         if self.shuffle:
             rng = np.random.default_rng(self.random_state)
@@ -50,7 +55,7 @@ class StratifiedKFold:
         self.shuffle = shuffle
         self.random_state = random_state
 
-    def split(self, X: np.ndarray, y: np.ndarray):
+    def split(self, X: np.ndarray, y: np.ndarray = None):
         """Generates indices to split data into training and test sets.
         
         Args:
@@ -60,6 +65,8 @@ class StratifiedKFold:
         Returns:
         An iterator containing tuples of (train_indices, test_indices).
         """
+        if y is None:
+            raise ValueError("StratifiedKFold needs the vector of labels 'y' to keep proportion between classes.")
         X = np.asarray(X)
         y = np.asarray(y)
         if X.shape[0] != y.shape[0]:
