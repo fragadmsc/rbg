@@ -14,7 +14,7 @@ F1Score(Y_predicted,Y_real)
 
 import pytest
 import numpy as np
-from rbg.Utilities import Accuracy, Precision, Recall, F1Score
+from rbg.Utilities import Accuracy, Precision, Recall, F1Score, Gini, entropy, mode, error_rate, classif_error
 # nomes errados: from rbg.Utilities import Accuracy, Precision, Recall, F1Score
 
 
@@ -97,3 +97,58 @@ class TestMetrics:
         assert isinstance(resultado, (float, np.number))
         assert 0.0 <= resultado <= 1.0
         assert np.isclose(resultado, 1 - Accuracy(Y_predicted, Y_real))
+
+
+    def test_gini(self):
+        y = np.array([0, 0, 1, 1])
+        assert np.isclose(Gini(y), 0.5)
+        
+        y = np.array([1, 1, 1, 1])
+        assert np.isclose(Gini(y), 0.0)
+
+
+        
+        with pytest.raises(ValueError, match="The array is empty"):
+            Gini(np.array([]))
+
+
+    def test_classif_error(self):
+        y = np.array([0, 0, 0, 1]) 
+        assert np.isclose(classif_error(y), 0.25)
+        y = np.array([0, 0, 1, 1])
+        assert np.isclose(classif_error(y), 0.5)
+        
+        y = np.array([2, 2, 2])
+        assert np.isclose(classif_error(y), 0.0)
+
+ 
+            
+        with pytest.raises(ValueError, match="The array is empty"):
+            classif_error(np.array([]))
+
+    def test_entropy(self):
+        y= np.array([1, 1, 1])
+        assert np.isclose(entropy(y), 0.0)
+
+        
+            
+        with pytest.raises(ValueError, match="The array is empty"):
+            entropy(np.array([]))
+
+    def test_mode(self):
+        y = np.array([1,2,3,4,5,5,3,7,8,9,0,0,3,2,2,2,2,22,222,1,2,2])
+        assert mode(y) == 2
+
+        y = np.array([
+            [1, 2, 5],
+            [1, 2, 4],
+            [3, 2, 3],
+            [3, 3, 3]
+            ])
+
+        r = mode(y, axis=1)
+        assert np.array_equal(r, np.array([1, 2, 3]))
+
+        with pytest.raises(ValueError, match="The array is empty"):
+            mode(np.array([]))
+    
