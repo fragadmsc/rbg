@@ -405,31 +405,30 @@ class ConstructionTree(Regression, Classification):
                 matri_list.append(X_c_p)
                 possible_cuts.append([greatest_purity_gain_per_p,associated_value_per_p,predictor,new_end_begin,imp_left, imp_right,prev_l,prev_r])
                 y_list.append(y_c_p) 
-    def tree_construction(self, X,y):
+    def _tree_construction(self, X,y):
 
         """
 
         Builds a decision tree from the matrix X and vector y. 
-        It calls the tree_structure to build the tree strcuture. Then, initializes the 
-        root node (0). Then, the algorithm checks if it is avaiable to cut the root
-        according to the limitations of the tree. It uses the function "splitter" to findo
-        the best split of the root, if it is applicable. Then, if "splitter" found a good split,
-        and if there is still avaiable splits, the algorithm will perform the split. This process
-        will continue in loop until there is no more splits avaiable according to the limitatinos
-        that defined the tree and while "splitter" still finds avaiable partitions.Since there are
-        parameters such as " maximum number of leaves", there could have, therefore, a maximum number
-        of splits. Hence, the splits that will actually be performed, are the ones from the nodes that
-        at the given step of the algorith, provide the greatest purity gain. 
+
+        It calls the _tree_structure to initialize the tree structure and sets up the 
+        root node (0). Then, it evaluates whether it is available to cut the root
+        according to the predefined tree constraints. 
+        
+        It uses the function "_splitter" to find the best split of the root, if it is applicable. If "_splitter" 
+        finds a good split, and if there is still available splits, the node will be split. This process
+        will continue in loop until there is no more splits available and while "_splitter" still finds available
+        partitions. The node that provides the greatest purity gain at each step of the algorithm that will
+        be split, according to the logic of "best-first growing strategy".
         
 
         Args:
-            X: Matrix of shape (n_new_samples, p_features)
+            X: Matrix of shape (n_samples, p_features)
             y: Vector of the observations of shape (n_samples,).
         
         Raises:
-            ValueError: if the number of dimensions os X and y are incompatible
+            ValueError: if the number of dimensions of X and y are incompatible
 
-        
         """
         if X.ndim != 2:
             raise ValueError("X must be two-dimensional")
@@ -439,17 +438,17 @@ class ConstructionTree(Regression, Classification):
             raise ValueError("X must contain at least one observation and one feature.")
         if X.shape[0] != y.shape[0]:
             raise ValueError("The data do not match")
-        self.tree_structure(X)
+        self._tree_structure(X)
         self.value[0] = self.custom_choose(y) 
         self.impurity[0] = self.custom_split(self.value[0],y) 
         self.start[0] = 0
-        self.end[0] = X.shape[0] # considerind [start , end)
+        self.end[0] = X.shape[0] # considering [start , end)
         self.node_depth[0] = 0
 
         list_nodes_that_can_be_split =  [] 
 
-        if (self.max_leaf >1 or self.max_leaf == None) and  X.shape[0] >=  self.min_samples_split and (self.max_depth == None or self.max_depth >=1 ) and self.impurity[0]>epsolon:
-            gain = self.splitter(X,y,0)
+        if (self.max_leaf >1 or self.max_leaf is None) and  X.shape[0] >=  self.min_samples_split and (self.max_depth is None or self.max_depth >=1 ) and self.impurity[0]>epsolon:
+            gain = self._splitter(X,y,0)
             if gain:
                 list_nodes_that_can_be_split.append([gain,0])
                 self.aux_purity_gain[0] = 1
@@ -463,36 +462,39 @@ class ConstructionTree(Regression, Classification):
                 list_nodes_that_can_be_split.remove(chosen)
               
                 self.aux_purity_gain[node_chosen_to_split] = -1 # turning it back to -1 
-                u = self.splitter(X,y,node_chosen_to_split, defenitive= True)
+                u = self._splitter(X,y,node_chosen_to_split, definitive= True)
 
 
                 self.max_splits -=1
 
-                if self.aux_purity_gain[self.children_left[node_chosen_to_split]] == 1: 
-                    new_candidate = self.splitter(X,y,self.children_left[node_chosen_to_split])
+                left_child = self.children_left[node_chosen_to_split]
+                right_child = self.children_right[node_chosen_to_split]
+
+                if self.aux_purity_gain[left_child] == 1: 
+                    new_candidate = self._splitter(X,y,left_child)
                     if new_candidate: # That is, if it returned a value different from "None" and gain > 0
-                        list_nodes_that_can_be_split.append([new_candidate,self.children_left[node_chosen_to_split]])
+                        list_nodes_that_can_be_split.append([new_candidate,left_child])
 
                     else: # if in reality, we can not split it
-                        self.aux_purity_gain[self.children_left[node_chosen_to_split]] = -1 
-                if self.aux_purity_gain[self.children_right[node_chosen_to_split]] == 1: 
-                    new_candidate = self.splitter(X,y,self.children_right[node_chosen_to_split])
+                        self.aux_purity_gain[left_child] = -1 
+                if self.aux_purity_gain[right_child] == 1: 
+                    new_candidate = self._splitter(X,y,right_child)
                     if new_candidate:# That is, if it returned a value different from "None" and gain > 0
-                        list_nodes_that_can_be_split.append([new_candidate,self.children_right[node_chosen_to_split]])
+                        list_nodes_that_can_be_split.append([new_candidate,right_child])
 
                     else:
-                        self.aux_purity_gain[self.children_right[node_chosen_to_split]] = -1
+                        self.aux_purity_gain[right_child] = -1
 
     def predict (self,X):
 
         """
-        After the tree has been built, X will be predicted line by line, by "following the tree".
+        Predict X after the tree has been built.
 
         Args:
-            X: Matrix
+            X: Sample matrix of shape (n_samples, p_features) or a 1D array for a single sample.
         
         Returns:
-            y: np.ndarray of the predicted values
+            y: np.ndarray of the predicted values of shape (n_samples,).
         
         """
 
@@ -504,7 +506,7 @@ class ConstructionTree(Regression, Classification):
         y = [] 
         for i in range(y_num):
             node = 0
-            while self.children_left[node] != -1: # Because if it has left child, then it has right child
+            while self.children_left[node] != -1: # If it has left child, then it is an internal node (or the root)
                 if X[i][self.feature[node]] <= self.threshold[node]:
                     node = self.children_left[node]
                 else:
@@ -514,6 +516,18 @@ class ConstructionTree(Regression, Classification):
         y = np.array(y)
         return y
     def set_params(self, **params):
+        """
+        Sets the parameters of the decision tree.
+
+        This method updates only the specified parameters without overwriting 
+        previously configured values for other parameters.
+
+        Args:
+            Parameters that need to be changed and the new value.
+        Raises:
+            ValueError if an invalid parameter is submitted.
+
+        """
         if not params:
             pass
         else:
@@ -530,13 +544,20 @@ class ConstructionTree(Regression, Classification):
 
 
     def get_params(self):
+        """
+
+        Function to get the parameters of the tree in a dictionary.
+
+        Returns:
+            Dictionary of the parameters.
+        
+        """
         dicto = {
             "min_impurity_decrease": self.min_impurity_decrease,
             "max_depth":self.max_depth ,
             "min_samples_split": self.min_samples_split,
             "min_samples_leaf": self.min_samples_leaf,
             "max_leaf": self.max_leaf ,
-            "max_depth" :self.max_depth,
             "random_forest": self.random_forest,
             "criterion_split": self.criterion_split,
             "custom_split": self.custom_split,
@@ -548,6 +569,14 @@ class ConstructionTree(Regression, Classification):
             }
         return dicto
     def get_tree_structure_info(self):
+
+        """
+        Function to get the tree structure in a dictionary.
+
+        Returns: 
+            Dictionary of the tree structure.
+
+        """
         dicto = {
         "children_left":self.children_left,
         "children_right":self.children_right,
@@ -556,7 +585,6 @@ class ConstructionTree(Regression, Classification):
         "threshold":self.threshold,
         "impurity":self.impurity,
         "value":self.value,
-        "purity_gain":self.purity_gain,
         "start":self.start,
         "end":self.end,
         "aux_purity_gain":self.aux_purity_gain,
@@ -564,6 +592,28 @@ class ConstructionTree(Regression, Classification):
             }
         return dicto
     def _change_right_child(self,father,new_value):
+        """
+        Internal function to change the correspondence between a node 
+        and its right child.
+
+        Args:
+            father: Index of father node.
+            new_value: Index of new right child.
+        
+        """
         self.children_right[father] = new_value
     def _change_left_child(self,father,new_value):
+
+        """
+        Internal function to change the correspondence between a node 
+        and its left child.
+
+        
+        Args:
+            father: Index of father node.
+            new_value: Index of the new left child.
+                
+        """
+        
         self.children_left[father] = new_value
+    
