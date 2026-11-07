@@ -11,6 +11,32 @@ def classif_error(_, y_true):
 epsolon = 0.000000000001
 
 class Classification:
+    '''
+
+    Initializes the metrics used to calculate the impurity (that is, the metrics to split the nodes),
+    predict and evaluate. For the impurity, it allows the user to use Gini as default, but also allows the classification
+    metrics implemented by the library. The user an also define a function of his choice, however,
+    it must take as parameters, y_predicted and y_true, respectively.
+    For the predict, it allows median, max, min, mode, or another one chosen by the
+    user. However, the user must define and submit a function that accepts an array as a paramter, and 
+    "axis", if the user is performing bagging, random forest or prunning a tree. 
+    The evaluation function is by standard "Standard", to indicate that is the error rate. 
+    The user is allowed to choose another one that must take as parameters, y_predicted and y_true, respectively.
+
+    Args:
+
+        criterion_split: string defining what will be the function to calculate the impurity (if "Other", then the user must provide a function)
+        custom_split: the function itself    
+        criterion_choose: string defining what will be the function to select the y_predic value (if "Other", then the user must provide a function)
+        custom_choose: the function itself (None if the user choose one of the median, min, max or mode) 
+        criterion_evaluation: string defining what will be the function to calculate the evluation / error (if "Other", then the user must provide a function)
+        custom_evaluation: the function itself 
+
+    Raises:
+
+        ValueError: if any of the strings from criterion_split, criterion_choose or criterion_evaluation are invalid strings
+        Warning:If the user chooses a different metric for the evaluation from the impurity metric. 
+    '''
     def __init__(self,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard",custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None):
         split ={
             'Standard':Gini,
