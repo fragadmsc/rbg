@@ -61,7 +61,7 @@ class TreeBase(ConstructionTree):
         alfas_oficial = self.cuts_and_alfas()
 
         number_splits = min(5,Y.shape[0])
-        k_fold = KFold(random_state = 41, n_splits = number_splits)
+        k_fold = KFold(random_state = 41, k = number_splits)
         k = k_fold.split(X.copy())
 
         list_test_X =[] 
