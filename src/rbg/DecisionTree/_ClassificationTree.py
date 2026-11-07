@@ -20,7 +20,7 @@ class Classification:
             'Other':custom_split
         }
         if criterion_split not in split:
-            raise ValueError ("The only split criterions avaiable for classification are Gini,classif_error,entropy, and Other")
+            raise ValueError ("The only split criterions available for classification are Gini,classif_error,entropy, and Other")
         self.custom_split  = split.get(criterion_split)
 
         y_pred ={
@@ -32,7 +32,7 @@ class Classification:
             'Other':custom_choose 
         }
         if criterion_choose not in y_pred:
-            raise ValueError ("The only split criterions avaiable for assinging y_pred are mode, median, min, and max")
+            raise ValueError ("The only split criterions available for assinging y_pred are mode, median, min, and max")
         self.custom_choose  = y_pred.get(criterion_choose)
         evalu ={
             'Standard':error_rate,
@@ -42,7 +42,7 @@ class Classification:
         } 
 
         if criterion_evaluation not in evalu:
-            raise ValueError ("The only evaluation criterions avaiable for evaluating the tree are Gini, entropy, criterion_split, the Same as used in spliting and Other")
+            raise ValueError ("The only evaluation criterions available for evaluating the tree are Gini, entropy, criterion_split, the Same as used in spliting and Other")
         self.custom_evaluation  = evalu.get(criterion_evaluation)
         if criterion_evaluation !="Standard":
             raise Warning("It is possible, but probably inefficient to assaing a different method of error rate")
