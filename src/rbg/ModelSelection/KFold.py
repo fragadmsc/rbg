@@ -19,6 +19,7 @@ class KFold:
             raise ValueError("'data_size' must be an integer or a dataset.")
         if type(self.k) is not int or self.k <= 1 or self.k > n_samples:
             raise ValueError("'k' must be an integer larger than 1 and at most the size of the dataset.")
+        # Valida y apenas se for passado
         if y is not None:
             y = np.asarray(y)
             if n_samples != y.shape[0]:
