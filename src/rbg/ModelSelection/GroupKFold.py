@@ -8,30 +8,51 @@ class GroupKFold:
     are never separated between training and test sets.
     """
 
+<<<<<<< HEAD
     def __init__(self, k: int = 5, shuffle: bool = False, random_state=42):
         if isinstance(k, bool) or not isinstance(k, (int, np.integer)) or k <= 1:
             raise ValueError("'k' must be an integer larger than 1.")
         self.k = int(k)
+=======
+    def __init__(self, k: int = 5, shuffle: bool = False, random_state=None):
+
+        if type(k) is not int or k <= 1:
+            raise ValueError("'k' must be an integer larger than 1.")
+
+        self.k = k
+>>>>>>> f7f3b07 (fixes bugs and divides functions in different files)
         self.shuffle = shuffle
         self.random_state = random_state
 
     def split(self, X, y = None, groups = None):
         """
+<<<<<<< HEAD
         Generates train and test indices while keeping all samples from the same group together.
 
         Args:
             X (np.ndarray): dataset used to determine the number of samples.
             groups (np.ndarray): group identifier for each sample.
+=======
+        Generates train/test indices while keeping all samples from the same group together.
+
+        Args:
+            X (np.ndarray): Dataset used to determine the number of samples.
+            groups (np.ndarray): Group identifier for each sample.
+>>>>>>> f7f3b07 (fixes bugs and divides functions in different files)
 
         Yields:
             Tuples of (train_idxs, test_idxs).
         """
         if groups is None:
+<<<<<<< HEAD
             if y is not None:
                 groups = y
                 y = None
             else:
                 raise ValueError("GroupKFold must have parameter 'groups'.")
+=======
+            raise ValueError("GroupKFold must have parameter 'groups'.")
+>>>>>>> f7f3b07 (fixes bugs and divides functions in different files)
         X = np.asarray(X)
         groups = np.asarray(groups)
 

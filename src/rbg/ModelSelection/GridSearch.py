@@ -64,8 +64,11 @@ class GridSearch:
                 if score < best_score:
                     best_score = score
                     self.best_params_ = params.copy()
+<<<<<<< HEAD
         if self.best_params_ is None:
             raise RuntimeError("GridSearch failed to find a valid score for any parameter combination.")
+=======
+>>>>>>> f7f3b07 (fixes bugs and divides functions in different files)
         self.best_model_ = deepcopy(self.model)
         self.best_model_.set_params(**self.best_params_)
         if y is not None:

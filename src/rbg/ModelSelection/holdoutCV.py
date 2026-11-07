@@ -9,9 +9,13 @@ class Holdout:
         self.random_state = random_state
 
     def split(self, data_size, y = None, groups = None):
+<<<<<<< HEAD
         if isinstance(data_size, (int, np.integer)) and not isinstance(data_size, bool):
             n_samples = data_size
         elif hasattr(data_size, "__len__"):
+=======
+        if isinstance(data_size, (np.ndarray, list)):
+>>>>>>> f7f3b07 (fixes bugs and divides functions in different files)
             n_samples = len(data_size)
         elif isinstance(data_size, int) and not isinstance(data_size, bool):
             n_samples = data_size
