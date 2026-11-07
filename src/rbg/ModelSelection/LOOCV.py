@@ -10,16 +10,14 @@ class LOOCV:
         pass
     
     def split(self, data_size, y = None):
-        if not isinstance(data_size, bool) and isinstance(data_size, (int, np.integer)):
-            x = int(data_size)
-        elif hasattr(data_size, "__len__"):
+        if type(data_size) == np.ndarray or type(data_size) == list:
             x = len(data_size)
+        elif type(data_size) == int:
+            x = data_size
         else:
             raise ValueError("'data_size' must be an integer or a dataset.")
-        if x < 2:
-            raise ValueError("LOOCV requires at least 2 samples to perform cross-validation.")
         if y is not None:
             y = np.asarray(y)
             if x != y.shape[0]:
                 raise ValueError("X and y dimensions must match.")
-        return KFold(k=x).split(data_size = x, y=y)
+        return KFold(k=x).split(data_size = x)
