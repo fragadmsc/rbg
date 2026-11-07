@@ -67,7 +67,7 @@ class TestClassificationTree:
         assert resultado.shape == (2,)
     def test_iniciate_class(self):
 
-        with pytest.raises(ValueError, match="The only split criterions avaiable for classification are Gini,classif_error,entropy, and Other"):
+        with pytest.raises(ValueError, match="The only split criterions available for classification are Gini,classif_error,entropy, and Other"):
                   modelo_classificacao = Classification( max_depth = 34, max_leaf = 90, min_samples_leaf = 1, random_forest = False, min_impurity_decrease = 0.0001, criterion_split = "MAE",  min_samples_split = 2, custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None )
 
         modelo_classificacao = Classification(min_samples_split = 6, max_depth = 34, max_leaf = 90, min_samples_leaf = 1, random_forest = False, min_impurity_decrease = 0.0001, criterion_split = "entropy", custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None )
@@ -207,7 +207,7 @@ class TestRegressionTree:
         assert resultado.shape == (3,)
     def test_iniciate_class(self):
 
-        with pytest.raises(ValueError, match="The only split criterions avaiable for regression are MSE, RSS, RMSE, MAE, RSquare, and Other"):
+        with pytest.raises(ValueError, match="The only split criterions available for regression are MSE, RSS, RMSE, MAE, RSquare, and Other"):
                   model_reg = Regression( max_depth = 34, max_leaf = 90, min_samples_leaf = 1, random_forest = False, min_impurity_decrease = 0.0001, criterion_split = "Gini",  min_samples_split = 2, custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None )
 
         model_reg = Regression(min_samples_split = 6, max_depth = 34, max_leaf = 90, min_samples_leaf = 1, random_forest = False, min_impurity_decrease = 0.0001, criterion_split = "MAE", custom_split = None, criterion_choose = "median", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None )
