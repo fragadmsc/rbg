@@ -3,10 +3,7 @@ from copy import deepcopy
 from rbg.Utilities import cv_score
 
 class RandomizedSearch:
-    def __init__(self, model, param_dist, metrics, cv, n_iter: int = 10, random_state=42, greater_is_better=False):
-        """Initializes a Randomized Search. param_dist must receive the parameters distributions as a dictionary, 
-        and the hyperparameters are decided randomly. n_iter is the number of times the hyperparameters are decided,
-        and the best set of hyperparameters is taken."""
+    def __init__(self, model, param_dist, metrics, cv, n_iter: int = 10, random_state=None, greater_is_better=False):
         self.model = model
         self.param_dist = param_dist
         self.metrics = metrics
@@ -72,15 +69,5 @@ class RandomizedSearch:
 
         return self
 
-    def set_params(self, param_dist = None, **kwargs):
-        if param_dist is not None:
-            for key, value in param_dist.items():
-                self.param_dist[key] = value
-        for key, value in kwargs.items():
-            self.param_dist[key] = value
-        return self
-
     def predict(self, X):
-        if self.best_model_ is None:
-            raise RuntimeError("RandomizedSearch has not been fitted yet.")
         return self.best_model_.predict(X)
