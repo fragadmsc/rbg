@@ -1,5 +1,4 @@
-from .GridSearch import GridSearch
-from .RandomizedSearch import RandomizedSearch
+from .GridSearch import RandomizedSearch,GridSearch
 from .KFold import KFold
 from .GroupKFold import GroupKFold
 from .StratifiedKFold import StratifiedKFold
