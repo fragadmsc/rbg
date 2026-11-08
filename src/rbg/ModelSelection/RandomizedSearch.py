@@ -69,5 +69,15 @@ class RandomizedSearch:
 
         return self
 
+    def set_params(self, param_dist = None, **kwargs):
+        if param_dist is not None:
+            for key, value in param_dist.items():
+                self.param_dist[key] = value
+        for key, value in kwargs.items():
+            self.param_dist[key] = value
+        return self
+
     def predict(self, X):
+        if self.best_model_ is None:
+            raise RuntimeError("RandomizedSearch has not been fitted yet.")
         return self.best_model_.predict(X)
