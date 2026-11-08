@@ -1,13 +1,17 @@
 import numpy as np
 
 class Holdout:
-    def __init__(self, val_size=0.2, shuffle=False, random_state=None):
+    """Separates the dataset between one training set and one validation set, and can be used on cv_score.
+    """
+    def __init__(self, val_size=0.2, shuffle=False, random_state=42):
         self.val_size = val_size
         self.shuffle = shuffle
         self.random_state = random_state
 
     def split(self, data_size, y = None, groups = None):
-        if isinstance(data_size, (np.ndarray, list)):
+        if isinstance(data_size, (int, np.integer)) and not isinstance(data_size, bool):
+            n_samples = data_size
+        elif hasattr(data_size, "__len__"):
             n_samples = len(data_size)
         elif isinstance(data_size, int) and not isinstance(data_size, bool):
             n_samples = data_size
