@@ -15,7 +15,7 @@ class StratifiedKFold:
             shuffle (bool, optional): _description_. Defaults to False.
             random_state (_type_, optional): _description_. Defaults to None.
         """
-        if type(k) is not int or k <= 1:
+        if isinstance(k, bool) or not isinstance(k, (int, np.integer)) or k <= 1:
             raise ValueError("The number of splits 'k' must be an integer greater than 1.")
         self.k = k
         self.shuffle = shuffle
@@ -36,13 +36,18 @@ class StratifiedKFold:
         X = np.asarray(X)
         y = np.asarray(y)
         if X.shape[0] != y.shape[0]:
-            raise ValueError("X and y must have the same number of rows!")
+            raise ValueError("X and y dimensions must match.")
         n_samples = X.shape[0]
         if self.k > n_samples:
-            raise ValueError(f"Number of splits ({self.k}) cannot be greater than the number of samples ({n_samples}).")
+            raise ValueError("Number of splits 'k' cannot be greater than the number of samples.")
+        unique_classes, y_counts = np.unique(y, return_counts=True)
+        min_samples = np.min(y_counts)
+        # levanta um ValueError se o k é maior do que o numero de membros em alguma classe,
+        # pq isso gera um fold vazio
+        if min_samples < self.k:
+            raise ValueError("k can't be greater than the number of members in a class.")
         rng = np.random.default_rng(self.random_state)
         all_indices = np.arange(n_samples)
-        unique_classes = np.unique(y)
         class_folds = []
         for cls in unique_classes:
             cls_indices = all_indices[y == cls]
