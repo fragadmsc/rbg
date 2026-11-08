@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest 
 
-from crossvalidation import train_val_test_split
+from rbg.Utilities.crossvalidation import train_val_test_split
 
 
 '''

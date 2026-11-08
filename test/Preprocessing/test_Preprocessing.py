@@ -19,7 +19,7 @@ class TestDataEntry():
 
     @pytest.mark.parametrize("func", [Standard])
     def test_Numpy(self,func):
-        Data = np.array([1,2,3])
+        Data = np.ndarray([1,2,3])
 
         NpResult = func(Data)
 

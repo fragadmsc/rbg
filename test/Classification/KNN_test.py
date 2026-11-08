@@ -1,4 +1,4 @@
-from rbg.Classification.KNN  import KNN
+from rbg.Classification  import KNN
 import numpy as np
 import pandas as pd
 import pytest

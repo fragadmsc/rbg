@@ -7,7 +7,7 @@ from rbg.DecisionTree import ClassificationTree
 from rbg.DecisionTree import RegressionTree 
 
 
-from crossvalidation import train_val_test_split
+from rbg.Utilities.crossvalidation import train_val_test_split
 
 
 '''
