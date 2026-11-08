@@ -1,8 +1,29 @@
 import numpy as np
 
-def Standard(Data):
-    """
-    Just normalize the Data array subtract the mean and divides by std
-    """
-    ep = 1e-11
-    return np.array((Data - np.mean(Data,axis = 0)) / (np.std(Data,axis= 0)+ep))
+class Standard():
+    def __init__(self):
+        #para cada tipo de normalização salvo um tipo de dado
+        #standard
+        self._mean = None
+        self._std =None
+
+
+
+    def fit(self,X):
+        """
+        Standarize the data and saves mean and std to use late in Standard
+        """
+        self._mean = np.mean(X,axis = 0)
+        self._std = np.std(X,axis = 0)
+
+        ep = 1e-11
+        return np.array((X - self._mean) / (self._std + ep))
+
+    def transform(self,X):
+        """
+        Must be used before Standard_fit
+        """
+
+
+        ep = 1e-11
+        return np.array((X - self._mean) / (self._std + ep))
