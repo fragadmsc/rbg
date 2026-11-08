@@ -171,5 +171,5 @@ def mode(y_true:np.ndarray, axis = None):
         ind = np.argmax(cont)
         return values[ind]
 
-def error_rate(y_pred: np.ndarray, y_true: np.ndarray) - > float:
-    return 1 - Acurracy(y_pred, y_true)
+def error_rate(y_pred: np.ndarray, y_true: np.ndarray) -> float:
+    return 1 - Accuracy(y_pred, y_true)
