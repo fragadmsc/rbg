@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 # y_pred, y_true
-def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, shuffle = True, random_state = None):
+def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, shuffle = True, random_state = 42):
     """
     Divides the dataset between a training set and a testing set.
 
@@ -10,7 +10,7 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
         y (np.ndarray): output values.
         test_size (float, optional): proportion of samples assigned to the test set. Defaults to 0.2.
         shuffle (bool, optional): if True, the data will be shuffled. Defaults to True.
-        random_state (int, optional): as integer seeds that ensures the random shuffle produces the same split every time. Defaults to None.
+        random_state (int, optional): an integer seeds that ensures the random shuffle produces the same split every time. Defaults to 42.
 
     Raises:
         ValueError: if X and y dimensions don't match.
@@ -44,7 +44,7 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     y_test = y[test_idxs]
     return X_train, X_test, y_train, y_test
 
-def train_val_test_split(X : np.ndarray, y : np.ndarray = None, val_size = 0.2, test_size = 0.2, shuffle = True, random_state = None):
+def train_val_test_split(X : np.ndarray, y : np.ndarray = None, val_size = 0.2, test_size = 0.2, shuffle = True, random_state = 42):
     """
     Splits arrays or matrices into random train, validation, and test subsets.
     """
