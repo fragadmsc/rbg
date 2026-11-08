@@ -46,10 +46,11 @@ class GridSearch:
         X = np.asarray(X)
         if y is not None:
             y = np.asarray(y)
+        model_obj = self.model() if isinstance(self.model, type) else self.model
         if self.greater_is_better:
             best_score = float('-inf')
             for params in self._gen_combs():
-                current_model = deepcopy(self.model)
+                current_model = deepcopy(model_obj)
                 current_model.set_params(**params) 
                 score = cv_score(current_model, X, y, self.cv, self.metrics, groups=groups)
                 if score > best_score:
@@ -58,7 +59,7 @@ class GridSearch:
         else:
             best_score = float('inf')
             for params in self._gen_combs():
-                current_model = deepcopy(self.model)
+                current_model = deepcopy(model_obj)
                 current_model.set_params(**params) 
                 score = cv_score(current_model, X, y, self.cv, self.metrics, groups=groups)
                 if score < best_score:
@@ -66,7 +67,7 @@ class GridSearch:
                     self.best_params_ = params.copy()
         if self.best_params_ is None:
             raise RuntimeError("GridSearch failed to find a valid score for any parameter combination.")
-        self.best_model_ = deepcopy(self.model)
+        self.best_model_ = deepcopy(model_obj)
         self.best_model_.set_params(**self.best_params_)
         if y is not None:
             self.best_model_.fit(X, y)

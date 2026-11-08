@@ -23,6 +23,7 @@ class RandomizedSearch:
         X = np.asarray(X)
         if y is not None:
             y = np.asarray(y)
+        model_obj = self.model() if isinstance(self.model, type) else self.model
         rng = np.random.default_rng(self.random_state)
         if self.greater_is_better:
             best_score = float('-inf')
@@ -37,7 +38,7 @@ class RandomizedSearch:
                         raise TypeError(
                             f"The parameter '{key}' must be a list or a function (callable)."
                         )
-                current_model = deepcopy(self.model)
+                current_model = deepcopy(model_obj)
                 current_model.set_params(**params)
                 score = cv_score(current_model, X, y, self.cv, self.metrics, groups=groups)
                 if score > best_score:
@@ -56,13 +57,13 @@ class RandomizedSearch:
                         raise TypeError(
                             f"The parameter '{key}' must be a list or a function (callable)."
                         )
-                current_model = deepcopy(self.model)
+                current_model = deepcopy(model_obj)
                 current_model.set_params(**params)
                 score = cv_score(current_model, X, y, self.cv, self.metrics, groups=groups)
                 if score < best_score:
                     best_score = score
                     self.best_params_ = params.copy()
-        self.best_model_ = deepcopy(self.model)
+        self.best_model_ = deepcopy(model_obj)
         self.best_model_.set_params(**self.best_params_)
         if y is not None:
             self.best_model_.fit(X, y)

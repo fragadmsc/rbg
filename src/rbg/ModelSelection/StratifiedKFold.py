@@ -42,8 +42,6 @@ class StratifiedKFold:
             raise ValueError("Number of splits 'k' cannot be greater than the number of samples.")
         unique_classes, y_counts = np.unique(y, return_counts=True)
         min_samples = np.min(y_counts)
-        # levanta um ValueError se o k é maior do que o numero de membros em alguma classe,
-        # pq isso gera um fold vazio
         if min_samples < self.k:
             raise ValueError("k can't be greater than the number of members in a class.")
         rng = np.random.default_rng(self.random_state)

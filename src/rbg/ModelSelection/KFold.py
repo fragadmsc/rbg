@@ -34,6 +34,5 @@ class KFold:
         idx_sets = np.array_split(idxs, self.k)
         for i in range(self.k):
             test_idxs = idx_sets[i]
-            # concatena todos os folds preservando a ordem se shuffle = true:
             train_idxs = np.concatenate([idx_sets[j] for j in range(self.k) if j!=i])
             yield train_idxs, test_idxs
