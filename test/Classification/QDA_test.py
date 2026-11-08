@@ -1,5 +1,5 @@
 
-from rbg.Classification.QDA import QDA as QDA
+from rbg.Classification import QDA as QDA
 import numpy as np
 import pandas as pd
 import pytest

@@ -1,5 +1,4 @@
-
-from rbg.Classification.LDA import LDA
+from rbg.Classification import LDA
 import numpy as np
 import pandas as pd
 import pytest
