@@ -8,7 +8,7 @@ class GroupKFold:
     are never separated between training and test sets.
     """
 
-    def __init__(self, k: int = 5, shuffle: bool = False, random_state=None):
+    def __init__(self, k: int = 5, shuffle: bool = False, random_state=42):
         if isinstance(k, bool) or not isinstance(k, (int, np.integer)) or k <= 1:
             raise ValueError("'k' must be an integer larger than 1.")
         self.k = int(k)
@@ -17,11 +17,11 @@ class GroupKFold:
 
     def split(self, X, y = None, groups = None):
         """
-        Generates train/test indices while keeping all samples from the same group together.
+        Generates train and test indices while keeping all samples from the same group together.
 
         Args:
-            X (np.ndarray): Dataset used to determine the number of samples.
-            groups (np.ndarray): Group identifier for each sample.
+            X (np.ndarray): dataset used to determine the number of samples.
+            groups (np.ndarray): group identifier for each sample.
 
         Yields:
             Tuples of (train_idxs, test_idxs).

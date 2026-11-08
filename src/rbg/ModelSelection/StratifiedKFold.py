@@ -7,13 +7,13 @@ class StratifiedKFold:
     Provides train/test indices to split data in train/test sets 
     while preserving the percentage of samples for each class.
     """
-    def __init__(self, k: int = 5, shuffle: bool = False, random_state = None):
+    def __init__(self, k: int = 5, shuffle: bool = False, random_state = 42):
         """Initializes a Stratified KFold instance.
 
         Args:
             k (int, optional): number of folds. Defaults to 5.
-            shuffle (bool, optional): _description_. Defaults to False.
-            random_state (_type_, optional): _description_. Defaults to None.
+            shuffle (bool, optional): if true, the data will be shuffled. Defaults to False.
+            random_state (int, optional): seed for shuffling. Defaults to 42.
         """
         if isinstance(k, bool) or not isinstance(k, (int, np.integer)) or k <= 1:
             raise ValueError("The number of splits 'k' must be an integer greater than 1.")
