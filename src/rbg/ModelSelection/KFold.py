@@ -5,7 +5,7 @@ class KFold:
     
     Separates the dataset in k folds and uses k-1 folds as train and 1 fold as test.
     """
-    def __init__(self, k : int = 5, shuffle : bool = False, random_state = None):
+    def __init__(self, k : int = 5, shuffle : bool = False, random_state = 42):
         if isinstance(k, bool) or not isinstance(k, (int, np.integer)) or k <= 1:
             raise ValueError("The number of splits 'k' must be an integer greater than 1.")
         self.k = int(k)
@@ -17,7 +17,7 @@ class KFold:
             n_samples = int(data_size)
             if n_samples <= 0:
                 raise ValueError("'data_size' must be positive.")
-        elif hasattr(data_size, "__len__"): # se tiver atributo len (pode ser lista, array do numpy, df do pandas...)
+        elif hasattr(data_size, "__len__"):
             n_samples = len(data_size)
         else:
             raise ValueError("'data_size' must be an integer or a dataset.")
