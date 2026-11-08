@@ -61,6 +61,8 @@ class ConstructionTree(Regression, Classification):
             - self.form: Variable indicating whether it is a classification or regression tree.
             - self.factor_selection: Function that determines the number of predictors to be analyzed.
             - self.random_seed: Random seed associated with the tree, if applicable.
+            - self.X: The sample data
+            - self.y: The sample data associated with X
             - self.max_splits: Maximum number of splits.
         
         Raises:
@@ -122,6 +124,8 @@ class ConstructionTree(Regression, Classification):
         self.form = form
         self.factor_selection = factor_selection
         self.random_seed = random_seed
+        self.X = None
+        self.y = None
 
         if max_leaf:
             self.max_splits = max_leaf - 1
@@ -191,7 +195,7 @@ class ConstructionTree(Regression, Classification):
             self.max_leaf = (self.n+ 1)//2 
             self.max_splits = self.max_leaf - 1
 
-    def _splitter(self, X,y,node,definitive = False):
+    def _splitter(self,node,definitive = False):
 
         """
 
@@ -212,8 +216,6 @@ class ConstructionTree(Regression, Classification):
 
 
         Args:
-            X: Sample matrix of shape (n_samples, p_feature).
-            y: Vector of the observations of shape (n_samples,).
             node: index of the node that will be tested or actually partitioned
             definitive: if "False" then _splitter only find the best cut of the node. If "True", then
             besides finding the best, it will actually cut the node and generate the child nodes.
@@ -228,7 +230,7 @@ class ConstructionTree(Regression, Classification):
         possible_cuts = [] 
         y_list = [] 
 
-        predictors = int(X.shape[1])
+        predictors = int(self.X.shape[1])
 
         train_idxs = np.arange(predictors)
 
@@ -245,16 +247,16 @@ class ConstructionTree(Regression, Classification):
 
         for predictor in train_idxs:
 
-            X_c_p = X.copy()
-            lines = X[self.start[node]:self.end[node]] #lines from the sample that are on the current node
+            X_c_p = self.X.copy()
+            lines = self.X[self.start[node]:self.end[node]] #lines from the sample that are on the current node
             ordered_ind = np.argsort(lines[:,predictor]) # increasing order index of those lines according to the predictor
             final_lines = lines[ordered_ind] # re - arranged lines that are on "node" but in increasing order according to predictor
             col_pred = final_lines[:, predictor]
 
             X_c_p [self.start[node]:self.end[node]] = final_lines # re - arrenged matrix X
 
-            y_c_p = y.copy()
-            y_lines = y[self.start[node]:self.end[node]]
+            y_c_p = self.y.copy()
+            y_lines = self.y[self.start[node]:self.end[node]]
             final_y_lines = y_lines[ordered_ind]
             y_c_p [self.start[node]:self.end[node]] = final_y_lines
 
@@ -277,8 +279,8 @@ class ConstructionTree(Regression, Classification):
             if definitive == False:
                 return greatest_purity_gain_overall
             else:
-                X = matri_list[greatest_purity_gain_overall_index]
-                y = y_list[greatest_purity_gain_overall_index]
+                self.X = matri_list[greatest_purity_gain_overall_index]
+                self.y = y_list[greatest_purity_gain_overall_index]
                 self.threshold[node] = possible_cuts[greatest_purity_gain_overall_index,1]
                 self.feature[node] = possible_cuts[greatest_purity_gain_overall_index,2]
                 r1 = np.max(self.children_right)
@@ -439,16 +441,18 @@ class ConstructionTree(Regression, Classification):
         if X.shape[0] != y.shape[0]:
             raise ValueError("The data do not match")
         self._tree_structure(X)
+        self.X = np.asarray(X.copy())
+        self.y = np.asarray(y.copy())
         self.value[0] = self.custom_choose(y) 
-        self.impurity[0] = self.custom_split(self.value[0],y) 
+        self.impurity[0] = self.custom_split(self.value[0],self.y) 
         self.start[0] = 0
-        self.end[0] = X.shape[0] # considering [start , end)
+        self.end[0] = self.X.shape[0] # considering [start , end)
         self.node_depth[0] = 0
 
         list_nodes_that_can_be_split =  [] 
 
-        if (self.max_leaf >1 or self.max_leaf is None) and  X.shape[0] >=  self.min_samples_split and (self.max_depth is None or self.max_depth >=1 ) and self.impurity[0]>epsolon:
-            gain = self._splitter(X,y,0)
+        if (self.max_leaf >1 or self.max_leaf is None) and  self.X.shape[0] >=  self.min_samples_split and (self.max_depth is None or self.max_depth >=1 ) and self.impurity[0]>epsolon:
+            gain = self._splitter(0)
             if gain:
                 list_nodes_that_can_be_split.append([gain,0])
                 self.aux_purity_gain[0] = 1
@@ -462,7 +466,7 @@ class ConstructionTree(Regression, Classification):
                 list_nodes_that_can_be_split.remove(chosen)
               
                 self.aux_purity_gain[node_chosen_to_split] = -1 # turning it back to -1 
-                u = self._splitter(X,y,node_chosen_to_split, definitive= True)
+                u = self._splitter(node_chosen_to_split, definitive= True)
 
 
                 self.max_splits -=1
@@ -471,14 +475,14 @@ class ConstructionTree(Regression, Classification):
                 right_child = self.children_right[node_chosen_to_split]
 
                 if self.aux_purity_gain[left_child] == 1: 
-                    new_candidate = self._splitter(X,y,left_child)
+                    new_candidate = self._splitter(left_child)
                     if new_candidate: # That is, if it returned a value different from "None" and gain > 0
                         list_nodes_that_can_be_split.append([new_candidate,left_child])
 
                     else: # if in reality, we can not split it
                         self.aux_purity_gain[left_child] = -1 
                 if self.aux_purity_gain[right_child] == 1: 
-                    new_candidate = self._splitter(X,y,right_child)
+                    new_candidate = self._splitter(right_child)
                     if new_candidate:# That is, if it returned a value different from "None" and gain > 0
                         list_nodes_that_can_be_split.append([new_candidate,right_child])
 
