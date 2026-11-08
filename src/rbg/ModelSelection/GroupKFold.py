@@ -9,11 +9,9 @@ class GroupKFold:
     """
 
     def __init__(self, k: int = 5, shuffle: bool = False, random_state=None):
-
-        if type(k) is not int or k <= 1:
+        if isinstance(k, bool) or not isinstance(k, (int, np.integer)) or k <= 1:
             raise ValueError("'k' must be an integer larger than 1.")
-
-        self.k = k
+        self.k = int(k)
         self.shuffle = shuffle
         self.random_state = random_state
 
@@ -29,7 +27,11 @@ class GroupKFold:
             Tuples of (train_idxs, test_idxs).
         """
         if groups is None:
-            raise ValueError("GroupKFold must have parameter 'groups'.")
+            if y is not None:
+                groups = y
+                y = None
+            else:
+                raise ValueError("GroupKFold must have parameter 'groups'.")
         X = np.asarray(X)
         groups = np.asarray(groups)
 
