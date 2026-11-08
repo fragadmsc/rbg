@@ -11,10 +11,12 @@ class MinMaxScaler(BaseTransformer):
             data_max_: Per-feature maximum seen in the data during fit.
             data_range_: Per-feature range, 'data_max_ - data_min_', with zeros replaced by 1 to avoid division by zero.
     """
-    def __init__(self, feature_range=(0, 1)) -> None:
-        self.feature_range = feature_range
+    def __init__(self,):
+        self.data_min_ = None
+        self.data_max_ = None
+        self.feature_range = None
         
-    def fit(self, X: np.ndarray, y = None) -> 'MinMaxScaler':
+    def fit(self, X: np.ndarray, y = None, feature_range=(0, 1)):
         """Compute the per-feature minimun and maximum.add()
         
 
@@ -25,6 +27,7 @@ class MinMaxScaler(BaseTransformer):
         Returns:
             The fitted scaler 'self'.
         """
+        self.feature_range = feature_range
         X = check_array(X)
         self.data_min_ = np.min(X, axis=0)
         self.data_max_ = np.max(X, axis=0)
@@ -33,7 +36,7 @@ class MinMaxScaler(BaseTransformer):
         
         data_range[data_range == 0] = 1.0 # cosntant column: avoid division by zero
         self.data_range_ = data_range
-        return self
+        return self.transform(X)
     
     def transform(self, X: np.ndarray) -> np.ndarray:
         """Scale 'X' using the minimum and range learned in 'fit'.
@@ -49,3 +52,10 @@ class MinMaxScaler(BaseTransformer):
         X = check_array(X)
         a, b = self.feature_range
         return a + (X - self.data_min_) / self.data_range_ * (b - a)
+
+    def untransform(self,X):
+        """untransform the data"""
+        a,b = self.feature_range
+        
+        return (X - a)/(b-a) * (self.data_max_ - self.data_min_) + self.data_min_
+     
