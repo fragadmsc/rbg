@@ -11,8 +11,8 @@ epsolon = 0.000000000001
 class ConstructionTree(Regression, Classification):
     """Base regression class for building a tree and fitting data."""
 
-    def __init__(self,min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None, factor_selection = np.sqrt, random_seed = 0, form = "regression"):
-        """Initializes the Regression Tree Strcuture 
+    def __init__(self,min_impurity_decrease = 0.01, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = False, criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None, factor_selection = np.sqrt, random_seed = 0, form = "regression"):
+        """Initializes the Tree Structure
 
                  
         Args:
@@ -20,36 +20,55 @@ class ConstructionTree(Regression, Classification):
             min_impurity_decrease: The minimum purity gain to allow a split in a node.
             min_samples_split: The minimum number of samples in a node to allow a split.
             max_depth: The maximum depth the tree can grow.
-            min_samples_leaf: Minimum number of samples of each leaf. 
+            min_samples_leaf: The minimum number of samples required for each leaf node.
             max_leaf: Maximum number of leaves of the tree. 
+            random_forest: Boolean indicating whether it is a random forest or not. 
+            criterion_split: String indicating the metric used to calculate the split.
+            custom_split: Metric function to calculate the split.
+            criterion_choose: String indicating the metric used to choose the predicted value.
+            custom_choose: Metric function to choose the predicted value.
+            criterion_evaluation: String indicating the metric used to evaluate the error.
+            custom_evaluation: Metric function to evaluate the error.
+            factor_selection: Function to select the amount of features that can be selected to split a node.
+            random_seed: Random seed associated with the tree.
+            form: Indicated whether it is a classification or regression tree.
+
 
         Initializes the attributes:
         
             - self.min_impurity_decrease: The minimum purity gain to allow a split in a node.
             - self.min_samples_split: The minimum number of samples in a node to allow a split.
             - self.max_depth: The maximum depth the tree can grow.
-            - self.min_samples_leaf: Minimum number of samples of each leaf. 
-            - self.children_left: Array mapping each node to its left child or -1 (if it is a leaf)
-            - self.node_depth: Array mapping each node to its depth 
-            - self.children_right: Array mapping each node to its right child or -1 (if it is a leaf)
-            - self.feature: Array mapping each node to its predictor splitter 
-            - self.threshold: Array mapping each node to its value of split
-            - self.impurity: Array mapping each node to its impurity
-            - self.value: Array mapping each node to its predictor splitter 
-            - self.purity_gain_subtree: Array mapping each node to its purity gain compared to it's subtree leaves
-            - self.start: Array mapping each node to the first sample that falls on that node
-            - self.end: Array mapping each node to the last sample that falls on that node
-            - self.aux_purity_gain: Auxiliar array mapping each node to its' purity gain compated to both children
-            - self.max_leaf: Maximum number of leaves
-            - self.n: Number of nodes
-            - self.max_splits: Maximum number of splits
+            - self.min_samples_leaf: Minimum number of samples required for each leaf node.
+            - self.children_left: Array mapping each node to its left child or -1 (if it is a leaf).
+            - self.node_depth: Array mapping each node to its depth. 
+            - self.children_right: Array mapping each node to its right child or -1 (if it is a leaf).
+            - self.feature: Array mapping each node to its split feature index.
+            - self.threshold: Array mapping each node to its split threshold value.
+            - self.impurity: Array mapping each node to its impurity.
+            - self.value: Array mapping each node to its predicted value.
+            - self.start: Array mapping each node to the first sample that falls on that node.
+            - self.end: Array mapping each node to the last sample that falls on that node.
+            - self.aux_purity_gain: Auxiliary array indicating if it is possible to split each node.
+            - self.max_leaf: Maximum number of leaves.
+            - self.n: Number of nodes.
+            - self.random_forest: Boolean indicating if it is a random forest.
+            - self.nodes_below: Number of nodes in the subtree of root "i".
+            - self.S_alg: Parameter to prune a tree.
+            - self.G_big: Parameter to prune a tree.
+            - self.g_small: Parameter to prune a tree.
+            - self.father: Array mapping each node to its ancestor.
+            - self.form: Variable indicating whether it is a classification or regression tree.
+            - self.factor_selection: Function that determines the number of predictors to be analyzed.
+            - self.random_seed: Random seed associated with the tree, if applicable.
+            - self.max_splits: Maximum number of splits.
         
         Raises:
 
-            TypeError: If the parameter 'min_impurity_decrease' is not number, or if 
+            TypeError: If the parameter 'min_impurity_decrease' is not a number, or if 
             parameters 'max_depth, min_samples_split,min_samples_leaf.max_leaf 'are not integers
 
-            ValueError: If the integer parameter if smaller than it should be to generate a tree.
+            ValueError: If the integer parameter is smaller than it should be to generate a tree.
 
 
         """
@@ -62,7 +81,7 @@ class ConstructionTree(Regression, Classification):
         if isinstance(min_impurity_decrease, str):
              raise TypeError ("min_impurity_decrease should be a number")        
         if max_depth is not None and not isinstance(max_depth,(int,np.integer)):
-            raise TypeError("The param 'ma_depth' must be None or an integer.")
+            raise TypeError("The param 'max_depth' must be None or an integer.")
         if max_depth is not None and max_depth < 0:
             raise ValueError("'max_depth' must be greater or equal to zero.")
         if  not isinstance(min_samples_split, (int,np.integer)):
@@ -75,7 +94,7 @@ class ConstructionTree(Regression, Classification):
             raise ValueError("min_samples_leaf must be at least one")
         if max_leaf is not None and not isinstance (max_leaf, (int, np.integer)):
             raise TypeError("max_leaf must be an integer")
-        if max_leaf != None and max_leaf <1:
+        if max_leaf is not None and max_leaf <1:
             raise ValueError("You must have at least one leaf node")    
 
         self.min_impurity_decrease = min_impurity_decrease 
@@ -89,18 +108,17 @@ class ConstructionTree(Regression, Classification):
         self.threshold = None
         self.impurity = None
         self.value = None
-        self.purity_gain_subtree = None
         self.start = None
         self.end = None
         self.aux_purity_gain = None
         self.max_leaf = max_leaf
         self.n = None
         self.random_forest = random_forest
-        self.nodes_bellow = None
+        self.nodes_below = None
         self.S_alg = None
         self.G_big = None
         self.g_small = None
-        self.pai = None
+        self.father = None
         self.form = form
         self.factor_selection = factor_selection
         self.random_seed = random_seed
@@ -110,14 +128,14 @@ class ConstructionTree(Regression, Classification):
         else:
             self.max_splits = None
         
-    def tree_structure(self,X):
+    def _tree_structure(self,X):
 
         """
-        Defines self.n, the number of nodes of the tree, according to the number os samples and previously
-        defined limitations (min_samples_leaf, max_depth, and max_leaf). The most limited criteria will define
+        Defines self.n, the number of nodes of the tree, according to the number of samples and previously
+        defined limitations (min_samples_leaf, max_depth, and max_leaf). The most restrictive criteria will define
         how many nodes the tree will have.
 
-        Defines the arrays size of  
+        Defines the sizes of the arrays  
             - self.children_left
             - self.children_right
             - self.feature 
@@ -125,11 +143,14 @@ class ConstructionTree(Regression, Classification):
             - self.threshold 
             - self.impurity 
             - self.value 
-            - self.purity_gain 
             - self.start 
             - self.end 
-            - self.values_per_leaf 
             - self.aux_purity_gain 
+            - self.nodes_below 
+            - self.S_alg
+            - self.G_big 
+            - self.g_small 
+            - self.father 
 
         Args:
             X: Sample matrix of shape (n_samples, p_feature)
@@ -140,7 +161,6 @@ class ConstructionTree(Regression, Classification):
         
         """
 
-        #conserter: tem que ser o minimo de n dado (limitação de profundidade, limitação de numero de folhas, limitação de número de amostras por folha)
 
         if self.min_samples_leaf > np.shape(X)[0]:
             raise ValueError ("The minimum amount of samples leaf is greater than the amount of samples. Either collect more data, or change min_sample_leaf")
@@ -149,72 +169,64 @@ class ConstructionTree(Regression, Classification):
             self.n = min(int(2 * np.floor(N/self.min_samples_leaf) -1),int(2 **(self.max_depth +1)) - 1 )
         else:
             N = np.shape(X)[0]
-            self.n = 2 * int(np.floor(N/self.min_samples_leaf) )-1 # maybe change to ceil to be safe that it fits. Or maybe set everythng to max to guarantee.
+            self.n = 2 * int(np.floor(N/self.min_samples_leaf) )-1 
         if self.max_leaf != None:
-            self.n = min(self.n, int(2*self.max_leaf-1)) # I want the most restritive condition
+            self.n = min(self.n, int(2*self.max_leaf-1)) # The most restrictive condition
         self.children_left = np.ones(self.n,dtype=int) * -1 
         self.children_right = np.ones(self.n,dtype=int) * -1 
         self.feature = np.ones(self.n,dtype=int) * -1 
-        self.node_depth = np.ones(self.n,dtype=int) * -1 #impossible, so that is ok 
+        self.node_depth = np.ones(self.n,dtype=int) * -1 
         self.threshold = np.full(self.n, np.nan)
         self.impurity = np.ones(self.n) * -1 
         self.value = np.full(self.n, None, dtype = object)
-        self.purity_gain = np.ones(self.n) * -1 
         self.start = np.ones(self.n,dtype=int) * -1
         self.end = np.ones(self.n,dtype=int) * -1
-        self.values_per_leaf = np.arange(self.n)# tirar
         self.aux_purity_gain = np.ones(self.n,dtype=int) * -1 
-        self.nodes_bellow = np.ones(self.n,dtype=int) * -1 
+        self.nodes_below = np.ones(self.n,dtype=int) * -1 
         self.S_alg= np.ones(self.n,dtype=int) * -1
         self.G_big = np.full(self.n, None, dtype=object)
         self.g_small = np.ones(self.n,dtype=float) * -1.0
-        self.pai = np.ones(self.n,dtype=int) * -1 
-        if self.max_leaf == None:
-            self.max_leaf = (self.n+ 1)//2  # talvez tenha um +1 ou -1 ai, sei la. Mas eh o maximo de folhas que poderiamos ter. Como eu tenho o minimo de nos por folha...
+        self.father = np.ones(self.n,dtype=int) * -1 
+        if self.max_leaf is None:
+            self.max_leaf = (self.n+ 1)//2 
             self.max_splits = self.max_leaf - 1
 
-    def splitter(self, X,y,node,defenitive = False):
+    def _splitter(self, X,y,node,definitive = False):
 
         """
 
-        Algorithm designed to find the best predictor and the best value of that predictor
-        to partitionate a node. 
-        If the node is found to be the best one to be splitted, it will indeed be partitioned and 
-        generate two new nodes.
+        Designed to find the best predictor and the corresponding best threshold 
+        to partition a node. 
 
-        For a fixed node, the algorithm will iterate for every parameter. In each parameter, 
-        the method "_best_cut_value_for_fixed_p" will be called to find the best cut value 
-        of that parameter ( if it existis). Then, the chosen parameter to cut the node will be
-        selected. If defenitive = False, only the information of the impurity decrease will be returned.
-        If defenitive = True, it means that the node will actually be cut, therefore, its children
-        will be defined, and the node's attributes of threshold and features will be updated. Also, 
-        the sample matrix "X" will be updated, that is, its lines will re-arrenge themselves to simulate
-        the final partition of the sample datas in each leaf. Therefore, the y vector will have its
-        lines equally re-arrenged. Lsatly, it sets up left child and right child as possible future nodes
-        to be split.
+        If definitive is False, it only calculates and returns the impurity decrease (purity gain).
+        If definitive is True, the node will actually be cut, therefore, its children
+        will be defined, and the node's attributes of threshold and features will be updated.Also,
+        it reorders the dataset sample, and registers the created left child and right child as 
+        possible future nodes to be split (if applicable).
+
+
+        For a fixed node, the algorithm will iterate for every applicable predictor. In each predictor, 
+        the method "_best_cut_value_for_fixed_p" will be called to find the best threshold 
+        of that feature ( if it exists). Then, the chosen parameter to cut the node will be
+        selected. 
 
 
         Args:
             X: Sample matrix of shape (n_samples, p_feature).
             y: Vector of the observations of shape (n_samples,).
-            node: indice of the node that will be testedo or actually partitioned
-            defenitive: if "False" then splitter only find the best cut of the node. If "True", then
-            besides finding the best, it will actually cut the node and generate the new leaves.
+            node: index of the node that will be tested or actually partitioned
+            definitive: if "False" then _splitter only find the best cut of the node. If "True", then
+            besides finding the best, it will actually cut the node and generate the child nodes.
         
         Returns:
-            None - > If there is no possible cut 
-            gratest_purity_gain_overall -> If there is a possible cut, returns the onw which
-            increses the purity the most
+            None: If there is no possible split
+            float: greatest_purity_gain_overall, the cut that increases the purity gain the most
 
-
-        
         """
 
         matri_list = [] 
         possible_cuts = [] 
         y_list = [] 
-
-        y_tam = int(y.shape[0])
 
         predictors = int(X.shape[1])
 
@@ -235,8 +247,8 @@ class ConstructionTree(Regression, Classification):
 
             X_c_p = X.copy()
             lines = X[self.start[node]:self.end[node]] #lines from the sample that are on the current node
-            ordered_ind = np.argsort(lines[:,predictor]) # incrising order index of those lines according to the predictor
-            final_lines = lines[ordered_ind] # re - arranged lines that are on "node" but in increasing order according to precidctor
+            ordered_ind = np.argsort(lines[:,predictor]) # increasing order index of those lines according to the predictor
+            final_lines = lines[ordered_ind] # re - arranged lines that are on "node" but in increasing order according to predictor
             col_pred = final_lines[:, predictor]
 
             X_c_p [self.start[node]:self.end[node]] = final_lines # re - arrenged matrix X
@@ -246,9 +258,9 @@ class ConstructionTree(Regression, Classification):
             final_y_lines = y_lines[ordered_ind]
             y_c_p [self.start[node]:self.end[node]] = final_y_lines
 
-            median = (col_pred[:-1] + col_pred[1:])/2 # Candidated for cut value. This will have to be chenged for classification (probably)
+            thresholds = (col_pred[:-1] + col_pred[1:])/2 # Candidates for cut value. 
 
-            self._best_cut_value_for_fixed_p(node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines)
+            self._best_cut_value_for_fixed_p(node,thresholds,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines)
 
 
         y_list = np.array(y_list)
@@ -260,15 +272,15 @@ class ConstructionTree(Regression, Classification):
         if y_list.shape[0] == 0:
             return None 
         else:
-            gratest_purity_gain_overall_index = np.argmax(possible_cuts[:,0])
-            gratest_purity_gain_overall = possible_cuts[gratest_purity_gain_overall_index,0]
-            if defenitive == False:
-                return gratest_purity_gain_overall
+            greatest_purity_gain_overall_index = np.argmax(possible_cuts[:,0])
+            greatest_purity_gain_overall = possible_cuts[greatest_purity_gain_overall_index,0]
+            if definitive == False:
+                return greatest_purity_gain_overall
             else:
-                X = matri_list[gratest_purity_gain_overall_index]
-                y = y_list[gratest_purity_gain_overall_index]
-                self.threshold[node] = possible_cuts[gratest_purity_gain_overall_index,1]
-                self.feature[node] = possible_cuts[gratest_purity_gain_overall_index,2]
+                X = matri_list[greatest_purity_gain_overall_index]
+                y = y_list[greatest_purity_gain_overall_index]
+                self.threshold[node] = possible_cuts[greatest_purity_gain_overall_index,1]
+                self.feature[node] = possible_cuts[greatest_purity_gain_overall_index,2]
                 r1 = np.max(self.children_right)
                 r2 = np.max(self.children_left)
                 right = max(r1,r2)+1
@@ -280,90 +292,63 @@ class ConstructionTree(Regression, Classification):
                 self.children_left[node] = left
                 self.children_right[node] = right
 
-                self.value[left] = possible_cuts[gratest_purity_gain_overall_index,6]
-                self.impurity[left] = possible_cuts[gratest_purity_gain_overall_index,4]
+                self.value[left] = possible_cuts[greatest_purity_gain_overall_index,6]
+                self.impurity[left] = possible_cuts[greatest_purity_gain_overall_index,4]
                 self.start[left] = self.start[node]
-                self.end[left] = possible_cuts[gratest_purity_gain_overall_index,3]
+                self.end[left] = possible_cuts[greatest_purity_gain_overall_index,3]
                 self.node_depth[left] = self.node_depth[node] +1 
-                self.pai[left] = node
+                self.father[left] = node
 
-                if (self.end[left] - self.start[left]) >= self.min_samples_split and (self.max_depth == None or self.node_depth[left] < self.max_depth) and self.impurity[left] > epsolon:
+                if (self.end[left] - self.start[left]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[left] < self.max_depth) and self.impurity[left] > epsolon:
                     self.aux_purity_gain[left] = 1
 
-                self.value[right] = possible_cuts[gratest_purity_gain_overall_index,7]
-                self.impurity[right] = possible_cuts[gratest_purity_gain_overall_index,5]
-                self.start[right]= possible_cuts[gratest_purity_gain_overall_index,3] #might need to review that
+                self.value[right] = possible_cuts[greatest_purity_gain_overall_index,7]
+                self.impurity[right] = possible_cuts[greatest_purity_gain_overall_index,5]
+                self.start[right]= possible_cuts[greatest_purity_gain_overall_index,3] 
                 self.end[right] = self.end[node]
                 self.node_depth[right] = self.node_depth[node] +1 
-                self.pai[right] = node
+                self.father[right] = node
 
-                if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth == None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
+                if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
                     self.aux_purity_gain[right] = 1
 
-                return gratest_purity_gain_overall   
+                return greatest_purity_gain_overall   
 
 
-    def _best_cut_value_for_fixed_p(self,node,median,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines):
+    def _best_cut_value_for_fixed_p(self,node,thresholds,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines):
             """
 
-            For a given predictior and node, the module finds that best cut value ( if it exists), and then:
-                - add to 'matri_list' the new X line ordered formed after the possible split (X_c_p)
-                - add to 'y_list' the new y line ordered (y_c_p) to match X_c_p
+            For a given predictor and node, the module finds that best cut value ( if it exists), and:
+                - add to 'matri_list' the reordered X matrix after the potential split (X_c_p).
+                - add to 'y_list' the reordered y vector to match X_c_p.
                 - add to 'possible_cuts' the best cut found, which is a list containing:
-                    * gratest_purity_gain_per_p: The best burity gain, over all value cuts, of the fixed parameter
-                    * associated_value_per_p: The value cut that maximized the purity gain
-                    * predictor: The fixed predictor
-                    * new_end_begin: The samples that originally belonged to the node ( that is being checked if can be splitted)
-                    will be divided between the left child and right child ( if the node is splitted). Since in X_c_p those samples
-                    are ordered according to the fixed parameter, then "new_end_begin" delimits the new "slice" of samples that
-                    belongs to the left child and right child. 
-                    * imp_left: impurity of the left child, according to this parameter
-                    * imp_right: impurity of the right child, according to this parameter
-                    * prev_l: prediction of the left child, according to this parameter
-                    * prev_r: prediction of the right child, according to this parameter
+                    * greatest_purity_gain_per_p: The best purity gain, over all cut values for this fixed predictor.
+                    * associated_value_per_p: The value cut that maximized the purity gain.
+                    * predictor: The fixed predictor index.
+                    * new_end_begin: The index delimiting the new "slice" of samples that belongs to the left child and right child. 
+                    * imp_left: impurity of the left child.
+                    * imp_right: impurity of the right child.
+                    * prev_l: prediction of the left child.
+                    * prev_r: prediction of the right child.
             
-            If, for a given cut value, the split violates any of the conditions 
+            If the split violates any of the conditions 
                 -'The minimum purity gain to allow a split in a node.'
                 -'Minimum number of samples of each leaf.'
-            Then this value cut will not be further considered to actually partition the sample space. 
-            If all of the cut values are invalid, then 'gratest_purity_gain_per_p' will remain as None,
-            and the fixed parameter will not be considered to partitionate the node. 
+            This value cut will be discarded. 
+            If all of the cut values are invalid, then 'greatest_purity_gain_per_p' will remain None,
+            and the fixed predictor will not be considered to partition the node. 
 
-            The current metrics for prediction is the mean values of the samples that fall on the region,
-            and the impurity is measured with MSE (so far).
-
-            Since the sequence of the possible cut values is calculated based on the ordinated sequence of 
-            the fixed predictor, there are (self.end[node] - self.start[node] -1) possible values. 
-            For Example, if "pi" is the predictor value of the samples, ordinated in final_lines , and "mj" the median 
-            values calculated as mj = (pj + p(j+1))/2, we would have:
-
-                    p1  p2   p3  p4  p5  p6  p7  p8  p9  p10 
-                      m1  m2   m3  m4  m5  m6  m7  m8  m9
-
-            Some "mj" values might be repeated. For example, if p1 = p2 = p3, then m1 = m2. Therefore,
-            in this cenario, instead of dividing de sample values according to the position m1, that is,
-            instead of testing 
-
-                    p1 | p2   p3  p4  p5  p6  p7  p8  p9  p10 
-                      m1   m2   m3  m4  m5  m6  m7  m8  m9
-            Since m1 = m2, and values are ordered, it means that the samples that would be on the left
-            child according to m1, should be actually the same according to m2. Therefore, whenever we are 
-            testing those "mj" values, we will take the last indice "k" from "median" , such that mj = mk,
-            and we will compare mk to p(k+1). If mk = p(k+1), then the cut on the sample will be indice 
-            "k+1":
-
-                    p1  p2  p3 | p4  p5  p6  p7  p8  p9  p10 
-                      m1  m2  m3  m4  m5  m6  m7  m8  m9
 
             Args:
                 - node: node evaluated for the split
-                - median: sequence of the possible cut values. 
+                - thresholds: sequence of the possible cut values. 
                 - matri_list: list of the X with its lines re-ordered to match the split
                 - possible_cuts: list of the possible cuts of the node
                 - y_list: list of the y with its lines re-ordered to match the split
                 - X_c_p: Matrix X with the lines re-ordered to match the split according to a fixed predictor
                 - y_c_p: vector y with the lines re-ordered to match the split according to a fixed predictor
                 - predictor: the fixed predictor
+                - final_lines:  rearranged lines from matrix X that are on "node" but in increasing order according to predictor
             
 
             
@@ -371,83 +356,79 @@ class ConstructionTree(Regression, Classification):
 
 
             m = 0
-            gratest_purity_gain_per_p = None
+            greatest_purity_gain_per_p = None
             associated_value_per_p = None
             new_end_begin = None
             imp_left = None
             imp_right = None
             prev_l= None
             prev_r = None
-            while m < len(median):
-                id_last_m = np.searchsorted(median, median[m], side = 'right') - 1  #since we are using an ordinated array, we can use a function that uses binary search to avoid recounting repeated medians.
-                if median[m] == median[id_last_m]:
+            while m < len(thresholds):
+                id_last_m = np.searchsorted(thresholds, thresholds[m], side = 'right') - 1  # Since we are using a sorted array, we can use a function that uses binary search to avoid recounting repeated means.
+                if thresholds[m] == thresholds[id_last_m]:
                     m = id_last_m 
-                if median[m] == final_lines[m+1,predictor]:
-                    if m+1 == len(median): #Extremly important break. If it is true, then it means that we would try to split by letting 
+                if thresholds[m] == final_lines[m+1,predictor]: # the scenario that two sorted samples have the same predictor value. The mean of those two is the same as their value.
+                    if m+1 == len(thresholds): #Extremly important break. If it is true, then it means that we would try to split by letting 
                         break # everything on the left child. Besides being prohibited, it would cause index error in the next lines.
-                    else:
+                    else: # if m+=1 is not out of range:
                         m+=1
-                #prevision_left = np.mean(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
-                #prevision_right = np.mean(y_c_p[self.start[node]+m+1:self.end[node]]) 
                 
-                if m+1 >=  self.min_samples_leaf and len(median)+1 - (m +1) >= self.min_samples_leaf: # checking if the left child and right child both have the minimum amount of samples
+                if m+1 >=  self.min_samples_leaf and len(thresholds)+1 - (m +1) >= self.min_samples_leaf: # checking if the left child and right child both have the minimum amount of samples
                     prevision_left = self.custom_choose(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
                     prevision_right = self.custom_choose(y_c_p[self.start[node]+m+1:self.end[node]]) 
-                    left_mse = self.custom_split(np.array(prevision_left),np.array(y_c_p[self.start[node]:self.start[node]+m+1])) 
-                    right_mse = self.custom_split(np.array(prevision_right),np.array(y_c_p[self.start[node]+m+1:self.end[node]]))
-                    current_purity_gain = self.impurity[node] - ((m+1)/ (len(median) +1)* left_mse + ((len(median)+1)-(m+1))/(len(median)+1)*right_mse)
+                    left_impurity = self.custom_split(np.array(prevision_left),np.array(y_c_p[self.start[node]:self.start[node]+m+1])) 
+                    right_impurity = self.custom_split(np.array(prevision_right),np.array(y_c_p[self.start[node]+m+1:self.end[node]]))
+                    current_purity_gain = self.impurity[node] - ((m+1)/ (len(thresholds) +1)* left_impurity + ((len(thresholds)+1)-(m+1))/(len(thresholds)+1)*right_impurity)
 
 
 
-                    if current_purity_gain >= self.min_impurity_decrease: # Checkgin if the purity gain is equal or greater than the minimum necessary
-                        if  gratest_purity_gain_per_p: #If a value was already computed, we have to check if the new one is better
-                            if gratest_purity_gain_per_p < current_purity_gain:
-                                gratest_purity_gain_per_p = current_purity_gain
-                                associated_value_per_p = median[m]
-                                new_end_begin = self.start[node] +m+1 # considerind [start , end)
-                                imp_left = left_mse
-                                imp_right = right_mse
+                    if current_purity_gain >= self.min_impurity_decrease: # Checking if the purity gain is equal or greater than the minimum necessary
+                        if  greatest_purity_gain_per_p is not None: #If a value was already computed, we have to check if the new one is better
+                            if greatest_purity_gain_per_p < current_purity_gain:
+                                greatest_purity_gain_per_p = current_purity_gain
+                                associated_value_per_p = thresholds[m]
+                                new_end_begin = self.start[node] +m+1 # considering [start , end)
+                                imp_left = left_impurity
+                                imp_right = right_impurity
                                 prev_l= prevision_left
                                 prev_r = prevision_right
                         else: # If no value was computed, the current is the best
-                            gratest_purity_gain_per_p = current_purity_gain
-                            associated_value_per_p = median[m]
-                            new_end_begin = self.start[node] +m+1 # considerind [start , end)
-                            imp_left = left_mse
-                            imp_right =right_mse
+                            greatest_purity_gain_per_p = current_purity_gain
+                            associated_value_per_p = thresholds[m]
+                            new_end_begin = self.start[node] +m+1 # considering [start , end)
+                            imp_left = left_impurity
+                            imp_right =right_impurity
                             prev_l= prevision_left
                             prev_r = prevision_right
                 m +=1
-            if gratest_purity_gain_per_p:
+            if greatest_purity_gain_per_p is not None:
                 matri_list.append(X_c_p)
-                possible_cuts.append([gratest_purity_gain_per_p,associated_value_per_p,predictor,new_end_begin,imp_left, imp_right,prev_l,prev_r])
-                y_list.append(y_c_p)    
-
-    def tree_construction(self, X,y):
+                possible_cuts.append([greatest_purity_gain_per_p,associated_value_per_p,predictor,new_end_begin,imp_left, imp_right,prev_l,prev_r])
+                y_list.append(y_c_p) 
+    def _tree_construction(self, X,y):
 
         """
 
         Builds a decision tree from the matrix X and vector y. 
-        It calls the tree_structure to build the tree strcuture. Then, initializes the 
-        root node (0). Then, the algorithm checks if it is avaiable to cut the root
-        according to the limitations of the tree. It uses the function "splitter" to findo
-        the best split of the root, if it is applicable. Then, if "splitter" found a good split,
-        and if there is still avaiable splits, the algorithm will perform the split. This process
-        will continue in loop until there is no more splits avaiable according to the limitatinos
-        that defined the tree and while "splitter" still finds avaiable partitions.Since there are
-        parameters such as " maximum number of leaves", there could have, therefore, a maximum number
-        of splits. Hence, the splits that will actually be performed, are the ones from the nodes that
-        at the given step of the algorith, provide the greatest purity gain. 
+
+        It calls the _tree_structure to initialize the tree structure and sets up the 
+        root node (0). Then, it evaluates whether it is available to cut the root
+        according to the predefined tree constraints. 
+        
+        It uses the function "_splitter" to find the best split of the root, if it is applicable. If "_splitter" 
+        finds a good split, and if there is still available splits, the node will be split. This process
+        will continue in loop until there is no more splits available and while "_splitter" still finds available
+        partitions. The node that provides the greatest purity gain at each step of the algorithm that will
+        be split, according to the logic of "best-first growing strategy".
         
 
         Args:
-            X: Matrix of shape (n_new_samples, p_features)
+            X: Matrix of shape (n_samples, p_features)
             y: Vector of the observations of shape (n_samples,).
         
         Raises:
-            ValueError: if the number of dimensions os X and y are incompatible
+            ValueError: if the number of dimensions of X and y are incompatible
 
-        
         """
         if X.ndim != 2:
             raise ValueError("X must be two-dimensional")
@@ -457,17 +438,17 @@ class ConstructionTree(Regression, Classification):
             raise ValueError("X must contain at least one observation and one feature.")
         if X.shape[0] != y.shape[0]:
             raise ValueError("The data do not match")
-        self.tree_structure(X)
-        self.value[0] = self.custom_choose(y) # considering just regression. Might be generlized later
-        self.impurity[0] = self.custom_split(self.value[0],y) # considering just regression. Might be generlized later
+        self._tree_structure(X)
+        self.value[0] = self.custom_choose(y) 
+        self.impurity[0] = self.custom_split(self.value[0],y) 
         self.start[0] = 0
-        self.end[0] = X.shape[0] # considerind [start , end)
+        self.end[0] = X.shape[0] # considering [start , end)
         self.node_depth[0] = 0
 
         list_nodes_that_can_be_split =  [] 
 
-        if (self.max_leaf >1 or self.max_leaf == None) and  X.shape[0] >=  self.min_samples_split and (self.max_depth == None or self.max_depth >=1 ) and self.impurity[0]>epsolon:
-            gain = self.splitter(X,y,0)
+        if (self.max_leaf >1 or self.max_leaf is None) and  X.shape[0] >=  self.min_samples_split and (self.max_depth is None or self.max_depth >=1 ) and self.impurity[0]>epsolon:
+            gain = self._splitter(X,y,0)
             if gain:
                 list_nodes_that_can_be_split.append([gain,0])
                 self.aux_purity_gain[0] = 1
@@ -481,36 +462,39 @@ class ConstructionTree(Regression, Classification):
                 list_nodes_that_can_be_split.remove(chosen)
               
                 self.aux_purity_gain[node_chosen_to_split] = -1 # turning it back to -1 
-                u = self.splitter(X,y,node_chosen_to_split, defenitive= True)
+                u = self._splitter(X,y,node_chosen_to_split, definitive= True)
 
 
                 self.max_splits -=1
 
-                if self.aux_purity_gain[self.children_left[node_chosen_to_split]] == 1: 
-                    new_candidate = self.splitter(X,y,self.children_left[node_chosen_to_split])
+                left_child = self.children_left[node_chosen_to_split]
+                right_child = self.children_right[node_chosen_to_split]
+
+                if self.aux_purity_gain[left_child] == 1: 
+                    new_candidate = self._splitter(X,y,left_child)
                     if new_candidate: # That is, if it returned a value different from "None" and gain > 0
-                        list_nodes_that_can_be_split.append([new_candidate,self.children_left[node_chosen_to_split]])
+                        list_nodes_that_can_be_split.append([new_candidate,left_child])
 
                     else: # if in reality, we can not split it
-                        self.aux_purity_gain[self.children_left[node_chosen_to_split]] = -1 
-                if self.aux_purity_gain[self.children_right[node_chosen_to_split]] == 1: 
-                    new_candidate = self.splitter(X,y,self.children_right[node_chosen_to_split])
+                        self.aux_purity_gain[left_child] = -1 
+                if self.aux_purity_gain[right_child] == 1: 
+                    new_candidate = self._splitter(X,y,right_child)
                     if new_candidate:# That is, if it returned a value different from "None" and gain > 0
-                        list_nodes_that_can_be_split.append([new_candidate,self.children_right[node_chosen_to_split]])
+                        list_nodes_that_can_be_split.append([new_candidate,right_child])
 
                     else:
-                        self.aux_purity_gain[self.children_right[node_chosen_to_split]] = -1
+                        self.aux_purity_gain[right_child] = -1
 
     def predict (self,X):
 
         """
-        After the tree has been built, X will be predicted line by line, by "following the tree".
+        Predict X after the tree has been built.
 
         Args:
-            X: Matrix
+            X: Sample matrix of shape (n_samples, p_features) or a 1D array for a single sample.
         
         Returns:
-            y: np.ndarray of the predicted values
+            y: np.ndarray of the predicted values of shape (n_samples,).
         
         """
 
@@ -522,7 +506,7 @@ class ConstructionTree(Regression, Classification):
         y = [] 
         for i in range(y_num):
             node = 0
-            while self.children_left[node] != -1: # Because if it has left child, then it has right child
+            while self.children_left[node] != -1: # If it has left child, then it is an internal node (or the root)
                 if X[i][self.feature[node]] <= self.threshold[node]:
                     node = self.children_left[node]
                 else:
@@ -532,6 +516,18 @@ class ConstructionTree(Regression, Classification):
         y = np.array(y)
         return y
     def set_params(self, **params):
+        """
+        Sets the parameters of the decision tree.
+
+        This method updates only the specified parameters without overwriting 
+        previously configured values for other parameters.
+
+        Args:
+            Parameters that need to be changed and the new value.
+        Raises:
+            ValueError if an invalid parameter is submitted.
+
+        """
         if not params:
             pass
         else:
@@ -548,13 +544,20 @@ class ConstructionTree(Regression, Classification):
 
 
     def get_params(self):
+        """
+
+        Function to get the parameters of the tree in a dictionary.
+
+        Returns:
+            Dictionary of the parameters.
+        
+        """
         dicto = {
             "min_impurity_decrease": self.min_impurity_decrease,
             "max_depth":self.max_depth ,
             "min_samples_split": self.min_samples_split,
             "min_samples_leaf": self.min_samples_leaf,
             "max_leaf": self.max_leaf ,
-            "max_depth" :self.max_depth,
             "random_forest": self.random_forest,
             "criterion_split": self.criterion_split,
             "custom_split": self.custom_split,
@@ -566,6 +569,14 @@ class ConstructionTree(Regression, Classification):
             }
         return dicto
     def get_tree_structure_info(self):
+
+        """
+        Function to get the tree structure in a dictionary.
+
+        Returns: 
+            Dictionary of the tree structure.
+
+        """
         dicto = {
         "children_left":self.children_left,
         "children_right":self.children_right,
@@ -574,7 +585,6 @@ class ConstructionTree(Regression, Classification):
         "threshold":self.threshold,
         "impurity":self.impurity,
         "value":self.value,
-        "purity_gain":self.purity_gain,
         "start":self.start,
         "end":self.end,
         "aux_purity_gain":self.aux_purity_gain,
@@ -582,6 +592,28 @@ class ConstructionTree(Regression, Classification):
             }
         return dicto
     def _change_right_child(self,father,new_value):
+        """
+        Internal function to change the correspondence between a node 
+        and its right child.
+
+        Args:
+            father: Index of father node.
+            new_value: Index of new right child.
+        
+        """
         self.children_right[father] = new_value
     def _change_left_child(self,father,new_value):
+
+        """
+        Internal function to change the correspondence between a node 
+        and its left child.
+
+        
+        Args:
+            father: Index of father node.
+            new_value: Index of the new left child.
+                
+        """
+        
         self.children_left[father] = new_value
+    

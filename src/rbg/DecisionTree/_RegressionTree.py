@@ -15,7 +15,7 @@ class Regression:
     For the predict, it allows mean (the standard), median, max, min, mode, or another one chosen by the
     user. However, the user must define and submit a function that accepts an array as a paramter, and 
     "axis", if the user is performing bagging, random forest or prunning a tree. 
-    The evaluation function is by standard "Same", to indicate that is the same as the impurity metric. 
+    The evaluation function is by standard "Standard", to indicate that is the same as the impurity metric. 
     The user is allowed to choose another one, following the same rules of either selecting rss, RMSE, MAE,
     RSquare or to define a function of his choice,that must take as parameters, y_predicted and y_true, respectively.
 
@@ -30,11 +30,10 @@ class Regression:
 
     Raises:
 
-        TypeError: If the user assing anything but a string to criterion_split, criterion_choose or criterion_evaluation
         ValueError: if any of the strings from criterion_split, criterion_choose or criterion_evaluation are invalid strings
         Warning:If the user chooses a different metric for the evaluation from the impurity metric. 
     '''
-    def __init__(self,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Same", custom_evaluation = None):
+    def __init__(self,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None):
         split ={
             'Standard':MSE,
             'MSE':MSE,
@@ -45,7 +44,7 @@ class Regression:
             'Other':custom_split
         }
         if criterion_split not in split:
-            raise ValueError ("The only split criterions avaiable for regression are MSE, RSS, RMSE, MAE, RSquare, and Other")
+            raise ValueError ("The only split criterions available for regression are MSE, RSS, RMSE, MAE, RSquare, and Other")
         self.custom_split  = split.get(criterion_split)
 
         y_pred ={
@@ -58,7 +57,7 @@ class Regression:
             'Other':custom_choose
         }
         if criterion_choose not in y_pred:
-            raise ValueError ("The only split criterions avaiable for assinging y_pred are mean, mode, median, min, and max")
+            raise ValueError ("The only split criterions available for assinging y_pred are mean, mode, median, min, and max")
         self.custom_choose  = y_pred.get(criterion_choose)
         evalu ={
             'MSE':MSE,
@@ -66,13 +65,13 @@ class Regression:
             'RMSE':RMSE,
             'MAE':MAE,
             'RSquare': RSquare,
-            "Same": self.custom_split,
+            "Standard": self.custom_split,
             'Other':custom_evaluation
         } 
         if criterion_evaluation not in evalu:
-            raise ValueError ("The only evalu criterions avaiable for evaluating the tree are mean, MSE, RSS, RMSE, MAE, RSquare, the Same as used in spliting and Other")
+            raise ValueError ("The only evalu criterions available for evaluating the tree are mean, MSE, RSS, RMSE, MAE, RSquare, the Same as used in spliting and Other")
         self.custom_evaluation = evalu.get(criterion_evaluation)
-        if criterion_evaluation !="Same":
+        if criterion_evaluation !="Standard":
             raise Warning("It is possible, but probably inefficient to assaing a different method of evaluation")
         self.criterion_split = criterion_split
         self.criterion_choose = criterion_choose
