@@ -2,7 +2,7 @@ import numpy as np
 from rbg.Utilities import MSE, rss, RMSE, MAE, RSquare
 from rbg.Utilities import Gini as gini, entropy as ent, classif_error as c_e, mode
 from rbg.ModelSelection import KFold
-from rbg.Utilities import Resample
+from rbg.Utilities import Resample as resample
 
 from ._ConstructionTree import ConstructionTree
 
