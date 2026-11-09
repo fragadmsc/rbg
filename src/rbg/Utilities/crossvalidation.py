@@ -1,6 +1,7 @@
 import numpy as np
-
-def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, shuffle = True, random_state = None):
+import copy
+# y_pred, y_true
+def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, shuffle = True, random_state = 42):
     """
     Divides the dataset between a training set and a testing set.
 
@@ -9,7 +10,7 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
         y (np.ndarray): output values.
         test_size (float, optional): proportion of samples assigned to the test set. Defaults to 0.2.
         shuffle (bool, optional): if True, the data will be shuffled. Defaults to True.
-        random_state (int, optional): as integer seeds that ensures the random shuffle produces the same split every time. Defaults to None.
+        random_state (int, optional): an integer seeds that ensures the random shuffle produces the same split every time. Defaults to 42.
 
     Raises:
         ValueError: if X and y dimensions don't match.
@@ -19,12 +20,12 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     y = np.asarray(y)
     if len(X) != len(y):
         raise ValueError("X and y must have the same number of rows.")
-    if isinstance(test_size, int):
-        if test_size < 0 or test_size > len(X):
+    if isinstance(test_size, int) and not isinstance(test_size,bool):
+        if test_size <= 0 or test_size >= len(X):
             raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
         n_test = test_size
     elif isinstance(test_size, float):
-        if test_size < 0 or test_size > 1:
+        if test_size <= 0 or test_size >= 1:
             raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
         n_test = int(np.ceil(test_size * len(X)))
     else:
@@ -43,7 +44,7 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
     y_test = y[test_idxs]
     return X_train, X_test, y_train, y_test
 
-def train_val_test_split(X : np.ndarray, y : np.ndarray = None, val_size = 0.2, test_size = 0.2, shuffle = True, random_state = None):
+def train_val_test_split(X : np.ndarray, y : np.ndarray = None, val_size = 0.2, test_size = 0.2, shuffle = True, random_state = 42):
     """
     Splits arrays or matrices into random train, validation, and test subsets.
     """
@@ -53,10 +54,16 @@ def train_val_test_split(X : np.ndarray, y : np.ndarray = None, val_size = 0.2, 
         y = np.asarray(y)
         if X.shape[0] != y.shape[0]:
             raise ValueError("X and y must have the same number of rows.")
-    if isinstance(test_size, float):
-        n_test = int(np.ceil(n_samples * test_size))
-    else:
+    if isinstance(test_size, int) and not isinstance(test_size,bool):
+        if test_size <= 0 or test_size >= len(X):
+            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
         n_test = test_size
+    elif isinstance(test_size, float):
+        if test_size <= 0 or test_size >= 1:
+            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+        n_test = int(np.ceil(test_size * len(X)))
+    else:
+        raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
     if isinstance(val_size, float):
         n_val = int(np.ceil(n_samples * val_size))
     else:
@@ -109,17 +116,19 @@ def cv_score(model, X : np.ndarray, y : np.ndarray = None, cv_method = None, met
         splits = cv_obj.split(X, y)
 
     for idxs_train, idxs_test in splits:
+        fold_model = copy.deepcopy(model)
         X_train = X[idxs_train]
         X_test = X[idxs_test]
         if y is not None:
             y_train = y[idxs_train]
             y_test = y[idxs_test]
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            score = metrics(y_test, y_pred)
+            fold_model.fit(X_train, y_train)
+            y_pred = fold_model.predict(X_test)
+            score = metrics(y_pred, y_test)
         else:
-            model.fit(X_train)
-            y_pred = model.predict(X_test)
-            score = metrics(X_test, y_pred)
+            # aprendizado não supervisionado:
+            fold_model.fit(X_train)
+            X_pred = fold_model.predict(X_test)
+            score = metrics(X_pred, X_test)
         scores.append(score)
     return np.mean(scores)
