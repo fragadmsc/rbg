@@ -197,7 +197,7 @@ class ConstructionTree(Regression, Classification):
             self.max_leaf = (self.n+ 1)//2 
             self.max_splits = self.max_leaf - 1
 
-    def _splitter(self, X,y,node):
+    def _splitter(self,node):
 
         """
 
