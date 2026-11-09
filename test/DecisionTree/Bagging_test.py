@@ -310,7 +310,7 @@ class TestBaggingReg_Error:
         params = modelo_bagging_reg.get_params()
     def test_iniciate_class(self):
     
-        with pytest.raises(ValueError, match="The only split criterions available for regression are MSE, RSS, RMSE, MAE, RSquare, and Other"):
+        with pytest.raises(ValueError, match="The only split criterions available for regression are MSE, RSS, RMSE, MAE, and Other"):
             model_regressionBag = BaggingReg( max_depth = 34, max_leaf = 90, min_samples_leaf = 1, random_forest = False, n_trees = 900000, min_impurity_decrease = 0.0001, criterion_split = "Gini",  min_samples_split = 2, custom_split = None, criterion_choose = "Standard", custom_choose = None,  criterion_evaluation = "Standard", custom_evaluation = None )
         with pytest.raises(TypeError, match="number of trees must be integer"):
             model_regressionBag = BaggingReg(n_trees = 4.7)

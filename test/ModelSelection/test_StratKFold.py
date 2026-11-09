@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from rbg.Utilities import cv_score
-from rbg.ModelSelection import KFold, StratifiedKFold
+from rbg.Utilities.crossvalidation import cv_score
+from rbg.ModelSelection.KFold import KFold, StratifiedKFold
 
 
 class DummyModel:
@@ -67,8 +67,8 @@ def test_cv_score_with_kfold_without_y(sample_data):
         def predict(self, X):
             return np.zeros(len(X))
 
-    def unsupervised_metric(x_pred, x_test):
-        return float(np.mean(x_pred))
+    def unsupervised_metric(X_test, y_pred):
+        return float(np.mean(y_pred))
 
     score = cv_score(
         UnsupervisedDummyModel(), 
