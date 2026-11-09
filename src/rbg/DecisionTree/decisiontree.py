@@ -367,10 +367,21 @@ class BaggingBase(TreeBase):
             for l in range(len(self.list_of_indx_test)):
                 if n in self.list_of_indx_test[l]:
                     tree_list.append(self.list_of_trees[l])
-            y_hat = self.predict(self.X_orig[n:n+1], trees = tree_list)
-            y_hat_array.append(y_hat)
-        y_hat_array = np.array(y_hat_array)
-        return self.custom_evaluation( y_hat_array,np.array(self.y_orig))
+            if len(tree_list) == 0:
+                y_hat_array.append(np.nan)
+            else:
+                y_hat = self.predict(self.X_orig[n:n+1], trees = tree_list)
+                value = y_hat[0] if isinstance(y_hat, np.ndarray) and y_hat.size > 0 else y_hat
+                y_hat_array.append(value)
+        y_hat_array = np.array(y_hat_array, dtype=float)
+        y_orig_array = np.array(self.y_orig)
+        
+        valid = ~np.isnan(y_hat_array)
+        if not np.any(valid):
+            return "OOB can not be calculated"
+        
+
+        return self.custom_evaluation(y_hat_array[valid], y_orig_array[valid])
 
 class RandomForestBase(BaggingBase):
     def __init__(self,n_trees = 100, min_impurity_decrease = 0.1, min_samples_split = 2, max_depth = None, min_samples_leaf = 1, max_leaf = None, random_forest = True,criterion_split = "Standard", custom_split = None, criterion_choose = "Standard", custom_choose = None, criterion_evaluation = "Standard", custom_evaluation = None,factor_selection = np.sqrt,form = "regression"):

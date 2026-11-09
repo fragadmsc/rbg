@@ -155,6 +155,8 @@ def entropy(y_true:np.ndarray) :
 def mode(y_true:np.ndarray, axis = None):
 
     y_true = np.asarray(y_true)
+    if y_true.size == 0:
+        raise ValueError("The array is empty")
 
     if axis is not None and y_true.ndim == 2:
         n_samples = y_true.shape[1]
