@@ -1,5 +1,4 @@
 """Compare Gaussian identity-link GLM predictions with ordinary least squares."""
-import unittest
 
 import numpy as np
 
@@ -29,8 +28,8 @@ def gaussian_identity_family() -> ExponentialFamily:
     return ExponentialFamily(cumulant, mean, curvature, inverse_mean, phi=1.0)
 
 
-class TestGaussianIdentityGLM(unittest.TestCase):
-    def setUp(self) -> None:
+class TestGaussianIdentityGLM:
+    def setup_method(self) -> None:
         x = np.linspace(-2.0, 2.0, 12)
         self.X = np.column_stack((x, x**2))
         coefficients = np.array([[1.5, -0.75], [2.0, 0.5]])
@@ -66,22 +65,22 @@ class TestGaussianIdentityGLM(unittest.TestCase):
             beta_shape = (n_parameters, n_components)
             prediction_shape = (len(self.X_new), n_components)
 
-        self.assertIsInstance(beta, np.ndarray)
-        self.assertIsInstance(predictions, np.ndarray)
-        self.assertEqual(beta.shape, beta_shape)
-        self.assertEqual(predictions.shape, prediction_shape)
+        assert isinstance(beta, np.ndarray)
+        assert isinstance(predictions, np.ndarray)
+        assert beta.shape == beta_shape
+        assert predictions.shape == prediction_shape
         np.testing.assert_allclose(predictions, expected, rtol=1e-7, atol=1e-8)
 
         residuals = model.residuals()
-        self.assertEqual(residuals.shape, y.shape)
+        assert residuals.shape == y.shape
         np.testing.assert_allclose(residuals, y - model.predict(self.X))
 
         # Only verify inference dimensions: GLM uses inverse-Fisher covariance,
         # whereas Linear estimates the residual variance from the observations.
         inference_beta, covariance, inference_residuals = model.inference()
-        self.assertEqual(inference_beta.shape, beta_shape)
-        self.assertEqual(covariance.shape, (n_parameters * n_components,) * 2)
-        self.assertEqual(inference_residuals.shape, y.shape)
+        assert inference_beta.shape == beta_shape
+        assert covariance.shape == (n_parameters * n_components,) * 2
+        assert inference_residuals.shape == y.shape
 
     def test_scalar_response_matches_linear(self) -> None:
         self.check_predictions_and_dimensions(self.responses[:, 0])
@@ -91,7 +90,3 @@ class TestGaussianIdentityGLM(unittest.TestCase):
 
     def test_multivariate_response_matches_separate_linear_models(self) -> None:
         self.check_predictions_and_dimensions(self.responses)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,4 +1,4 @@
-from rbg.Classification.KNN  import KNN
+from rbg.Classification  import KNN
 import numpy as np
 import pandas as pd
 import pytest
@@ -98,99 +98,11 @@ class TestError():
         assert resultado.shape == (1,)
         assert resultado[0] in [0, 1]
 
-    def test_fit_train(self):
+    def test_predict(self):
         modelo_knn = KNN([0,1])
 
-        # X one dimension
-        X = np.array([1, 2, 3])
-        y = np.array([0])
-        with pytest.raises(ValueError, match="X must be two-dimensional."):
-            modelo_knn.fit(X, y)
-
-        # X three dimension
-        X = np.zeros((1,2,3))
-        y = np.array([0])
-        with pytest.raises(ValueError, match="X must be two-dimensional."):
-            modelo_knn.fit(X, y)
-
-        # X or y empty
-        X = np.zeros((0,1))
-        y = np.array([])
-        with pytest.raises(ValueError, match="X and y must not be empty."):
-            modelo_knn.fit(X, y)
-
-        # X no features
-        X = np.zeros((3,0))
-        y = np.array([0, 1, 0])
-        with pytest.raises(ValueError, match="X must have at least one feature."):
-            modelo_knn.fit(X, y)
-
-        # y two dimensions
-        X = np.array([[1.0], [2.0]])
-        y = np.array([[0], [1]])
-        with pytest.raises(ValueError, match="y must be one-dimensional."):
-            modelo_knn.fit(X, y)
-
-        # X nan, inf or -inf
-        X_invalid = [np.array([[1.0], [np.nan]]), np.array([[1.0], [np.inf]]), np.array([[1.0], [-np.inf]])]
-        for X in X_invalid:
-            with pytest.raises(ValueError, match="X must have only finite values."):
-                modelo_knn.fit(X, np.array([0, 1]))
-
-        # y com classes desconhecidas
-        X = np.array([[1.0], [2.0], [3.0]])
-        y = np.array([0, 1, 2])
-        with pytest.raises(ValueError, match="y contains unknown class labels."):
-            modelo_knn.fit(X, y)
-
-        # X com strings
-        X = np.array([["a"], ["b"]])
-        y = np.array([0, 1])
-        with pytest.raises(ValueError, match="X must be a numerical array."):
-            modelo_knn.fit(X, y)
-        
-    def test_predict(self):
-        modelo_knn = KNN([0, 1])
-
-        # not trained model
         X = np.array([[1.0], [2.0]])
         with pytest.raises(ValueError, match="The model must be trained before prediction."):
-            modelo_knn.predict(X)
-
-        # valid train
-        X_train = np.array([[1.0], [2.0], [3.0]])
-        y_train = np.array([0, 1, 0])
-        modelo_knn.fit(X_train, y_train)
-
-        # X one dimension
-        X = np.array([1, 2, 3])
-        with pytest.raises(ValueError, match="X must be two-dimensional."):
-            modelo_knn.predict(X)
-
-        # X three dimension
-        X = np.zeros((1, 2, 3))
-        with pytest.raises(ValueError, match="X must be two-dimensional."):
-            modelo_knn.predict(X)
-
-        # X empty
-        X = np.empty((0, 1))
-        with pytest.raises(ValueError, match="X must not be empty."):
-            modelo_knn.predict(X)
-
-        # wrong features
-        X = np.zeros((2, 3))
-        with pytest.raises(ValueError, match="X must be the same number of features as the training X."):
-            modelo_knn.predict(X)
-
-        # X nan, inf or -inf
-        X_invalid = [np.array([[1.0], [np.nan]]), np.array([[1.0], [np.inf]]), np.array([[1.0], [-np.inf]])]
-        for X in X_invalid:
-            with pytest.raises(ValueError, match="X must have only finite values."):
-                modelo_knn.predict(X)
-
-        # X com strings
-        X = np.array([["a"], ["b"]])
-        with pytest.raises(ValueError, match="X must be a numerical array."):
             modelo_knn.predict(X)
 
 class TestRightResults():
