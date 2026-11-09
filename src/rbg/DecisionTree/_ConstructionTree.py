@@ -61,7 +61,7 @@ class ConstructionTree(Regression, Classification):
             - self.form: Variable indicating whether it is a classification or regression tree.
             - self.factor_selection: Function that determines the number of predictors to be analyzed.
             - self.random_seed: Random seed associated with the tree, if applicable.
-            - self.dict_split = {}
+            - self.dict_split = {}: Dictionary associating each node with their resulting split parameters.
             - self.max_splits: Maximum number of splits.
         
         Raises:
@@ -377,6 +377,8 @@ class ConstructionTree(Regression, Classification):
         will continue in loop until there is no more splits available and while "_splitter" still finds available
         partitions. The node that provides the greatest purity gain at each step of the algorithm that will
         be split, according to the logic of "best-first growing strategy".
+
+        It uses self.dict_split to acess the informations of the node selected to be split, to actually split it. 
         
 
         Args:
