@@ -123,6 +123,7 @@ class ConstructionTree(Regression, Classification):
         self.form = form
         self.factor_selection = factor_selection
         self.random_seed = random_seed
+        self.dict_split = {}
 
         if max_leaf:
             self.max_splits = max_leaf - 1
