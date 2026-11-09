@@ -14,18 +14,27 @@ class FisherScoring:
         tol: float = 1e-6,
         max_iter: int = 100,
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Find the coefficients that maximize the GLM likelihood.
+        """Maximize the GLM likelihood with backtracking Fisher scoring.
 
         Args:
             X: Design matrix of shape (n, p), with the intercept column if used.
             y: Responses of shape (n,) or (n, K).
             family: Exponential family of the responses.
             beta0: Initial coefficients of shape (p,) or (p, K).
-            tol: Stop when the size of the update is less than tol.
+            tol: Stop when the score norm per observation is less than tol.
             max_iter: Maximum number of iterations.
 
         Returns:
             The coefficients, and the Fisher information at those coefficients, of shape (p*K, p*K).
+
+        Raises:
+            RuntimeError: If no finite likelihood-improving step is found.
+            numpy.linalg.LinAlgError: If the Fisher system is singular.
+
+        Notes:
+            Backtracking requires an Armijo increase in log-likelihood. A small
+            damped step alone does not establish convergence. This does not
+            regularize the model or resolve non-identifiability or separation.
         """
         n, p = X.shape
 
@@ -40,19 +49,35 @@ class FisherScoring:
         converged = False
         for _ in range(max_iter):
             score, fisher = FisherScoring._working_values(X, y, family, beta)
-            step = np.linalg.solve(fisher, score)
-
-            step = step.reshape(K, p).T
-            beta = beta + step
-
-            if np.linalg.norm(step) < tol:
+            if np.linalg.norm(score) / n < tol:
                 converged = True
                 break
 
-        if not converged:
-            warnings.warn("Did not converge")
+            direction = np.linalg.solve(fisher, score)
+            step = direction.reshape(K, p).T
+            current = family.log_likelihood(y, X @ beta)
+            slope = score @ direction
+            if not np.isfinite(current) or not np.isfinite(slope) or slope <= 0:
+                raise RuntimeError("Invalid Fisher scoring ascent direction")
+
+            step_size = 1.0
+            for _ in range(40):
+                # Oversized trial steps may overflow; reject them and retry.
+                with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+                    candidate = beta + step_size * step
+                    value = family.log_likelihood(y, X @ candidate)
+                if np.isfinite(value) and value >= current + 1e-4 * step_size * slope:
+                    beta = candidate
+                    break
+                step_size *= 0.5
+            else:
+                raise RuntimeError("Fisher scoring line search failed")
 
         score, fisher = FisherScoring._working_values(X, y, family, beta)
+        converged = converged or np.linalg.norm(score) / n < tol
+
+        if not converged:
+            warnings.warn("Did not converge")
 
         if is_vector:
             beta = beta[:, 0]
