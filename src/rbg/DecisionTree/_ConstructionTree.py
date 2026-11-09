@@ -61,6 +61,8 @@ class ConstructionTree(Regression, Classification):
             - self.form: Variable indicating whether it is a classification or regression tree.
             - self.factor_selection: Function that determines the number of predictors to be analyzed.
             - self.random_seed: Random seed associated with the tree, if applicable.
+            - self.X: The sample data
+            - self.y: The sample data associated with X
             - self.dict_split = {}: Dictionary associating each node with their resulting split parameters.
             - self.max_splits: Maximum number of splits.
         
@@ -123,6 +125,8 @@ class ConstructionTree(Regression, Classification):
         self.form = form
         self.factor_selection = factor_selection
         self.random_seed = random_seed
+        self.X = None
+        self.y = None
         self.dict_split = {}
 
         if max_leaf:
@@ -216,9 +220,8 @@ class ConstructionTree(Regression, Classification):
 
         """
 
-        matri_list = [] 
+        ordered_list = [] 
         possible_cuts = [] 
-        y_list = [] 
 
         predictors = int(self.X.shape[1])
 
@@ -237,42 +240,37 @@ class ConstructionTree(Regression, Classification):
 
         for predictor in train_idxs:
 
-            X_c_p = self.X.copy()
             lines = self.X[self.start[node]:self.end[node]] #lines from the sample that are on the current node
             ordered_ind = np.argsort(lines[:,predictor]) # increasing order index of those lines according to the predictor
             final_lines = lines[ordered_ind] # re - arranged lines that are on "node" but in increasing order according to predictor
             col_pred = final_lines[:, predictor]
 
-            X_c_p [self.start[node]:self.end[node]] = final_lines # re - arrenged matrix X
 
-            y_c_p = self.y.copy()
             y_lines = self.y[self.start[node]:self.end[node]]
             final_y_lines = y_lines[ordered_ind]
-            y_c_p [self.start[node]:self.end[node]] = final_y_lines
 
             thresholds = (col_pred[:-1] + col_pred[1:])/2 # Candidates for cut value. 
 
-            self._best_cut_value_for_fixed_p(node,thresholds,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines)
+            self._best_cut_value_for_fixed_p(node,thresholds,ordered_list,possible_cuts,final_y_lines,predictor,final_lines,ordered_ind)
 
 
-        y_list = np.array(y_list)
-        matri_list = np.array(matri_list)
+        ordered_list = np.array(ordered_list)
         possible_cuts = np.array(possible_cuts)
 
 
 
-        if y_list.shape[0] == 0:
+        if ordered_list.shape[0] == 0:
             return None 
         else:
             greatest_purity_gain_overall_index = np.argmax(possible_cuts[:,0])
             greatest_purity_gain_overall = possible_cuts[greatest_purity_gain_overall_index,0]
 
-            self.dict_split[node] = [ greatest_purity_gain_overall_index, possible_cuts, matri_list, y_list]
+            self.dict_split[node] = [ greatest_purity_gain_overall_index, possible_cuts, ordered_list]
             
             return greatest_purity_gain_overall
 
 
-    def _best_cut_value_for_fixed_p(self,node,thresholds,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines):
+    def _best_cut_value_for_fixed_p(self,node,thresholds,ordered_list,possible_cuts,final_y_lines,predictor,final_lines,ordered_ind):
             """
 
             For a given predictor and node, the module finds that best cut value ( if it exists), and:
@@ -299,15 +297,13 @@ class ConstructionTree(Regression, Classification):
             Args:
                 - node: node evaluated for the split
                 - thresholds: sequence of the possible cut values. 
-                - matri_list: list of the X with its lines re-ordered to match the split
+                - ordered_list: list of the ordered lines of the cut.
                 - possible_cuts: list of the possible cuts of the node
-                - y_list: list of the y with its lines re-ordered to match the split
-                - X_c_p: Matrix X with the lines re-ordered to match the split according to a fixed predictor
-                - y_c_p: vector y with the lines re-ordered to match the split according to a fixed predictor
+                - final_y_lines: rearranged lines from the vector y but in increasing order according to predictor, to match the X ones.
                 - predictor: the fixed predictor
-                - final_lines:  rearranged lines from matrix X that are on "node" but in increasing order according to predictor
+                - final_lines: rearranged lines from matrix X that are on "node" but in increasing order according to predictor
+                - ordered_ind: Ordered sequence that determines final_lines and final_y_lines.
             
-
             
             """
 
@@ -331,10 +327,13 @@ class ConstructionTree(Regression, Classification):
                         m+=1
                 
                 if m+1 >=  self.min_samples_leaf and len(thresholds)+1 - (m +1) >= self.min_samples_leaf: # checking if the left child and right child both have the minimum amount of samples
-                    prevision_left = self.custom_choose(y_c_p[self.start[node]:self.start[node]+m+1]) # add +1 after m becuase in sclicing the end is exclusive
-                    prevision_right = self.custom_choose(y_c_p[self.start[node]+m+1:self.end[node]]) 
-                    left_impurity = self.custom_split(np.array(prevision_left),np.array(y_c_p[self.start[node]:self.start[node]+m+1])) 
-                    right_impurity = self.custom_split(np.array(prevision_right),np.array(y_c_p[self.start[node]+m+1:self.end[node]]))
+                    y_left_slice = final_y_lines[:m + 1]
+                    y_right_slice = final_y_lines[m + 1:]
+                
+                    prevision_left = self.custom_choose(y_left_slice) # add +1 after m becuase in sclicing the end is exclusive
+                    prevision_right = self.custom_choose(y_right_slice) 
+                    left_impurity = self.custom_split(np.array(prevision_left),np.array(y_left_slice)) 
+                    right_impurity = self.custom_split(np.array(prevision_right),np.array(y_right_slice))
                     current_purity_gain = self.impurity[node] - ((m+1)/ (len(thresholds) +1)* left_impurity + ((len(thresholds)+1)-(m+1))/(len(thresholds)+1)*right_impurity)
 
 
@@ -359,9 +358,8 @@ class ConstructionTree(Regression, Classification):
                             prev_r = prevision_right
                 m +=1
             if greatest_purity_gain_per_p is not None:
-                matri_list.append(X_c_p)
+                ordered_list.append(ordered_ind)
                 possible_cuts.append([greatest_purity_gain_per_p,associated_value_per_p,predictor,new_end_begin,imp_left, imp_right,prev_l,prev_r])
-                y_list.append(y_c_p) 
     def _tree_construction(self, X,y):
 
         """
@@ -426,10 +424,17 @@ class ConstructionTree(Regression, Classification):
 
                 greatest_purity_gain_overall_index = self.dict_split[node_chosen_to_split][0] 
                 possible_cuts = self.dict_split[node_chosen_to_split][1] 
-                matri_list = self.dict_split[node_chosen_to_split][2] 
-                y_list = self.dict_split[node_chosen_to_split][3]
-                self.X = matri_list[greatest_purity_gain_overall_index]
-                self.y = y_list[greatest_purity_gain_overall_index]
+                ordered_list = self.dict_split[node_chosen_to_split][2]
+                del self.dict_split[node_chosen_to_split]
+
+                lines = self.X[self.start[node_chosen_to_split]:self.end[node_chosen_to_split]] #lines from the sample that are on the current node
+                ordered_ind = ordered_list[greatest_purity_gain_overall_index] # increasing order index of those lines according to the predictor
+                final_lines = lines[ordered_ind] # re - arranged lines that are on "node" but in increasing order according to predictor
+
+                self.X[self.start[node_chosen_to_split]:self.end[node_chosen_to_split]] = final_lines # re - arrenged matrix X 
+                y_lines = self.y[self.start[node_chosen_to_split]:self.end[node_chosen_to_split]]
+                y_final_lines = y_lines[ordered_ind]
+                self.y[self.start[node_chosen_to_split]:self.end[node_chosen_to_split]] = y_final_lines
                 self.threshold[node_chosen_to_split] = possible_cuts[greatest_purity_gain_overall_index,1]
                 self.feature[node_chosen_to_split] = possible_cuts[greatest_purity_gain_overall_index,2]
                 r1 = np.max(self.children_right)
