@@ -67,7 +67,7 @@ def test_cv_score_with_kfold_without_y(sample_data):
         def predict(self, X):
             return np.zeros(len(X))
 
-    def unsupervised_metric(X_test, y_pred):
+    def unsupervised_metric(y_pred, X_test):
         return float(np.mean(y_pred))
 
     score = cv_score(
