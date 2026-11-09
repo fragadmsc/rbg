@@ -194,18 +194,12 @@ class ConstructionTree(Regression, Classification):
             self.max_leaf = (self.n+ 1)//2 
             self.max_splits = self.max_leaf - 1
 
-    def _splitter(self,node,definitive = False):
+    def _splitter(self, X,y,node):
 
         """
 
         Designed to find the best predictor and the corresponding best threshold 
         to partition a node. 
-
-        If definitive is False, it only calculates and returns the impurity decrease (purity gain).
-        If definitive is True, the node will actually be cut, therefore, its children
-        will be defined, and the node's attributes of threshold and features will be updated.Also,
-        it reorders the dataset sample, and registers the created left child and right child as 
-        possible future nodes to be split (if applicable).
 
 
         For a fixed node, the algorithm will iterate for every applicable predictor. In each predictor, 
