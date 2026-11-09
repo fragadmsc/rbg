@@ -61,6 +61,7 @@ class ConstructionTree(Regression, Classification):
             - self.form: Variable indicating whether it is a classification or regression tree.
             - self.factor_selection: Function that determines the number of predictors to be analyzed.
             - self.random_seed: Random seed associated with the tree, if applicable.
+            - self.dict_split = {}
             - self.max_splits: Maximum number of splits.
         
         Raises:
@@ -215,8 +216,6 @@ class ConstructionTree(Regression, Classification):
             X: Sample matrix of shape (n_samples, p_feature).
             y: Vector of the observations of shape (n_samples,).
             node: index of the node that will be tested or actually partitioned
-            definitive: if "False" then _splitter only find the best cut of the node. If "True", then
-            besides finding the best, it will actually cut the node and generate the child nodes.
         
         Returns:
             None: If there is no possible split
@@ -274,45 +273,10 @@ class ConstructionTree(Regression, Classification):
         else:
             greatest_purity_gain_overall_index = np.argmax(possible_cuts[:,0])
             greatest_purity_gain_overall = possible_cuts[greatest_purity_gain_overall_index,0]
-            if definitive == False:
-                return greatest_purity_gain_overall
-            else:
-                X = matri_list[greatest_purity_gain_overall_index]
-                y = y_list[greatest_purity_gain_overall_index]
-                self.threshold[node] = possible_cuts[greatest_purity_gain_overall_index,1]
-                self.feature[node] = possible_cuts[greatest_purity_gain_overall_index,2]
-                r1 = np.max(self.children_right)
-                r2 = np.max(self.children_left)
-                right = max(r1,r2)+1
-                left = right+1
-                if right == 0: #because in the first split, all values will be -1, but 0, 0 = -1 +1, is the root.
-                    right =1 
-                    left = 2         
 
-                self.children_left[node] = left
-                self.children_right[node] = right
-
-                self.value[left] = possible_cuts[greatest_purity_gain_overall_index,6]
-                self.impurity[left] = possible_cuts[greatest_purity_gain_overall_index,4]
-                self.start[left] = self.start[node]
-                self.end[left] = possible_cuts[greatest_purity_gain_overall_index,3]
-                self.node_depth[left] = self.node_depth[node] +1 
-                self.father[left] = node
-
-                if (self.end[left] - self.start[left]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[left] < self.max_depth) and self.impurity[left] > epsolon:
-                    self.aux_purity_gain[left] = 1
-
-                self.value[right] = possible_cuts[greatest_purity_gain_overall_index,7]
-                self.impurity[right] = possible_cuts[greatest_purity_gain_overall_index,5]
-                self.start[right]= possible_cuts[greatest_purity_gain_overall_index,3] 
-                self.end[right] = self.end[node]
-                self.node_depth[right] = self.node_depth[node] +1 
-                self.father[right] = node
-
-                if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
-                    self.aux_purity_gain[right] = 1
-
-                return greatest_purity_gain_overall   
+            self.dict_split[node] = [ greatest_purity_gain_overall_index, possible_cuts, matri_list, y_list]
+            
+            return greatest_purity_gain_overall
 
 
     def _best_cut_value_for_fixed_p(self,node,thresholds,matri_list,possible_cuts,y_list,X_c_p,y_c_p,predictor,final_lines):
@@ -462,8 +426,46 @@ class ConstructionTree(Regression, Classification):
                 list_nodes_that_can_be_split.remove(chosen)
               
                 self.aux_purity_gain[node_chosen_to_split] = -1 # turning it back to -1 
-                u = self._splitter(X,y,node_chosen_to_split, definitive= True)
 
+                greatest_purity_gain_overall_index = self.dict_split[node_chosen_to_split][0] 
+                possible_cuts = self.dict_split[node_chosen_to_split][1] 
+                matri_list = self.dict_split[node_chosen_to_split][2] 
+                y_list = self.dict_split[node_chosen_to_split][3]
+                self.X = matri_list[greatest_purity_gain_overall_index]
+                self.y = y_list[greatest_purity_gain_overall_index]
+                self.threshold[node_chosen_to_split] = possible_cuts[greatest_purity_gain_overall_index,1]
+                self.feature[node_chosen_to_split] = possible_cuts[greatest_purity_gain_overall_index,2]
+                r1 = np.max(self.children_right)
+                r2 = np.max(self.children_left)
+                right = max(r1,r2)+1
+                left = right+1
+                if right == 0: #because in the first split, all values will be -1, but 0, 0 = -1 +1, is the root.
+                    right =1 
+                    left = 2         
+
+                self.children_left[node_chosen_to_split] = left
+                self.children_right[node_chosen_to_split] = right
+
+                self.value[left] = possible_cuts[greatest_purity_gain_overall_index,6]
+                self.impurity[left] = possible_cuts[greatest_purity_gain_overall_index,4]
+                self.start[left] = self.start[node_chosen_to_split]
+                self.end[left] = possible_cuts[greatest_purity_gain_overall_index,3]
+                self.node_depth[left] = self.node_depth[node_chosen_to_split] +1 
+                self.father[left] = node_chosen_to_split
+
+                if (self.end[left] - self.start[left]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[left] < self.max_depth) and self.impurity[left] > epsolon:
+                    self.aux_purity_gain[left] = 1
+
+                self.value[right] = possible_cuts[greatest_purity_gain_overall_index,7]
+                self.impurity[right] = possible_cuts[greatest_purity_gain_overall_index,5]
+                self.start[right]= possible_cuts[greatest_purity_gain_overall_index,3] 
+                self.end[right] = self.end[node_chosen_to_split]
+                self.node_depth[right] = self.node_depth[node_chosen_to_split] +1 
+                self.father[right] = node_chosen_to_split
+
+                if (self.end[right] - self.start[right]) >= self.min_samples_split and (self.max_depth is None or self.node_depth[right] < self.max_depth) and self.impurity[right] > epsolon:
+                    self.aux_purity_gain[right] = 1
+                    
 
                 self.max_splits -=1
 
