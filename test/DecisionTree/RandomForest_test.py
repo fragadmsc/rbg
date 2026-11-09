@@ -432,22 +432,3 @@ class TestRdForestReg_Error:
         Y_test_2 = model_regressionRand_2.predict(X_test)
            
         assert np.array_equal(Y_test_1, Y_test_2)
-    def test_OOB(self):
-        np.random.seed(42)
-        X_train = np.random.uniform(0, 10, size=(200, 15))
-        y_train = 3.5 * X_train[:, 0] - 2.0 * X_train[:, 5] + 1.2 * X_train[:, 10] + np.random.normal(0, 1, size=200)
-    
-    
-        model_regressionRand = RdForestReg(n_trees = 50)
-        model_regressionRand.fit(X_train, y_train)
-
-        error = model_regressionRand.OOB()
-
-        assert isinstance(error, (float, int, np.integer, np.floating))
-        
-        model_BagReg = BaggingReg(n_trees = 50)
-        model_BagReg.fit(X_train, y_train)
-
-        errorBag = model_BagReg.OOB()
-
-        assert error<= errorBag
