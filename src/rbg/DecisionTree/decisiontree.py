@@ -311,6 +311,13 @@ class BaggingBase(TreeBase):
         if X.shape[0] != y.shape[0]:
             raise ValueError("The data do not match")
 
+        self.X_trees_train =[]
+        self.y_trees_train = [] 
+        self.X_trees_test =[]
+        self.y_trees_test = [] 
+        self.list_of_trees = []
+        self.list_of_indx_test = [] 
+
         self.qnt_samples = X.shape[0]
         resamples = resample(X,n_resamples = self.n_trees,random_state = 42)
         number_of_the_tree = 0 
