@@ -22,14 +22,14 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
         raise ValueError("X and y must have the same number of rows.")
     if isinstance(test_size, int) and not isinstance(test_size,bool):
         if test_size <= 0 or test_size >= len(X):
-            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the test set.")
         n_test = test_size
     elif isinstance(test_size, float):
         if test_size <= 0 or test_size >= 1:
-            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the test set.")
         n_test = int(np.ceil(test_size * len(X)))
     else:
-        raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+        raise ValueError("'test_size' must represent the proportion or the exact number of samples on the test set.")
 
     n_samples = len(X)
     idxs = np.arange(n_samples)
@@ -56,14 +56,14 @@ def train_val_test_split(X : np.ndarray, y : np.ndarray = None, val_size = 0.2, 
             raise ValueError("X and y must have the same number of rows.")
     if isinstance(test_size, int) and not isinstance(test_size,bool):
         if test_size <= 0 or test_size >= len(X):
-            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the test set.")
         n_test = test_size
     elif isinstance(test_size, float):
         if test_size <= 0 or test_size >= 1:
-            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+            raise ValueError("'test_size' must represent the proportion or the exact number of samples on the test set.")
         n_test = int(np.ceil(test_size * len(X)))
     else:
-        raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
+        raise ValueError("'test_size' must represent the proportion or the exact number of samples on the test set.")
     if isinstance(val_size, float):
         n_val = int(np.ceil(n_samples * val_size))
     else:
