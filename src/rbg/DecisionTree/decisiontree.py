@@ -367,7 +367,7 @@ class BaggingBase(TreeBase):
             for l in range(len(self.list_of_indx_test)):
                 if n in self.list_of_indx_test[l]:
                     tree_list.append(self.list_of_trees[l])
-            y_hat = self.predict(self.X_orig[n], trees = tree_list)
+            y_hat = self.predict(self.X_orig[n:n+1], trees = tree_list)
             y_hat_array.append(y_hat)
         y_hat_array = np.array(y_hat_array)
         return self.custom_evaluation( y_hat_array,np.array(self.y_orig))
