@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from rbg.ModelSelection.KFold import KFold, StratifiedKFold, GroupKFold
+from rbg.ModelSelection import KFold, StratifiedKFold, GroupKFold
 
 
 class TestKFold:

@@ -1,4 +1,4 @@
-from rbg.Classification.Logistic import Logistic as LogReg
+from rbg.Classification import Logistic as LogReg
 import numpy as np
 import pandas as pd
 import pytest
