@@ -13,15 +13,15 @@ class TestDataEntry():
     def test_DataFrame(self,func):
         Data = pd.DataFrame({"coluna1": [1.0, 2.0, 3.0]})
         
-        DtFrameResult = func(Data)
+        DtFrameResult = func().fit(Data).transform(Data)
         
         assert isinstance(DtFrameResult, np.ndarray)
 
     @pytest.mark.parametrize("func", [Standard])
     def test_Numpy(self,func):
-        Data = np.ndarray([1,2,3])
+        Data = np.array([1.0, 2.0, 3.0])
 
-        NpResult = func(Data)
+        NpResult = func().fit(Data).transform(Data)
 
         assert isinstance(NpResult, np.ndarray)
 
@@ -34,7 +34,7 @@ class TestFunctionality():
         ExpectedResult = (Data - np.mean(Data)) / np.std(Data)
         #testa elemento por elemento da array
         np.testing.assert_allclose(
-            Standard(Data), 
+            Standard().fit(Data).transform(Data), 
             ExpectedResult, 
             atol=MEpsylon,
             err_msg="O calculo divergiu da matriz esperada acima do limite de MEpsylon."
