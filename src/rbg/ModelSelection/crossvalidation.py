@@ -32,13 +32,13 @@ def train_test_split(X : np.ndarray, y : np.ndarray, test_size : float = 0.2, sh
         raise ValueError("'test_size' must represent the proportion or the exact number of samples on the training set.")
 
     n_samples = len(X)
-    n_test = test_size * n_samples
+    n_test = int(np.ceil(test_size * n_samples)) if isinstance(test_size, float) else test_size
     
     idxs = np.arange(n_samples)
     
     if shuffle:
         rng = np.random.default_rng(random_state)
-        idxs = rng.permutation()
+        idxs = rng.permutation(idxs)
         
     test_idxs = idxs[:n_test]
     train_idxs = idxs[n_test:]
