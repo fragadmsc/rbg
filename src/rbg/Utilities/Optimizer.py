@@ -9,8 +9,8 @@ class AdamOptimizer():
                  max_iter: int = 1000, 
                  delta: float = 1e-5,
                  beta1: float = 0.9,
-                 beta2: float = 0.999, 
-                 eps: float = 1e-8
+                 beta2: float = 0.99, 
+                 eps: float = 1e-9
                  ):
         self.lr = learning_rate
         self.tol = tolerance
@@ -29,8 +29,7 @@ class AdamOptimizer():
         for i in range(x.size):
             step = np.zeros_like(x)
             step[i] = self.delta
-            grad[i] = (f(x + step) - f(x - step)) / (2 * self.delta)
-
+            grad[i] = (np.asarray(f(x + step)).item() - np.asarray(f(x - step)).item()) / (2 * self.delta)
         return grad 
 
     def getmin(self, 
