@@ -3,6 +3,9 @@
 
 This is the official repository for the machine learning library titled RBG.
 
+The documentation is at: [docs](https://rbg.readthedocs.io/en/latest/
+)
+
 This file contains the structure of the library, the workflow with git/github that should be used and the code style guides. This document should be referred to if you have some doubt (it is also a good context base for asking something to AI).
 
 ### Table of Contents
